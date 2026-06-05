@@ -1,5 +1,6 @@
 # Thành viên:
 | Họ tên | MSSV | Vai trò |
+|---|---|---|
 | Lê Trí Cao | 24520206 | Backend, database, nghiệp vụ |
 | Tô Ngọc Huy | 24520698 | Frontend, Electron, giao diện |
 | Lê Tuấn Dương | 24520359 | Tài liệu, kiểm thử, báo cáo |
