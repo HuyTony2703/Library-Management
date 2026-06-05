@@ -25,7 +25,7 @@ public class BackendApplication {
     }
 }
 ```
-**Chức năng**: Điểm vào của ứng dụng Spring Boot. Khi chạy file này, Spring sẽ tự động:
+**Chức năng**: Điểm vào của ứng dụng Spring Boot. Khi chạy file này, Spring sẽ tự động thực hiện:
 - Scan tất cả @Component, @Controller, @Service, @Repository
 - Cấu hình database connection
 - Khởi động Tomcat server trên port 8080
