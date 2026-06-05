@@ -1,4 +1,4 @@
-# Thành viên thực hiện:
+# Thành viên:
 | Họ tên | MSSV | Vai trò |
 |---|---|---|
 | Lê Trí Cao | 24520206 | Backend, database, nghiệp vụ |
