@@ -11,7 +11,7 @@ Trạng thái:
 
 ---
 
-## 2. Dashboard
+## 2. Màn hình Dashboard
 API cần:
 - GET /api/reports/debts
 - GET /api/reports/current-loans
