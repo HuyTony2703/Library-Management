@@ -1,6 +1,6 @@
 # Mô Tả Chi Tiết Cấu Trúc Backend - Hoàn Chỉnh
 
-**Dự án**: Hệ thống quản lý thư viện desktop  
+**Dự án**: Hệ thống quản lý thư viện desktop app
 **Framework**: Spring Boot 3.5.14  
 **Database**: SQL Server  
 **Kiến trúc**: 3-tier layered (Controller → Service → Repository)  
