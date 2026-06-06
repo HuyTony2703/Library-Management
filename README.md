@@ -13,27 +13,48 @@ LibraDesk là ứng dụng desktop quản lý thư viện. Tài liệu này đư
 
 ## 1. Trước khi mở app
 
-Trước khi dùng LibraDesk, cần đảm bảo hệ thống backend đã được bật.
+Trước khi dùng LibraDesk, nên mở app bằng file chạy nhanh:
 
-Nếu bạn được giao file chạy backend, hãy mở:
+```text
+start-libradesk.bat
+```
+
+File này sẽ tự động:
+
+```text
+1. Kiểm tra backend tại http://localhost:8080/api/health.
+2. Nếu backend chưa chạy, tự mở start-backend.bat.
+3. Chờ backend khởi động tối đa 60 giây.
+4. Mở LibraDesk.exe.
+```
+
+Vì vậy, trong đa số trường hợp chỉ cần nhấn đúp vào:
+
+```text
+start-libradesk.bat
+```
+
+Nếu chỉ muốn mở backend riêng, ví dụ khi cần kiểm tra lỗi backend hoặc demo từng bước, hãy chạy:
 
 ```text
 start-backend.bat
 ```
 
-Sau đó đợi cửa sổ backend chạy ổn. Khi backend đã chạy, mở ứng dụng:
+Sau đó đợi cửa sổ backend chạy ổn rồi mở ứng dụng nếu cần.
+
+File `start-libradesk.bat` đang tìm app tại:
 
 ```text
-LibraDesk.exe
+..\release\win-unpacked\LibraDesk.exe
 ```
 
-Hoặc mở bản cài đặt:
+Nếu chưa có bản app đã giải nén, có thể chạy bản cài đặt:
 
 ```text
 LibraDesk Setup 1.0.0.exe
 ```
 
-Nếu app mở được nhưng đăng nhập không được, hãy kiểm tra backend đã chạy chưa.
+Nếu app mở được nhưng đăng nhập không được, hãy kiểm tra cửa sổ backend đã chạy ổn chưa.
 
 ---
 
@@ -495,8 +516,8 @@ Sau khi đăng xuất, hệ thống quay lại màn hình đăng nhập.
 Khi demo app, nên thao tác theo thứ tự:
 
 ```text
-1. Mở backend.
-2. Mở LibraDesk.
+1. Mở start-libradesk.bat.
+2. Đợi script tự kiểm tra backend và mở LibraDesk.
 3. Đăng nhập bằng tài khoản thủ thư.
 4. Vào Tổng quan để giới thiệu dashboard.
 5. Vào Đầu sách để xem F01.
@@ -548,10 +569,12 @@ Cách xử lý:
 
 ```text
 Đóng app.
-Chạy backend.
-Mở lại app.
+Chạy start-libradesk.bat.
+Đợi script kiểm tra backend và mở lại app.
 Đăng nhập lại.
 ```
+
+Nếu `start-libradesk.bat` báo backend không khởi động được sau 60 giây, hãy xem cửa sổ `LibraDesk Backend` để biết lỗi chi tiết.
 
 ### 15.3. Mượn sách bị lỗi cuốn sách không sẵn có
 
@@ -608,6 +631,8 @@ Nhập số tiền nhỏ hơn hoặc bằng số tiền còn lại.
 ## 16. Ghi chú
 
 - App desktop cần backend đang chạy để sử dụng được.
+- Nên mở app bằng `start-libradesk.bat` để script tự kiểm tra và bật backend.
+- `start-backend.bat` yêu cầu máy đã cài JDK 21 và Java nằm trong PATH.
 - Dữ liệu trong app lấy trực tiếp từ database SQL Server.
 - Khi thao tác mượn, trả, thu tiền, hệ thống sẽ cập nhật dữ liệu thật trong database.
 - Trước khi demo nhiều lần, nên reset dữ liệu demo để tránh lỗi trùng mã hoặc sách đã bị mượn.
