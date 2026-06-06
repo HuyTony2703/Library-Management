@@ -21,9 +21,11 @@ backend/derby.log
 frontend/.env
 frontend/.env.*
 backend/src/main/resources/application.properties
+backend/local-db.bat
 
 # Cho phép push file cấu hình mẫu nếu có
 !backend/src/main/resources/application-example.properties
+!backend/local-db.example.bat
 
 # =========================
 # IDE
