@@ -47,98 +47,6 @@ button {
   color: var(--primary);
 }
 
-/* Desktop database setup */
-
-.setup-screen {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 32px;
-}
-
-.setup-card {
-  width: min(680px, 100%);
-  display: grid;
-  gap: 18px;
-  padding: 34px;
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-}
-
-.setup-header {
-  display: grid;
-  gap: 8px;
-}
-
-.setup-header span {
-  color: var(--primary);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.setup-header h1 {
-  margin: 0;
-  font-size: 34px;
-}
-
-.setup-header p {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-.setup-auth-mode {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 4px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
-}
-
-.setup-auth-mode button {
-  min-height: 46px;
-  border: none;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--muted);
-  font-weight: 900;
-}
-
-.setup-auth-mode button.selected {
-  background: var(--primary);
-  color: white;
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
-}
-
-.setup-message,
-.setup-error {
-  padding: 12px 14px;
-  border-radius: 14px;
-  font-weight: 800;
-}
-
-.setup-message {
-  color: var(--primary);
-  background: rgba(37, 99, 235, 0.1);
-}
-
-.setup-error {
-  color: var(--bad);
-  background: rgba(220, 38, 38, 0.1);
-}
-
-.setup-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
 /* Login */
 
 .login-page {
@@ -782,18 +690,5 @@ textarea:focus {
   .form-grid-3,
   .compact-form {
     grid-template-columns: 1fr;
-  }
-
-  .setup-card {
-    padding: 24px;
-  }
-
-  .setup-auth-mode,
-  .setup-actions {
-    grid-template-columns: 1fr;
-  }
-
-  .setup-actions {
-    display: grid;
   }
 }
