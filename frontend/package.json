@@ -18,7 +18,7 @@
     "appId": "com.library.libradesk",
     "productName": "LibraDesk",
     "directories": {
-      "output": "release"
+      "output": "../release"
     },
     "files": [
       "dist/**/*",
@@ -26,16 +26,12 @@
       "package.json"
     ],
     "asar": true,
+    "afterPack": "build/after-pack.cjs",
     "win": {
+      "signAndEditExecutable": false,
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
           "arch": [
             "x64"
           ]
@@ -51,19 +47,18 @@
       "uninstallDisplayName": "LibraDesk"
     }
   },
-  "dependencies": {
-    "lucide-react": "^1.17.0",
-    "react": "latest",
-    "react-dom": "latest",
-    "react-router-dom": "^7.16.0",
-    "recharts": "^3.8.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@vitejs/plugin-react": "latest",
     "concurrently": "^10.0.3",
     "cross-env": "^10.1.0",
     "electron": "^42.3.2",
     "electron-builder": "^26.8.1",
+    "lucide-react": "^1.17.0",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router-dom": "^7.16.0",
+    "recharts": "^3.8.1",
     "vite": "latest",
     "wait-on": "^9.0.10"
   }
