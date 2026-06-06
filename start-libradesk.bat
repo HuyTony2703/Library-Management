@@ -6,7 +6,7 @@ setlocal
 
 set "ROOT=%~dp0"
 set "BACKEND_BAT=%ROOT%start-backend.bat"
-set "APP_EXE=%ROOT%..\release\win-unpacked\LibraDesk.exe"
+set "APP_EXE=%ROOT%release\win-unpacked\LibraDesk.exe"
 
 echo ==========================================
 echo              START LIBRADESK

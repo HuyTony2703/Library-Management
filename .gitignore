@@ -46,3 +46,4 @@ Thumbs.db
 *.7z
 *.zip
 *.asar
+release/
