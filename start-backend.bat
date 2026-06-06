@@ -6,7 +6,6 @@ setlocal
 
 set "ROOT=%~dp0"
 set "BACKEND_DIR=%ROOT%backend"
-set "LOCAL_CONFIG=%BACKEND_DIR%\local-db.bat"
 
 echo ==========================================
 echo        LIBRADESK BACKEND SERVER
@@ -22,13 +21,6 @@ if not exist "%BACKEND_DIR%" (
 )
 
 cd /d "%BACKEND_DIR%"
-
-if exist "%LOCAL_CONFIG%" (
-    echo Doc cau hinh database local:
-    echo %LOCAL_CONFIG%
-    call "%LOCAL_CONFIG%"
-    echo.
-)
 
 echo [1/3] Kiem tra Java...
 java -version >nul 2>&1
