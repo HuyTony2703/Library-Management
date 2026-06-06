@@ -12,33 +12,44 @@
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && cross-env ELECTRON_START_URL=http://localhost:5173 electron .\"",
     "electron:preview": "npm run build && electron .",
     "dist:dir": "npm run build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --dir",
-    "dist:win": "npm run build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win --x64"
+    "dist:win": "npm run build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win && node build/cleanup-release.cjs"
   },
   "build": {
     "appId": "com.library.libradesk",
     "productName": "LibraDesk",
+    "artifactName": "LibraDesk-${version}-portable.${ext}",
     "directories": {
       "output": "../release"
     },
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "package.json"
+      "package.json",
+      "!**/*.map",
+      "!**/*.md",
+      "!**/README*",
+      "!**/CHANGELOG*",
+      "!**/LICENSE*"
     ],
     "asar": true,
+    "compression": "maximum",
+    "npmRebuild": false,
+    "buildDependenciesFromSource": false,
     "afterPack": "build/after-pack.cjs",
     "win": {
       "signAndEditExecutable": false,
       "target": [
         {
-          "target": "nsis",
+          "target": "portable",
           "arch": [
-            "x64"
+            "ia32"
           ]
         }
       ]
     },
     "nsis": {
+      "artifactName": "LibraDesk-Setup-${version}.${ext}",
+      "differentialPackage": false,
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,

@@ -6,7 +6,8 @@ setlocal
 
 set "ROOT=%~dp0"
 set "BACKEND_BAT=%ROOT%start-backend.bat"
-set "APP_EXE=%ROOT%release\win-unpacked\LibraDesk.exe"
+set "APP_EXE=%ROOT%release\LibraDesk-1.0.0-portable.exe"
+set "APP_EXE_FALLBACK=%ROOT%release\win-unpacked\LibraDesk.exe"
 
 echo ==========================================
 echo              START LIBRADESK
@@ -21,9 +22,14 @@ if not exist "%BACKEND_BAT%" (
     exit /b 1
 )
 
+if not exist "%APP_EXE%" if exist "%APP_EXE_FALLBACK%" (
+    set "APP_EXE=%APP_EXE_FALLBACK%"
+)
+
 if not exist "%APP_EXE%" (
     echo [ERROR] Khong tim thay LibraDesk.exe:
     echo %APP_EXE%
+    echo %APP_EXE_FALLBACK%
     echo.
     echo Vi tri script hien tai:
     echo %ROOT%

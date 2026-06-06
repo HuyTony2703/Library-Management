@@ -6,6 +6,7 @@ setlocal
 
 set "ROOT=%~dp0"
 set "BACKEND_DIR=%ROOT%backend"
+set "RELEASE_BACKEND_JAR=%ROOT%release\backend-0.0.1-SNAPSHOT.jar"
 set "LOCAL_CONFIG=%BACKEND_DIR%\local-db.bat"
 
 echo ==========================================
@@ -48,7 +49,11 @@ echo [2/3] Kiem tra file backend JAR...
 
 set "JAR_FILE="
 
-if exist "%BACKEND_DIR%\target" (
+if exist "%RELEASE_BACKEND_JAR%" (
+    set "JAR_FILE=%RELEASE_BACKEND_JAR%"
+)
+
+if not defined JAR_FILE if exist "%BACKEND_DIR%\target" (
     for /f "delims=" %%F in ('dir /b /a-d "%BACKEND_DIR%\target\*.jar" 2^>nul') do (
         echo %%F | findstr /I "original sources javadoc" >nul
         if errorlevel 1 (
