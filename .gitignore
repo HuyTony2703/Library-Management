@@ -40,12 +40,3 @@ backend/local-db.bat
 .DS_Store
 Thumbs.db
 
-# =========================
-# Build outputs
-# =========================
-*.exe
-*.msi
-*.7z
-*.zip
-*.asar
-release/
