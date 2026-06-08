@@ -10,7 +10,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.*;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
@@ -42,6 +44,13 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/auth/me").authenticated()
 
+                        .requestMatchers("/api/admin/**").hasRole("QUAN_TRI_VIEN")
+                        .requestMatchers("/api/staff/**").hasAnyRole("THU_THU", "QUAN_TRI_VIEN")
+                        .requestMatchers("/api/reader/**").hasRole("DOC_GIA")
+
+                        .requestMatchers("/api/options/", "/api/options/**")
+                        .hasAnyRole("THU_THU", "QUAN_TRI_VIEN", "DOC_GIA")
+
                         // Tra cứu sách: tài khoản đăng nhập nào cũng xem được.
                         .requestMatchers(HttpMethod.GET,
                                 "/api/categories/**",
@@ -65,7 +74,10 @@ public class SecurityConfig {
                                 "/api/book-copies/**"
                         ).hasAnyRole("THU_THU", "QUAN_TRI_VIEN")
 
-                        // Nghiệp vụ thư viện: thủ thư và admin.
+                        /*
+                         * Endpoint cũ giữ lại để app hiện tại không vỡ.
+                         * Sau này có thể chuyển dần sang /api/staff/** hoặc /api/admin/**.
+                         */
                         .requestMatchers(
                                 "/api/readers",
                                 "/api/readers/**",
@@ -73,8 +85,6 @@ public class SecurityConfig {
                                 "/api/reader-groups/**",
                                 "/api/membership-plans",
                                 "/api/membership-plans/**",
-                                "/api/options/",
-                                "/api/options/**",
                                 "/api/loans",
                                 "/api/loans/**",
                                 "/api/returns",
@@ -82,11 +92,10 @@ public class SecurityConfig {
                                 "/api/payments",
                                 "/api/payments/**",
                                 "/api/payment-methods",
-                                "/api/payment-methods/**",
-                                "/api/reports",
-                                "/api/reports/**"
+                                "/api/payment-methods/**"
                         ).hasAnyRole("THU_THU", "QUAN_TRI_VIEN")
 
+                        .requestMatchers("/api/reports", "/api/reports/**").hasRole("QUAN_TRI_VIEN")
                         .requestMatchers("/api/activity-logs/**").hasRole("QUAN_TRI_VIEN")
 
                         .anyRequest().authenticated()
@@ -117,6 +126,7 @@ public class SecurityConfig {
                 "GET",
                 "POST",
                 "PUT",
+                "PATCH",
                 "DELETE",
                 "OPTIONS"
         ));
