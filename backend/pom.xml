@@ -75,9 +75,21 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <configuration>
+                    <imageName>backend</imageName>
+                    <mainClass>com.library.backend.BackendApplication</mainClass>
+                    <buildArgs>
+                        <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                    </buildArgs>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <mainClass>com.library.backend.BackendApplication</mainClass>
                     <includeTools>false</includeTools>
                     <excludes>
                         <exclude>

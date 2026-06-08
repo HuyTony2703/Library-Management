@@ -33,6 +33,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
 
                         .requestMatchers("/api/health").permitAll()
+                        .requestMatchers("/api/warmup").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
 
                         // Nếu còn giữ DevPasswordController thì KHÔNG permitAll ở bản demo.

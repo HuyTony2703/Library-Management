@@ -7,6 +7,7 @@ $ErrorActionPreference = "Stop"
 $Root = $Root.Trim().Trim('"').TrimEnd("\")
 $backendDir = Join-Path $Root "backend"
 $releaseBackendJar = Join-Path $Root "release\backend-0.0.1-SNAPSHOT.jar"
+$releaseBackendNative = Join-Path $Root "release\backend.exe"
 $configDir = Join-Path $env:APPDATA "LibraDesk"
 $configFile = Join-Path $configDir "db-config.properties"
 $passwordFile = Join-Path $configDir "db-password.dpapi"
@@ -46,6 +47,25 @@ function Read-EncryptedPassword {
         return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
     } finally {
         [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+    }
+}
+
+function Test-AotJar {
+    param([string]$Path)
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zip = [IO.Compression.ZipFile]::OpenRead($Path)
+
+    try {
+        foreach ($entry in $zip.Entries) {
+            if ($entry.FullName.EndsWith("__ApplicationContextInitializer.class")) {
+                return $true
+            }
+        }
+
+        return $false
+    } finally {
+        $zip.Dispose()
     }
 }
 
@@ -123,40 +143,46 @@ Write-Host "[OK] Java da san sang."
 Write-Host ""
 Write-Host "[2/3] Kiem tra file backend JAR..."
 
-$jarFile = $null
-
-if (Test-Path -Path $releaseBackendJar) {
-    $jarFile = $releaseBackendJar
+if ((Test-Path -Path $releaseBackendNative) -or (Test-Path -Path $releaseBackendJar)) {
+    $hasBackendArtifact = $true
 } else {
-    $targetDir = Join-Path $backendDir "target"
-    if (Test-Path -Path $targetDir) {
-        $jarFile = Get-ChildItem -Path $targetDir -Filter "*.jar" |
-            Where-Object { $_.Name -notmatch "original|sources|javadoc" } |
-            Select-Object -First 1 -ExpandProperty FullName
-    }
+    $hasBackendArtifact = $false
+}
+
+if (-not $hasBackendArtifact) {
+    Write-Host "[ERROR] Khong tim thay backend release artifact:"
+    Write-Host $releaseBackendJar
+    Write-Host $releaseBackendNative
+    Write-Host ""
+    Write-Host "Hay build backend release truoc khi chay."
+    exit 1
 }
 
 Write-Host ""
 Write-Host "[3/3] Dang khoi dong backend..."
 Write-Host ""
 
-if ($jarFile) {
-    Write-Host "Chay backend bang file JAR:"
-    Write-Host $jarFile
+if (Test-Path -Path $releaseBackendNative) {
+    Write-Host "Chay backend bang native executable:"
+    Write-Host $releaseBackendNative
     Write-Host ""
-    & java -jar $jarFile
+    & $releaseBackendNative
     exit $LASTEXITCODE
 }
 
-Write-Host "Khong tim thay file JAR."
-Write-Host "Se chay backend bang Maven Wrapper."
+Write-Host "Chay backend bang file JAR:"
+Write-Host $releaseBackendJar
 Write-Host ""
 
-$mavenWrapper = Join-Path $backendDir "mvnw.cmd"
-if (-not (Test-Path -Path $mavenWrapper)) {
-    Write-Host "[ERROR] Khong tim thay mvnw.cmd."
-    exit 1
+$javaArgs = @("-XX:TieredStopAtLevel=1", "-Xms128m", "-Xmx512m")
+
+if (Test-AotJar -Path $releaseBackendJar) {
+    Write-Host "AOT mode: enabled"
+    $javaArgs += "-Dspring.aot.enabled=true"
+} else {
+    Write-Host "AOT mode: disabled"
 }
 
-& $mavenWrapper spring-boot:run
+$javaArgs += @("-jar", $releaseBackendJar)
+& java @javaArgs
 exit $LASTEXITCODE
