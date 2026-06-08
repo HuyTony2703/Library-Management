@@ -11,6 +11,7 @@ import LoansPage from "./pages/LoansPage";
 import ReturnsPage from "./pages/ReturnsPage";
 import PaymentsPage from "./pages/PaymentsPage";
 import ReportsPage from "./pages/ReportsPage";
+import StaffLoansPage from "./pages/staff/StaffLoansPage";
 
 function ProtectedRoute({ children }) {
     const { user, loadingUser } = useAuth();
@@ -46,6 +47,7 @@ export default function App() {
                 <Route path="/returns" element={<ReturnsPage />} />
                 <Route path="/payments" element={<PaymentsPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/staff/loans" element={<StaffLoansPage />} />
             </Route>
         </Routes>
     );
