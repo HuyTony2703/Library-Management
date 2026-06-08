@@ -1474,3 +1474,5 @@ INSERT INTO NHATKYHOATDONG(MaTaiKhoan, HanhDong, DoiTuongTacDong, MaDoiTuongTacD
 VALUES ('TK_THUTHU01', N'Tạo phiếu đặt trước demo', N'PHIEUDATTRUOC', 'PDT_DG006_HEADJAVA', SYSDATETIME(), '127.0.0.1', N'Tạo phiếu đặt trước và giữ chỗ sách Head First Java');
 
 GO
+
+
