@@ -19,8 +19,6 @@ if not exist "%START_SCRIPT%" (
 powershell -NoProfile -ExecutionPolicy Bypass -File "%START_SCRIPT%" -Root "%ROOT%"
 
 if errorlevel 1 (
-    echo.
-    pause
     exit /b 1
 )
 

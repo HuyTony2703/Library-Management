@@ -50,6 +50,72 @@ function Read-EncryptedPassword {
     }
 }
 
+function New-SqlConnectionStringFromJdbcUrl {
+    param(
+        [string]$JdbcUrl,
+        [string]$Username,
+        [string]$Password
+    )
+
+    if (-not $JdbcUrl.StartsWith("jdbc:sqlserver://")) {
+        throw "DB_URL khong dung dinh dang jdbc:sqlserver://"
+    }
+
+    $withoutPrefix = $JdbcUrl.Substring("jdbc:sqlserver://".Length)
+    $parts = $withoutPrefix.Split(";")
+    $server = $parts[0]
+    $database = ""
+
+    foreach ($part in $parts) {
+        $separatorIndex = $part.IndexOf("=")
+        if ($separatorIndex -le 0) {
+            continue
+        }
+
+        $key = $part.Substring(0, $separatorIndex).Trim()
+        $value = $part.Substring($separatorIndex + 1).Trim()
+
+        if ($key.Equals("databaseName", [StringComparison]::OrdinalIgnoreCase)) {
+            $database = $value
+        }
+    }
+
+    if (-not $server) {
+        throw "DB_URL thieu SQL Server host/port."
+    }
+
+    if (-not $database) {
+        throw "DB_URL thieu databaseName."
+    }
+
+    Add-Type -AssemblyName System.Data
+    $sqlClientServer = $server
+    if ($sqlClientServer -match "^([^\\,]+):(\d+)$") {
+        $sqlClientServer = "$($matches[1]),$($matches[2])"
+    }
+
+    $builder = New-Object System.Data.SqlClient.SqlConnectionStringBuilder
+    $builder["Data Source"] = $sqlClientServer
+    $builder["Initial Catalog"] = $database
+    $builder["User ID"] = $Username
+    $builder["Password"] = $Password
+    $builder["Encrypt"] = $true
+    $builder["TrustServerCertificate"] = $true
+    $builder["Connect Timeout"] = 5
+    return $builder.ConnectionString
+}
+
+function Test-SqlConnection {
+    param([string]$ConnectionString)
+
+    $connection = New-Object System.Data.SqlClient.SqlConnection $ConnectionString
+    try {
+        $connection.Open()
+    } finally {
+        $connection.Dispose()
+    }
+}
+
 function Test-AotJar {
     param([string]$Path)
 
@@ -130,7 +196,50 @@ if (-not $env:DB_PASSWORD) {
     exit 1
 }
 
-Write-Host "[1/3] Kiem tra Java..."
+Write-Host "[1/4] Kiem tra ket noi database..."
+
+try {
+    $connectionString = New-SqlConnectionStringFromJdbcUrl `
+        -JdbcUrl $env:DB_URL `
+        -Username $env:DB_USERNAME `
+        -Password $env:DB_PASSWORD
+    Test-SqlConnection -ConnectionString $connectionString
+} catch {
+    Write-Host "[ERROR] Khong ket noi duoc SQL Server bang cau hinh da luu."
+    Write-Host ""
+    Write-Host "Nguyen nhan thuong gap:"
+    Write-Host "- Sai SQL username/password"
+    Write-Host "- Sai SQL Server host/port"
+    Write-Host "- Sai databaseName"
+    Write-Host "- SQL Server chua bat TCP/IP hoac chua chay"
+    Write-Host ""
+    Write-Host "Cau hinh database da luu se duoc reset."
+    Remove-Item -LiteralPath $configFile, $passwordFile -Force -ErrorAction SilentlyContinue
+    Write-Host ""
+    Write-Host "Chi tiet loi:"
+    Write-Host $_.Exception.Message
+    Write-Host ""
+    Write-Host "Vui long nhap lai thong tin SQL Server."
+    Write-Host ""
+
+    & powershell -NoProfile -ExecutionPolicy Bypass -File $setupConfigScript
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host ""
+        Write-Host "[ERROR] Khong the tao lai cau hinh database."
+        exit 1
+    }
+
+    $dbConfig = Read-DbConfig -Path $configFile
+    $env:DB_URL = $dbConfig.DB_URL
+    $env:DB_USERNAME = $dbConfig.DB_USERNAME
+    $env:DB_PASSWORD = Read-EncryptedPassword -Path $passwordFile
+}
+
+Write-Host "[OK] Ket noi database thanh cong."
+Write-Host ""
+
+Write-Host "[2/4] Kiem tra Java..."
 & cmd.exe /c "java -version >nul 2>nul"
 
 if ($LASTEXITCODE -ne 0) {
@@ -141,7 +250,7 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "[OK] Java da san sang."
 Write-Host ""
-Write-Host "[2/3] Kiem tra file backend JAR..."
+Write-Host "[3/4] Kiem tra file backend JAR..."
 
 if ((Test-Path -Path $releaseBackendNative) -or (Test-Path -Path $releaseBackendJar)) {
     $hasBackendArtifact = $true
@@ -159,7 +268,7 @@ if (-not $hasBackendArtifact) {
 }
 
 Write-Host ""
-Write-Host "[3/3] Dang khoi dong backend..."
+Write-Host "[4/4] Dang khoi dong backend..."
 Write-Host ""
 
 if (Test-Path -Path $releaseBackendNative) {

@@ -7,6 +7,7 @@ $ErrorActionPreference = "Stop"
 $Root = $Root.Trim().Trim('"').TrimEnd("\")
 $backendBat = Join-Path $Root "start-backend.bat"
 $backendScript = Join-Path $Root "backend\run-backend.ps1"
+$resetDbConfigBat = Join-Path $Root "reset-db-config.bat"
 $appExe = Join-Path $Root "release\LibraDesk-1.0.0-portable.exe"
 $appExeFallback = Join-Path $Root "release\win-unpacked\LibraDesk.exe"
 $configDir = Join-Path $env:APPDATA "LibraDesk"
@@ -105,10 +106,21 @@ if (Test-BackendHealth) {
     if (-not (Wait-BackendHealth -TimeoutSeconds 60)) {
         Write-Host ""
         Write-Host "[ERROR] Backend khong khoi dong duoc sau 60 giay."
-        Write-Host "Hay chay start-backend.bat truc tiep de xem log loi."
+        Write-Host ""
+        Write-Host "Huong xu ly nhanh:"
+        Write-Host "1. Chay reset-db-config.bat de xoa cau hinh database da luu."
+        Write-Host "2. Chay lai start-libradesk.bat va nhap lai thong tin SQL Server."
+        Write-Host ""
+        Write-Host "File reset:"
+        Write-Host $resetDbConfigBat
+        Write-Host ""
+        Write-Host "Neu van loi, hay chay start-backend.bat truc tiep de xem log chi tiet."
         Write-Host "Neu backend chay nen, log nam tai:"
         Write-Host $backendOutLogFile
         Write-Host $backendErrLogFile
+        Write-Host ""
+        Write-Host "Cua so nay se tu dong dong sau 8 giay..."
+        Start-Sleep -Seconds 8
         exit 1
     }
 
