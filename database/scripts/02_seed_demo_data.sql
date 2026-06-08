@@ -1476,4 +1476,3 @@ VALUES ('TK_THUTHU01', N'Tạo phiếu đặt trước demo', N'PHIEUDATTRUOC', 
 GO
 
 
-//siuuuuuuuuuuuuuuu
