@@ -1,5 +1,6 @@
 param(
-    [string]$Root = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
+    [string]$Root = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)),
+    [switch]$ValidateOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -265,6 +266,12 @@ if (-not $hasBackendArtifact) {
     Write-Host ""
     Write-Host "Hay build backend release truoc khi chay."
     exit 1
+}
+
+if ($ValidateOnly) {
+    Write-Host ""
+    Write-Host "[OK] Backend da san sang de khoi dong."
+    exit 0
 }
 
 Write-Host ""
