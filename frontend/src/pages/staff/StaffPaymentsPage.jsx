@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RefreshCcw, Search } from "lucide-react";
+import { libraryApi } from "../../api/libraryApi";
 import { staffApi } from "../../api/staffApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
@@ -12,6 +13,7 @@ export default function StaffPaymentsPage() {
 
     const [maDocGia, setMaDocGia] = useState("DG001");
     const [debts, setDebts] = useState([]);
+    const [debtors, setDebtors] = useState([]);
     const [selected, setSelected] = useState({});
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -46,6 +48,19 @@ export default function StaffPaymentsPage() {
             toast.error(err.message || "Không tải được khoản nợ");
         }
     }
+
+    async function loadDebtors() {
+        try {
+            const data = await libraryApi.debtReport();
+            setDebtors(Array.isArray(data) ? data.filter((item) => Number(item.tongNoConLai || 0) > 0) : []);
+        } catch (err) {
+            toast.error(err.message || "Không tải được danh sách độc giả còn nợ");
+        }
+    }
+
+    useEffect(() => {
+        loadDebtors();
+    }, []);
 
     function toggleDebt(row) {
         const remaining = getDebtRemaining(row);
@@ -122,6 +137,7 @@ export default function StaffPaymentsPage() {
 
             setResult(data);
             toast.success("Thu tiền thành công");
+            await loadDebtors();
             await loadDebts();
         } catch (err) {
             toast.error(err.message || "Thu tiền thất bại");
@@ -151,6 +167,7 @@ export default function StaffPaymentsPage() {
 
             setResult(data);
             toast.success("Tự động phân bổ thu tiền thành công");
+            await loadDebtors();
             await loadDebts();
         } catch (err) {
             toast.error(err.message || "Tự động phân bổ thất bại");
@@ -275,8 +292,28 @@ export default function StaffPaymentsPage() {
                     </button>
                 </form>
 
-                <PaymentResultPanel result={result} />
+                {result ? <PaymentResultPanel result={result} /> : <DebtorOverviewPanel debtors={debtors} />}
             </div>
+        </div>
+    );
+}
+
+function DebtorOverviewPanel({ debtors }) {
+    return (
+        <div className="panel preview-panel">
+            <div className="panel-title">
+                <h2>Độc giả còn nợ</h2>
+                <span>{debtors.length} độc giả</span>
+            </div>
+
+            <DataTable
+                data={debtors.slice(0, 8)}
+                columns={[
+                    { key: "maDocGia", title: "Mã độc giả" },
+                    { key: "hoTen", title: "Họ tên" },
+                    { key: "tongNoConLai", title: "Tổng nợ", render: (row) => formatMoney(row.tongNoConLai) }
+                ]}
+            />
         </div>
     );
 }

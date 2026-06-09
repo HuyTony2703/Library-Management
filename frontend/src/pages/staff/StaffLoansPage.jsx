@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RefreshCcw, Search } from "lucide-react";
+import { libraryApi } from "../../api/libraryApi";
 import { staffApi } from "../../api/staffApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
@@ -20,6 +21,7 @@ export default function StaffLoansPage() {
     });
 
     const [currentLoans, setCurrentLoans] = useState([]);
+    const [availableCopies, setAvailableCopies] = useState([]);
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -37,6 +39,19 @@ export default function StaffLoansPage() {
             .map((item) => item.trim())
             .filter(Boolean);
     }
+
+    async function loadAvailableCopies() {
+        try {
+            const data = await libraryApi.bookCopies();
+            setAvailableCopies((Array.isArray(data) ? data : []).filter((item) => item.maTrangThai === "TT_SANCO"));
+        } catch (err) {
+            toast.error(err.message || "Không tải được danh sách sách sẵn có");
+        }
+    }
+
+    useEffect(() => {
+        loadAvailableCopies();
+    }, []);
 
     async function loadCurrentLoans() {
         try {
@@ -72,6 +87,7 @@ export default function StaffLoansPage() {
 
             setResult(data);
             toast.success("Tạo phiếu mượn thành công");
+            await loadAvailableCopies();
             await loadCurrentLoans();
         } catch (err) {
             toast.error(err.message || "Tạo phiếu mượn thất bại");
@@ -144,7 +160,7 @@ export default function StaffLoansPage() {
                     </button>
                 </form>
 
-                <LoanResultPanel result={result} />
+                {result ? <LoanResultPanel result={result} /> : <AvailableCopiesPanel copies={availableCopies} />}
             </div>
 
             <div className="panel">
@@ -165,6 +181,27 @@ export default function StaffLoansPage() {
                     ]}
                 />
             </div>
+        </div>
+    );
+}
+
+function AvailableCopiesPanel({ copies }) {
+    return (
+        <div className="panel preview-panel">
+            <div className="panel-title">
+                <h2>Cuốn sách đang sẵn có</h2>
+                <span>{copies.length} cuốn</span>
+            </div>
+
+            <DataTable
+                data={copies.slice(0, 8)}
+                columns={[
+                    { key: "maCuonSach", title: "Mã cuốn" },
+                    { key: "maDauSach", title: "Đầu sách" },
+                    { key: "maChiNhanh", title: "Chi nhánh" },
+                    { key: "maTrangThai", title: "Trạng thái", render: (row) => <StatusBadge value={row.maTrangThai} /> }
+                ]}
+            />
         </div>
     );
 }

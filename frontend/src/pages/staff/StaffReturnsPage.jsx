@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RefreshCcw, Search } from "lucide-react";
+import { libraryApi } from "../../api/libraryApi";
 import { staffApi } from "../../api/staffApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
@@ -22,6 +23,7 @@ export default function StaffReturnsPage() {
     });
 
     const [currentLoans, setCurrentLoans] = useState([]);
+    const [loanOverview, setLoanOverview] = useState([]);
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -46,6 +48,19 @@ export default function StaffReturnsPage() {
     function selectLoan(row) {
         updateField("maChiTietMuon", row.maChiTietMuon);
     }
+
+    async function loadLoanOverview() {
+        try {
+            const data = await libraryApi.currentLoansReport();
+            setLoanOverview(Array.isArray(data) ? data : []);
+        } catch (err) {
+            toast.error(err.message || "Không tải được tổng quan sách đang mượn");
+        }
+    }
+
+    useEffect(() => {
+        loadLoanOverview();
+    }, []);
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -86,6 +101,7 @@ export default function StaffReturnsPage() {
 
             setResult(data);
             toast.success("Tạo phiếu trả thành công");
+            await loadLoanOverview();
             await loadCurrentLoans();
         } catch (err) {
             toast.error(err.message || "Tạo phiếu trả thất bại");
@@ -174,7 +190,7 @@ export default function StaffReturnsPage() {
                     </button>
                 </form>
 
-                <ReturnResultPanel result={result} />
+                {result ? <ReturnResultPanel result={result} /> : <LoanOverviewPanel rows={loanOverview} />}
             </div>
 
             <div className="panel">
@@ -203,6 +219,26 @@ export default function StaffReturnsPage() {
                     ]}
                 />
             </div>
+        </div>
+    );
+}
+
+function LoanOverviewPanel({ rows }) {
+    return (
+        <div className="panel preview-panel">
+            <div className="panel-title">
+                <h2>Độc giả đang mượn sách</h2>
+                <span>{rows.length} dòng</span>
+            </div>
+
+            <DataTable
+                data={rows.slice(0, 8)}
+                columns={[
+                    { key: "maDocGia", title: "Mã độc giả" },
+                    { key: "hoTen", title: "Họ tên" },
+                    { key: "soSachDangMuon", title: "Số sách đang mượn" }
+                ]}
+            />
         </div>
     );
 }

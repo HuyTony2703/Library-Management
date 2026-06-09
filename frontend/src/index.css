@@ -664,15 +664,23 @@ textarea:focus {
 }
 
 .toast {
-  min-width: 300px;
+  width: fit-content;
+  min-width: 260px;
+  max-width: 420px;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px;
-  border-radius: 16px;
+  padding: 11px 14px;
+  border-radius: 12px;
   color: white;
   box-shadow: var(--shadow);
   font-weight: 800;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.toast span {
+  overflow-wrap: anywhere;
 }
 
 .toast-success {

@@ -9,7 +9,13 @@ export function ToastProvider({ children }) {
     function pushToast(type, message) {
         const id = crypto.randomUUID();
 
-        setToasts((prev) => [...prev, { id, type, message }]);
+        setToasts((prev) => {
+            if (prev.some((item) => item.type === type && item.message === message)) {
+                return prev;
+            }
+
+            return [...prev, { id, type, message }];
+        });
 
         setTimeout(() => {
             setToasts((prev) => prev.filter((item) => item.id !== id));

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { RefreshCcw } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { adminApi } from "../../api/adminApi";
+import { libraryApi } from "../../api/libraryApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import StatusBadge from "../../components/StatusBadge";
@@ -51,17 +52,17 @@ export default function AdminReportsPage() {
             const year = filter.year;
 
             const results = await Promise.allSettled([
-                adminApi.getReportOverview(month, year),
-                adminApi.getDebtReport(),
-                adminApi.getCurrentLoansReport(),
-                adminApi.getBorrowByCategoryReport(month, year),
-                adminApi.getLateReturnsReport(month, year),
-                adminApi.getPaymentsReport(month, year)
+                loadOverviewWithFallback(month, year),
+                loadWithFallback(() => adminApi.getDebtReport(), () => libraryApi.debtReport()),
+                loadWithFallback(() => adminApi.getCurrentLoansReport(), () => libraryApi.currentLoansReport()),
+                loadWithFallback(() => adminApi.getBorrowByCategoryReport(month, year), () => libraryApi.borrowByCategoryReport(month, year)),
+                loadWithFallback(() => adminApi.getLateReturnsReport(month, year), () => libraryApi.lateReturnsReport(month, year)),
+                loadWithFallback(() => adminApi.getPaymentsReport(month, year), () => [])
             ]);
 
             applyReportResult(results[0], setOverview);
             applyArrayReportResult(results[1], setDebts);
-            applyArrayReportResult(results[2], setCurrentLoans);
+            applyArrayReportResult(results[2], (items) => setCurrentLoans(normalizeCurrentLoans(items)));
             applyArrayReportResult(results[3], setBorrowByCategory);
             applyArrayReportResult(results[4], setLateReturns);
             applyArrayReportResult(results[5], setPayments);
@@ -248,6 +249,68 @@ function applyArrayReportResult(result, setter) {
     if (result.status === "fulfilled") {
         setter(Array.isArray(result.value) ? result.value : []);
     }
+}
+
+async function loadWithFallback(primary, fallback) {
+    try {
+        return await primary();
+    } catch {
+        return fallback();
+    }
+}
+
+async function loadOverviewWithFallback(month, year) {
+    try {
+        return await adminApi.getReportOverview(month, year);
+    } catch {
+        const [bookCopiesResult, readersResult, debtsResult, borrowResult, lateResult] = await Promise.allSettled([
+            libraryApi.bookCopies(),
+            libraryApi.readers(),
+            libraryApi.debtReport(),
+            libraryApi.borrowByCategoryReport(month, year),
+            libraryApi.lateReturnsReport(month, year)
+        ]);
+
+        const bookCopies = getSettledArray(bookCopiesResult);
+        const readers = getSettledArray(readersResult);
+        const debts = getSettledArray(debtsResult);
+        const borrowByCategory = getSettledArray(borrowResult);
+        const lateReturns = getSettledArray(lateResult);
+
+        return {
+            totalBookCopies: bookCopies.length,
+            availableBookCopies: bookCopies.filter((item) => item.maTrangThai === "TT_SANCO").length,
+            borrowedBookCopies: bookCopies.filter((item) => item.maTrangThai === "TT_DANGMUON").length,
+            activeReaders: readers.filter((item) => item.trangThai === "Hoạt động").length,
+            loansThisMonth: borrowByCategory.reduce((sum, item) => sum + Number(item.soLuotMuon || 0), 0),
+            lateReturnsThisMonth: lateReturns.length,
+            totalDebt: debts.reduce((sum, item) => sum + Number(item.tongNoConLai || 0), 0),
+            paymentsThisMonth: 0
+        };
+    }
+}
+
+function getSettledArray(result) {
+    return result.status === "fulfilled" && Array.isArray(result.value) ? result.value : [];
+}
+
+function normalizeCurrentLoans(items) {
+    return items.map((item) => {
+        if (item.maChiTietMuon) {
+            return item;
+        }
+
+        return {
+            maChiTietMuon: "",
+            maPhieuMuon: "",
+            maDocGia: item.maDocGia,
+            hoTenDocGia: item.hoTen,
+            maCuonSach: "",
+            tenDauSach: `${Number(item.soSachDangMuon || 0)} sách đang mượn`,
+            hanTra: null,
+            soNgayConLai: null
+        };
+    });
 }
 
 function ReportCard({ label, value }) {
