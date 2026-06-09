@@ -522,6 +522,7 @@
 }
 
 .reader-soft-button,
+.reader-primary-button,
 .reader-secondary-button {
     border: none;
     border-radius: 14px;
@@ -537,6 +538,11 @@
 .reader-soft-button {
     color: #2563eb;
     background: rgba(37, 99, 235, 0.1);
+}
+
+.reader-primary-button {
+    color: white;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
 }
 
 .reader-secondary-button {
@@ -1013,6 +1019,127 @@
     font-weight: 800;
 }
 
+.reader-section-block {
+    margin-top: 24px;
+}
+
+.reader-section-block h2,
+.current-membership-box h2 {
+    margin: 0 0 14px;
+    font-size: 20px;
+}
+
+.current-membership-box {
+    padding: 22px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    margin-bottom: 24px;
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+}
+
+.current-membership-content {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.current-membership-content h3 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.membership-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+}
+
+.membership-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    display: grid;
+    gap: 12px;
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+}
+
+.membership-card.is-current {
+    border-color: rgba(37, 99, 235, 0.35);
+    background: rgba(239, 246, 255, 0.95);
+}
+
+.membership-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.membership-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+}
+
+.current-plan-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #2563eb;
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.membership-card h3 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.membership-card p {
+    margin: 0;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+.membership-price {
+    font-size: 26px;
+    font-weight: 950;
+    color: #0f172a;
+}
+
+.membership-duration {
+    color: #475569;
+    font-size: 14px;
+}
+
+.checkout-summary {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.04);
+}
+
+.checkout-summary div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.checkout-summary span {
+    color: #64748b;
+}
+
 @media (max-width: 760px) {
     .reader-loan-card {
         grid-template-columns: 1fr;
@@ -1047,5 +1174,9 @@
     .notification-item .reader-secondary-button {
         grid-column: 1 / -1;
         justify-self: flex-start;
+    }
+
+    .current-membership-content {
+        grid-template-columns: 1fr;
     }
 }

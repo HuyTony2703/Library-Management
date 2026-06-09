@@ -71,8 +71,11 @@ export const readerApi = {
 
   // Membership
   currentMembership: () => apiFetch("/api/reader/membership/current"),
+  getCurrentMembership: () => apiFetch("/api/reader/membership/current"),
   membershipPlans: () => apiFetch("/api/reader/membership/plans"),
+  getMembershipPlans: () => apiFetch("/api/reader/membership/plans"),
   membershipHistory: () => apiFetch("/api/reader/membership/history"),
+  getMembershipHistory: () => apiFetch("/api/reader/membership/history"),
   purchaseMembership: (payload) =>
     apiFetch("/api/reader/membership/purchase", {
       method: "POST",
