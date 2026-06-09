@@ -698,3 +698,12 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+.rule-summary {
+  display: grid;
+  gap: 8px;
+}
+
+.rule-summary p {
+  margin: 0;
+}

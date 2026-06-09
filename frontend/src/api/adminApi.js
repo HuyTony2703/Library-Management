@@ -33,6 +33,8 @@ export const adminApi = {
 
     getRuleHistory: () => apiFetch("/api/admin/rules/history"),
 
+    getRule: (id) => apiFetch(`/api/admin/rules/${id}`),
+
     createRule: (payload) =>
         apiFetch("/api/admin/rules", {
             method: "POST",
