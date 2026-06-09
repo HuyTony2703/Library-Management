@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -101,6 +102,10 @@ public class AdminRuleService {
 
         if (exists("PHIENBANQUYDINH", "MaPhienBan", request.getMaPhienBan())) {
             throw new BusinessException("Mã phiên bản quy định đã tồn tại");
+        }
+
+        if (exists("THAMSOQUYDINH", "MaThamSo", request.getThamSo().getMaThamSo())) {
+            throw new BusinessException("Mã tham số quy định đã tồn tại");
         }
 
         if (!exists("NHANVIEN", "MaNhanVien", request.getMaNhanVienThayDoi())) {
@@ -474,6 +479,94 @@ public class AdminRuleService {
 
         if (request.getQuyDinhMuonTheoTheLoai() == null || request.getQuyDinhMuonTheoTheLoai().isEmpty()) {
             throw new BusinessException("Phải có ít nhất một quy định mượn theo thể loại");
+        }
+
+        validateMembershipPriceRules(request.getGiaGoiTheoNhom());
+        validatePackageBorrowRules(request.getQuyDinhGoi());
+        validateCategoryBorrowRules(request.getQuyDinhMuonTheoTheLoai());
+    }
+
+    private void validateMembershipPriceRules(List<RuleCreateRequest.MembershipPriceRuleRequest> rules) {
+        if (rules == null) {
+            return;
+        }
+
+        for (RuleCreateRequest.MembershipPriceRuleRequest item : rules) {
+            if (item == null) {
+                throw new BusinessException("Quy định giá gói theo nhóm không hợp lệ");
+            }
+
+            if (isBlank(item.getMaGiaGoi())) {
+                throw new BusinessException("Mã giá gói không được để trống");
+            }
+
+            if (isBlank(item.getMaGoiThanhVien())) {
+                throw new BusinessException("Mã gói thành viên của giá gói không được để trống");
+            }
+
+            if (isBlank(item.getMaNhomDocGia())) {
+                throw new BusinessException("Mã nhóm độc giả của giá gói không được để trống");
+            }
+
+            if (item.getGiaTien() == null || item.getGiaTien().compareTo(BigDecimal.ZERO) < 0) {
+                throw new BusinessException("Giá tiền của giá gói không hợp lệ");
+            }
+
+            if (item.getThoiHanGoiTheoNgay() == null || item.getThoiHanGoiTheoNgay() <= 0) {
+                throw new BusinessException("Thời hạn gói theo ngày phải lớn hơn 0");
+            }
+        }
+    }
+
+    private void validatePackageBorrowRules(List<RuleCreateRequest.PackageBorrowRuleRequest> rules) {
+        for (RuleCreateRequest.PackageBorrowRuleRequest item : rules) {
+            if (item == null) {
+                throw new BusinessException("Quy định gói không hợp lệ");
+            }
+
+            if (isBlank(item.getMaQuyDinhGoi())) {
+                throw new BusinessException("Mã quy định gói không được để trống");
+            }
+
+            if (isBlank(item.getMaGoiThanhVien())) {
+                throw new BusinessException("Mã gói thành viên của quy định gói không được để trống");
+            }
+
+            if (item.getSoSachMuonToiDa() == null || item.getSoSachMuonToiDa() <= 0) {
+                throw new BusinessException("Số sách mượn tối đa phải lớn hơn 0");
+            }
+
+            if (item.getSoLanGiaHanToiDa() == null || item.getSoLanGiaHanToiDa() < 0) {
+                throw new BusinessException("Số lần gia hạn tối đa không hợp lệ");
+            }
+        }
+    }
+
+    private void validateCategoryBorrowRules(List<RuleCreateRequest.CategoryBorrowRuleRequest> rules) {
+        for (RuleCreateRequest.CategoryBorrowRuleRequest item : rules) {
+            if (item == null) {
+                throw new BusinessException("Quy định mượn theo thể loại không hợp lệ");
+            }
+
+            if (isBlank(item.getMaQuyDinhMuon())) {
+                throw new BusinessException("Mã quy định mượn không được để trống");
+            }
+
+            if (isBlank(item.getMaGoiThanhVien())) {
+                throw new BusinessException("Mã gói thành viên của quy định mượn không được để trống");
+            }
+
+            if (isBlank(item.getMaTheLoai())) {
+                throw new BusinessException("Mã thể loại của quy định mượn không được để trống");
+            }
+
+            if (item.getSoNgayMuon() == null || item.getSoNgayMuon() <= 0) {
+                throw new BusinessException("Số ngày mượn phải lớn hơn 0");
+            }
+
+            if (item.getSoNgayGiaHanMoiLan() == null || item.getSoNgayGiaHanMoiLan() < 0) {
+                throw new BusinessException("Số ngày gia hạn mỗi lần không hợp lệ");
+            }
         }
     }
 

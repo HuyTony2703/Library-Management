@@ -8,6 +8,7 @@ import {
     LogOut,
     RefreshCcw,
     RotateCcw,
+    Settings,
     Search,
     UserRound,
     UsersRound
@@ -26,9 +27,17 @@ const menu = [
     { to: "/reports", label: "Báo cáo", icon: BarChart3 }
 ];
 
+const adminMenu = [
+    { to: "/admin/rules", label: "Quy định", icon: Settings }
+];
+
 export default function AppLayout() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const isAdmin = user?.tenVaiTro === "QUAN_TRI_VIEN" || user?.maVaiTro === "VT_ADMIN";
+    const visibleMenu = isAdmin
+        ? [...menu, ...adminMenu]
+        : menu;
 
     function handleLogout() {
         logout();
@@ -49,7 +58,7 @@ export default function AppLayout() {
                 </div>
 
                 <nav className="nav-menu">
-                    {menu.map((item) => {
+                    {visibleMenu.map((item) => {
                         const Icon = item.icon;
 
                         return (
