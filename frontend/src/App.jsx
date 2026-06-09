@@ -12,6 +12,7 @@ import ReturnsPage from "./pages/ReturnsPage";
 import PaymentsPage from "./pages/PaymentsPage";
 import ReportsPage from "./pages/ReportsPage";
 import StaffLoansPage from "./pages/staff/StaffLoansPage";
+import StaffReturnsPage from "./pages/staff/StaffReturnsPage";
 
 function ProtectedRoute({ children }) {
     const { user, loadingUser } = useAuth();
@@ -48,6 +49,7 @@ export default function App() {
                 <Route path="/payments" element={<PaymentsPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/staff/loans" element={<StaffLoansPage />} />
+                <Route path="/staff/returns" element={<StaffReturnsPage />} />
             </Route>
         </Routes>
     );
