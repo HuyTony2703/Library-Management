@@ -17,14 +17,18 @@ import {
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const menu = [
+const staffMenu = [
     { to: "/", label: "Tổng quan", icon: Home },
     { to: "/books", label: "Đầu sách", icon: BookOpen },
     { to: "/book-copies", label: "Cuốn sách", icon: Boxes },
     { to: "/readers", label: "Độc giả", icon: UsersRound },
     { to: "/loans", label: "Mượn sách", icon: RefreshCcw },
     { to: "/returns", label: "Trả sách", icon: RotateCcw },
-    { to: "/payments", label: "Thu tiền", icon: CreditCard },
+    { to: "/payments", label: "Thu tiền", icon: CreditCard }
+];
+
+const adminBaseMenu = [
+    ...staffMenu,
     { to: "/reports", label: "Báo cáo", icon: BarChart3 }
 ];
 
@@ -39,8 +43,8 @@ export default function AppLayout() {
     const navigate = useNavigate();
     const isAdmin = user?.tenVaiTro === "QUAN_TRI_VIEN" || user?.maVaiTro === "VT_ADMIN";
     const visibleMenu = isAdmin
-        ? [...menu, ...adminMenu]
-        : menu;
+        ? [...adminBaseMenu, ...adminMenu]
+        : staffMenu;
 
     function handleLogout() {
         logout();
