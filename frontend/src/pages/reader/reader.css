@@ -515,6 +515,29 @@
     gap: 12px;
 }
 
+.reader-soft-button,
+.reader-secondary-button {
+    border: none;
+    border-radius: 14px;
+    padding: 10px 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.reader-soft-button {
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.1);
+}
+
+.reader-secondary-button {
+    color: #0f172a;
+    background: rgba(15, 23, 42, 0.08);
+}
+
 .reader-copy-list {
     display: grid;
     gap: 12px;
@@ -528,6 +551,14 @@
     padding: 14px;
     border-radius: 16px;
     background: rgba(15, 23, 42, 0.04);
+}
+
+.reader-copy-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .reader-copy-item p {
@@ -764,6 +795,18 @@
     margin: 0 0 12px;
 }
 
+.reader-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.reader-modal-header h2 {
+    margin: 0;
+}
+
 .reader-modal-info {
     display: grid;
     gap: 10px;
@@ -808,6 +851,28 @@
 .reader-modal-actions .reader-secondary-button {
     color: #0f172a;
     background: rgba(15, 23, 42, 0.08);
+}
+
+.reader-form-row {
+    display: grid;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.reader-form-row span,
+.reader-muted {
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.reader-form-row textarea {
+    width: 100%;
+    min-height: 92px;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 14px;
+    padding: 12px 14px;
+    resize: vertical;
 }
 
 .reader-table-card {

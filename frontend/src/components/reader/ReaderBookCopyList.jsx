@@ -1,3 +1,5 @@
+import ReservationButton from "./ReservationButton";
+
 function getCopyStatusClass(maTrangThai) {
     if (maTrangThai === "TT_SANCO") {
         return "copy-status-good";
@@ -14,7 +16,7 @@ function getCopyStatusClass(maTrangThai) {
     return "copy-status-neutral";
 }
 
-export default function ReaderBookCopyList({ copies = [] }) {
+export default function ReaderBookCopyList({ maDauSach, copies = [], onReserved }) {
     if (!copies.length) {
         return (
             <div className="reader-empty-box">
@@ -35,12 +37,23 @@ export default function ReaderBookCopyList({ copies = [] }) {
                         </p>
                     </div>
 
-                    <span className={`copy-status ${getCopyStatusClass(copy.maTrangThai)}`}>
-                        {copy.tenTrangThai || copy.maTrangThai}
-                    </span>
+                    <div className="reader-copy-actions">
+                        <span className={`copy-status ${getCopyStatusClass(copy.maTrangThai)}`}>
+                            {copy.tenTrangThai || copy.maTrangThai}
+                        </span>
+
+                        {copy.maTrangThai === "TT_SANCO" && (
+                            <ReservationButton
+                                maDauSach={maDauSach}
+                                maCuonSach={copy.maCuonSach}
+                                maChiNhanh={copy.maChiNhanh}
+                                label="Đặt cuốn này"
+                                onSuccess={onReserved}
+                            />
+                        )}
+                    </div>
                 </div>
             ))}
         </div>
     );
 }
-

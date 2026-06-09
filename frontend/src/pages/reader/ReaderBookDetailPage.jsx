@@ -1,8 +1,9 @@
-import { ArrowLeft, ClipboardList, Heart, MessageSquare, Star } from "lucide-react";
+import { ArrowLeft, Heart, MessageSquare, Star } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import ReaderBookCopyList from "../../components/reader/ReaderBookCopyList";
+import ReservationButton from "../../components/reader/ReservationButton";
 
 function formatMoney(value) {
     return `${Number(value || 0).toLocaleString("vi-VN")}đ`;
@@ -16,21 +17,26 @@ export default function ReaderBookDetailPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    useEffect(() => {
-        async function loadBook() {
-            setLoading(true);
-            setError("");
+    async function loadBook() {
+        setLoading(true);
+        setError("");
 
-            try {
-                const data = await readerApi.bookDetail(maDauSach);
-                setBook(data);
-            } catch (err) {
-                setError(err.message || "Không tải được chi tiết sách");
-            } finally {
-                setLoading(false);
-            }
+        try {
+            const data = await readerApi.bookDetail(maDauSach);
+            setBook(data);
+        } catch (err) {
+            setError(err.message || "Không tải được chi tiết sách");
+        } finally {
+            setLoading(false);
         }
+    }
 
+    async function handleReserved() {
+        await loadBook();
+        navigate("/reader/reservations");
+    }
+
+    useEffect(() => {
         loadBook();
     }, [maDauSach]);
 
@@ -131,13 +137,12 @@ export default function ReaderBookDetailPage() {
                     </div>
 
                     <div className="reader-action-row">
-                        <button
-                            type="button"
-                            onClick={() => alert("Chức năng đặt trước sẽ làm ở Module 4")}
-                        >
-                            <ClipboardList size={18} />
-                            Đặt trước
-                        </button>
+                        <ReservationButton
+                            maDauSach={book.maDauSach}
+                            maChiNhanh="CN_TD"
+                            label="Đặt trước đầu sách"
+                            onSuccess={handleReserved}
+                        />
 
                         <button
                             type="button"
@@ -152,7 +157,11 @@ export default function ReaderBookDetailPage() {
 
             <section className="reader-card">
                 <h2>Danh sách cuốn sách</h2>
-                <ReaderBookCopyList copies={book.cuonSach || []} />
+                <ReaderBookCopyList
+                    maDauSach={book.maDauSach}
+                    copies={book.cuonSach || []}
+                    onReserved={handleReserved}
+                />
             </section>
 
             <section className="reader-card">
