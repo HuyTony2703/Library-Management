@@ -1,100 +1,35 @@
-import {
-    Bell,
-    BookOpen,
-    ClipboardList,
-    Heart,
-    HelpCircle,
-    Home,
-    Lightbulb,
-    LogOut,
-    RotateCcw,
-    ShoppingBag,
-    UserRound
-} from "lucide-react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import NotificationBell from "../../components/reader/NotificationBell";
-import "./reader.css";
+import { NavLink, Outlet } from "react-router-dom";
 
 const menuItems = [
-    { to: "/reader", label: "Trang chủ", icon: Home, end: true },
-    { to: "/reader/books", label: "Tra cứu sách", icon: BookOpen },
-    { to: "/reader/loans", label: "Sách đang mượn", icon: RotateCcw },
-    { to: "/reader/reservations", label: "Đặt trước", icon: ClipboardList },
-    { to: "/reader/notifications", label: "Thông báo", icon: Bell },
-    { to: "/reader/membership", label: "Gói thành viên", icon: ShoppingBag },
-    { to: "/reader/favorites", label: "Sách yêu thích", icon: Heart },
-    { to: "/reader/recommendations", label: "Gợi ý sách", icon: Lightbulb },
-    { to: "/reader/guide", label: "Hướng dẫn", icon: HelpCircle }
+  { to: "/reader", label: "Trang chủ" },
+  { to: "/reader/books", label: "Tra cứu sách" },
+  { to: "/reader/loans", label: "Sách đang mượn" },
+  { to: "/reader/reservations", label: "Đặt trước" },
+  { to: "/reader/notifications", label: "Thông báo" },
+  { to: "/reader/membership", label: "Gói thành viên" },
+  { to: "/reader/favorites", label: "Sách yêu thích" },
+  { to: "/reader/recommendations", label: "Gợi ý sách" },
+  { to: "/reader/guide", label: "Hướng dẫn" }
 ];
 
 export default function ReaderLayout() {
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
+  return (
+    <div className="reader-layout">
+      <aside className="reader-sidebar">
+        <h2>LibraDesk Reader</h2>
 
-    function handleLogout() {
-        logout();
-        navigate("/login");
-    }
+        <nav>
+          {menuItems.map((item) => (
+            <NavLink key={item.to} to={item.to} end={item.to === "/reader"}>
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+      </aside>
 
-    return (
-        <div className="reader-shell">
-            <aside className="reader-sidebar">
-                <div className="reader-brand">
-                    <div className="reader-brand-icon">
-                        <BookOpen size={24} />
-                    </div>
-                    <div>
-                        <h2>LibraDesk</h2>
-                        <p>Reader Portal</p>
-                    </div>
-                </div>
-
-                <nav className="reader-nav">
-                    {menuItems.map((item) => {
-                        const Icon = item.icon;
-
-                        return (
-                            <NavLink key={item.to} to={item.to} end={item.end}>
-                                <Icon size={18} />
-                                <span>{item.label}</span>
-                            </NavLink>
-                        );
-                    })}
-                </nav>
-
-                <div className="reader-account">
-                    <div className="reader-avatar">
-                        <UserRound size={20} />
-                    </div>
-                    <div>
-                        <b>{user?.tenDangNhap || "Độc giả"}</b>
-                        <span>{user?.maDocGia || "DOC_GIA"}</span>
-                    </div>
-                </div>
-            </aside>
-
-            <main className="reader-content">
-                <header className="reader-topbar">
-                    <div className="reader-topbar-title">
-                        <strong>Cổng độc giả</strong>
-                        <span>Theo dõi sách, đặt trước, gia hạn và thông báo</span>
-                    </div>
-
-                    <div className="reader-topbar-actions">
-                        <NotificationBell />
-
-                        <button className="reader-logout-button" onClick={handleLogout}>
-                            <LogOut size={18} />
-                        Đăng xuất
-                        </button>
-                    </div>
-                </header>
-
-                <section className="reader-page">
-                    <Outlet />
-                </section>
-            </main>
-        </div>
-    );
+      <main className="reader-main">
+        <Outlet />
+      </main>
+    </div>
+  );
 }
