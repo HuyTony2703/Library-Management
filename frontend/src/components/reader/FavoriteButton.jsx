@@ -57,6 +57,11 @@ export default function FavoriteButton({
     }
 
     useEffect(() => {
+        if (initialFavorite !== null) {
+            setFavorite(Boolean(initialFavorite));
+            return;
+        }
+
         loadFavoriteStatus();
     }, [maDauSach, initialFavorite]);
 

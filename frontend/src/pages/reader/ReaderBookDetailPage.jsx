@@ -64,6 +64,11 @@ export default function ReaderBookDetailPage() {
         return null;
     }
 
+    const defaultReservationBranch =
+        book.cuonSach?.find((copy) => copy.maTrangThai === "TT_SANCO")?.maChiNhanh ||
+        book.cuonSach?.[0]?.maChiNhanh ||
+        "CN_TD";
+
     return (
         <div>
             <button className="reader-back-button" onClick={() => navigate(-1)}>
@@ -142,7 +147,7 @@ export default function ReaderBookDetailPage() {
                     <div className="reader-action-row">
                         <ReservationButton
                             maDauSach={book.maDauSach}
-                            maChiNhanh="CN_TD"
+                            maChiNhanh={defaultReservationBranch}
                             label="Đặt trước đầu sách"
                             onSuccess={handleReserved}
                         />

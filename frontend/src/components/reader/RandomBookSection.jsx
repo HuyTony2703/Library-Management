@@ -43,7 +43,12 @@ export default function RandomBookSection({ limit = 6 }) {
                 </button>
             </div>
 
-            {books.length === 0 ? (
+            {loading && books.length === 0 ? (
+                <div className="reader-empty-box recommendation-empty">
+                    <Sparkles size={24} />
+                    <p>Đang tải sách gợi ý...</p>
+                </div>
+            ) : books.length === 0 ? (
                 <div className="reader-empty-box recommendation-empty">
                     <Sparkles size={24} />
                     <p>Hiện chưa có sách phù hợp để gợi ý.</p>

@@ -209,12 +209,35 @@
     font-weight: 900;
 }
 
+.reader-status-warn,
+.reader-status-bad {
+    display: inline-flex;
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 900;
+}
+
+.reader-status-warn {
+    background: rgba(217, 119, 6, 0.12);
+    color: #d97706;
+}
+
+.reader-status-bad {
+    background: rgba(220, 38, 38, 0.1);
+    color: #dc2626;
+}
+
 .reader-quick-actions {
     display: grid;
     gap: 12px;
+    margin-top: 18px;
 }
 
 .reader-quick-actions a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     text-decoration: none;
     color: #2563eb;
     background: rgba(37, 99, 235, 0.08);
