@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/dev/**").hasRole(RoleConstants.ADMIN)
 
                         .requestMatchers("/api/auth/me").authenticated()
+                        .requestMatchers("/api/reader/**").hasRole("DOC_GIA")
 
                         .requestMatchers("/api/admin/**").hasRole(RoleConstants.ADMIN)
                         .requestMatchers("/api/staff/**").hasAnyRole(RoleConstants.LIBRARIAN, RoleConstants.ADMIN)

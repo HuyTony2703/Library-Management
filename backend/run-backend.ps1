@@ -12,6 +12,7 @@ $releaseBackendNative = Join-Path $Root "release\backend.exe"
 $configDir = Join-Path $env:APPDATA "LibraDesk"
 $configFile = Join-Path $configDir "db-config.properties"
 $passwordFile = Join-Path $configDir "db-password.dpapi"
+$jsonConfigFile = Join-Path $configDir "database-config.json"
 $setupConfigScript = Join-Path $backendDir "setup-db-config.ps1"
 
 function Read-DbConfig {
@@ -48,6 +49,33 @@ function Read-EncryptedPassword {
         return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
     } finally {
         [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+    }
+}
+
+function Read-JsonDbConfig {
+    param([string]$Path)
+
+    $json = Get-Content -Raw -Path $Path | ConvertFrom-Json
+    $hostValue = [string]$json.host
+    $portValue = [string]$json.port
+    $databaseValue = [string]$json.database
+    $usernameValue = [string]$json.username
+    $passwordValue = [string]$json.password
+
+    if (-not $hostValue -or -not $databaseValue -or -not $usernameValue) {
+        throw "database-config.json thieu host, database hoac username."
+    }
+
+    $server = $hostValue
+    if ($portValue) {
+        $server = "$hostValue`:$portValue"
+    }
+
+    return @{
+        DB_URL = "jdbc:sqlserver://$server;databaseName=$databaseValue;encrypt=true;trustServerCertificate=true"
+        DB_USERNAME = $usernameValue
+        DB_PASSWORD = $passwordValue
+        SOURCE = $Path
     }
 }
 
@@ -149,7 +177,25 @@ if (-not (Test-Path -Path $backendDir)) {
 
 Set-Location $backendDir
 
-if (-not (Test-Path -Path $configFile)) {
+if ((Test-Path -Path $configFile) -and (Test-Path -Path $passwordFile)) {
+    Write-Host "Doc cau hinh database:"
+    Write-Host $configFile
+    Write-Host ""
+
+    $dbConfig = Read-DbConfig -Path $configFile
+    $env:DB_URL = $dbConfig.DB_URL
+    $env:DB_USERNAME = $dbConfig.DB_USERNAME
+    $env:DB_PASSWORD = Read-EncryptedPassword -Path $passwordFile
+} elseif (Test-Path -Path $jsonConfigFile) {
+    Write-Host "Doc cau hinh database:"
+    Write-Host $jsonConfigFile
+    Write-Host ""
+
+    $dbConfig = Read-JsonDbConfig -Path $jsonConfigFile
+    $env:DB_URL = $dbConfig.DB_URL
+    $env:DB_USERNAME = $dbConfig.DB_USERNAME
+    $env:DB_PASSWORD = $dbConfig.DB_PASSWORD
+} else {
     Write-Host "Chua co cau hinh database."
     Write-Host "Vui long nhap thong tin SQL Server cho lan chay dau tien."
     Write-Host ""
@@ -161,38 +207,25 @@ if (-not (Test-Path -Path $configFile)) {
         Write-Host "[ERROR] Khong the tao cau hinh database."
         exit 1
     }
+
+    $dbConfig = Read-DbConfig -Path $configFile
+    $env:DB_URL = $dbConfig.DB_URL
+    $env:DB_USERNAME = $dbConfig.DB_USERNAME
+    $env:DB_PASSWORD = Read-EncryptedPassword -Path $passwordFile
 }
 
-if (-not (Test-Path -Path $passwordFile)) {
-    Write-Host "[ERROR] Khong tim thay file mat khau database da ma hoa:"
-    Write-Host $passwordFile
-    Write-Host ""
-    Write-Host "Hay xoa thu muc $configDir roi chay lai de thiet lap lai."
-    exit 1
-}
-
-Write-Host "Doc cau hinh database:"
-Write-Host $configFile
-Write-Host ""
-
-$dbConfig = Read-DbConfig -Path $configFile
-
-if (-not $dbConfig.DB_URL) {
+if (-not $env:DB_URL) {
     Write-Host "[ERROR] DB_URL chua duoc cau hinh."
     exit 1
 }
 
-if (-not $dbConfig.DB_USERNAME) {
+if (-not $env:DB_USERNAME) {
     Write-Host "[ERROR] DB_USERNAME chua duoc cau hinh."
     exit 1
 }
 
-$env:DB_URL = $dbConfig.DB_URL
-$env:DB_USERNAME = $dbConfig.DB_USERNAME
-$env:DB_PASSWORD = Read-EncryptedPassword -Path $passwordFile
-
 if (-not $env:DB_PASSWORD) {
-    Write-Host "[ERROR] Khong the giai ma DB_PASSWORD."
+    Write-Host "[ERROR] DB_PASSWORD chua duoc cau hinh."
     Write-Host "Hay xoa thu muc $configDir roi chay lai de thiet lap lai."
     exit 1
 }
