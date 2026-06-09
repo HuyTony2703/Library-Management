@@ -3,6 +3,7 @@ package com.library.backend.controller.admin;
 import com.library.backend.dto.RuleCreateRequest;
 import com.library.backend.dto.RuleDetailResponse;
 import com.library.backend.service.admin.AdminRuleService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/rules")
+@PreAuthorize("hasRole('QUAN_TRI_VIEN')")
 public class AdminRuleController {
 
     private final AdminRuleService adminRuleService;

@@ -1,9 +1,11 @@
 package com.library.backend.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,15 +16,19 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.io.IOException;
 import java.util.List;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
+    private final TokenService tokenService;
 
-    public SecurityConfig(TokenAuthenticationFilter tokenAuthenticationFilter) {
+    public SecurityConfig(TokenAuthenticationFilter tokenAuthenticationFilter, TokenService tokenService) {
         this.tokenAuthenticationFilter = tokenAuthenticationFilter;
+        this.tokenService = tokenService;
     }
 
     @Bean
@@ -31,6 +37,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> sendUnauthorizedOrForbidden(request.getHeader("Authorization"), response))
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN)
+                        )
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
 
@@ -40,16 +52,16 @@ public class SecurityConfig {
 
                         // Nếu còn giữ DevPasswordController thì KHÔNG permitAll ở bản demo.
                         // Khi cần tạo hash, chỉ bật tạm ở profile dev.
-                        .requestMatchers("/api/dev/**").hasRole("QUAN_TRI_VIEN")
+                        .requestMatchers("/api/dev/**").hasRole(RoleConstants.ADMIN)
 
                         .requestMatchers("/api/auth/me").authenticated()
 
-                        .requestMatchers("/api/admin/**").hasRole("QUAN_TRI_VIEN")
-                        .requestMatchers("/api/staff/**").hasAnyRole("THU_THU", "QUAN_TRI_VIEN")
-                        .requestMatchers("/api/reader/**").hasRole("DOC_GIA")
+                        .requestMatchers("/api/admin/**").hasRole(RoleConstants.ADMIN)
+                        .requestMatchers("/api/staff/**").hasAnyRole(RoleConstants.LIBRARIAN, RoleConstants.ADMIN)
+                        .requestMatchers("/api/reader/**").hasRole(RoleConstants.READER)
 
                         .requestMatchers("/api/options/", "/api/options/**")
-                        .hasAnyRole("THU_THU", "QUAN_TRI_VIEN", "DOC_GIA")
+                        .hasAnyRole(RoleConstants.LIBRARIAN, RoleConstants.ADMIN, RoleConstants.READER)
 
                         // Tra cứu sách: tài khoản đăng nhập nào cũng xem được.
                         .requestMatchers(HttpMethod.GET,
@@ -72,7 +84,7 @@ public class SecurityConfig {
                                 "/api/books/**",
                                 "/api/book-copies",
                                 "/api/book-copies/**"
-                        ).hasAnyRole("THU_THU", "QUAN_TRI_VIEN")
+                        ).hasAnyRole(RoleConstants.LIBRARIAN, RoleConstants.ADMIN)
 
                         /*
                          * Endpoint cũ giữ lại để app hiện tại không vỡ.
@@ -93,10 +105,10 @@ public class SecurityConfig {
                                 "/api/payments/**",
                                 "/api/payment-methods",
                                 "/api/payment-methods/**"
-                        ).hasAnyRole("THU_THU", "QUAN_TRI_VIEN")
+                        ).hasAnyRole(RoleConstants.LIBRARIAN, RoleConstants.ADMIN)
 
-                        .requestMatchers("/api/reports", "/api/reports/**").hasAnyRole("THU_THU", "QUAN_TRI_VIEN")
-                        .requestMatchers("/api/activity-logs/**").hasRole("QUAN_TRI_VIEN")
+                        .requestMatchers("/api/reports", "/api/reports/**").hasAnyRole(RoleConstants.LIBRARIAN, RoleConstants.ADMIN)
+                        .requestMatchers("/api/activity-logs/**").hasRole(RoleConstants.ADMIN)
 
                         .anyRequest().authenticated()
                 )
@@ -147,5 +159,19 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/api/**", configuration);
 
         return source;
+    }
+
+    private void sendUnauthorizedOrForbidden(String authorization, HttpServletResponse response) throws IOException {
+        if (authorization != null && authorization.startsWith("Bearer ")) {
+            try {
+                tokenService.parseToken(authorization.substring(7));
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            } catch (RuntimeException ignored) {
+                // Invalid or expired tokens remain authentication failures.
+            }
+        }
+
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }

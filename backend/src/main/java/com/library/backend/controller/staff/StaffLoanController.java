@@ -4,6 +4,7 @@ import com.library.backend.dto.MuonSachRequest;
 import com.library.backend.dto.MuonSachResponse;
 import com.library.backend.service.MuonSachService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/staff")
+@PreAuthorize("hasAnyRole('THU_THU', 'QUAN_TRI_VIEN')")
 public class StaffLoanController {
 
     private final MuonSachService muonSachService;

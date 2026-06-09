@@ -7,6 +7,7 @@ import com.library.backend.dto.AdminReportResponses.LateReturnReportResponse;
 import com.library.backend.dto.AdminReportResponses.OverviewResponse;
 import com.library.backend.dto.AdminReportResponses.PaymentReportResponse;
 import com.library.backend.service.admin.AdminReportService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/reports")
+@PreAuthorize("hasRole('QUAN_TRI_VIEN')")
 public class AdminReportController {
 
     private final AdminReportService adminReportService;

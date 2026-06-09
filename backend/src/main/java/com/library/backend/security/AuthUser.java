@@ -33,11 +33,6 @@ public class AuthUser {
     public String getMaNhanVien() { return maNhanVien; }
 
     public String getRoleAuthority() {
-        return switch (maVaiTro) {
-            case "VT_ADMIN" -> "ROLE_QUAN_TRI_VIEN";
-            case "VT_THU_THU" -> "ROLE_THU_THU";
-            case "VT_DOC_GIA" -> "ROLE_DOC_GIA";
-            default -> "ROLE_UNKNOWN";
-        };
+        return RoleConstants.toAuthority(tenVaiTro);
     }
 }

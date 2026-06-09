@@ -6,6 +6,7 @@ import com.library.backend.dto.AdminLibrarianStatusRequest;
 import com.library.backend.dto.AdminLibrarianUpdateRequest;
 import com.library.backend.dto.ResetPasswordRequest;
 import com.library.backend.service.admin.AdminLibrarianService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/librarians")
+@PreAuthorize("hasRole('QUAN_TRI_VIEN')")
 public class AdminLibrarianController {
 
     private final AdminLibrarianService adminLibrarianService;

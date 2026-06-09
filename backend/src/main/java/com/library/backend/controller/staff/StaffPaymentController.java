@@ -5,6 +5,7 @@ import com.library.backend.dto.PhieuThuRequest;
 import com.library.backend.dto.PhieuThuResponse;
 import com.library.backend.service.ThanhToanService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/staff")
+@PreAuthorize("hasAnyRole('THU_THU', 'QUAN_TRI_VIEN')")
 public class StaffPaymentController {
 
     private final ThanhToanService thanhToanService;

@@ -3,6 +3,7 @@ package com.library.backend.controller.admin;
 import com.library.backend.dto.CommentModerationResponse;
 import com.library.backend.dto.ModerateCommentRequest;
 import com.library.backend.service.admin.CommentModerationService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/comments")
+@PreAuthorize("hasRole('QUAN_TRI_VIEN')")
 public class CommentModerationController {
 
     private final CommentModerationService commentModerationService;
