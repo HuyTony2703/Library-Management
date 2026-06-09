@@ -1574,6 +1574,195 @@
     margin: 0;
 }
 
+.guide-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 18px;
+}
+
+.guide-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+}
+
+.guide-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    margin-bottom: 14px;
+}
+
+.guide-card h3 {
+    margin: 0 0 12px;
+    font-size: 20px;
+}
+
+.guide-card ol {
+    margin: 0;
+    padding-left: 20px;
+    color: #475569;
+    line-height: 1.65;
+}
+
+.guide-link-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.guide-link-row a {
+    text-decoration: none;
+    color: #2563eb;
+    font-weight: 900;
+    padding: 11px 14px;
+    border-radius: 14px;
+    background: rgba(37, 99, 235, 0.1);
+}
+
+.rules-hero {
+    display: grid;
+    grid-template-columns: 58px 1fr;
+    gap: 16px;
+    align-items: start;
+    padding: 24px;
+    border-radius: 22px;
+    background: rgba(239, 246, 255, 0.95);
+    border: 1px solid rgba(37, 99, 235, 0.18);
+    margin-bottom: 22px;
+}
+
+.rules-hero-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 20px;
+    display: grid;
+    place-items: center;
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+}
+
+.rules-hero h2 {
+    margin: 0 0 8px;
+}
+
+.rules-hero p {
+    margin: 0 0 8px;
+    color: #475569;
+}
+
+.rule-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.rule-card {
+    padding: 18px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
+}
+
+.rule-card p {
+    margin: 0 0 8px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.rule-card h3 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.penalty-layout {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.penalty-info-card,
+.penalty-calculator-card {
+    padding: 24px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+}
+
+.penalty-info-card h2,
+.penalty-calculator-card h2 {
+    margin: 0 0 12px;
+}
+
+.penalty-info-card p {
+    color: #475569;
+    line-height: 1.6;
+}
+
+.formula-box {
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.05);
+    font-weight: 800;
+    margin: 16px 0;
+}
+
+.rule-highlight {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 16px;
+    background: rgba(239, 246, 255, 0.95);
+    color: #1e40af;
+}
+
+.calculator-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.penalty-result {
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 18px;
+    background: rgba(254, 242, 242, 0.95);
+    display: grid;
+    gap: 8px;
+}
+
+.penalty-result span {
+    color: #991b1b;
+}
+
+.penalty-result strong {
+    font-size: 28px;
+    color: #dc2626;
+}
+
+.rules-text-list {
+    display: grid;
+    gap: 12px;
+    color: #475569;
+    line-height: 1.65;
+}
+
+.rules-text-list p {
+    margin: 0;
+}
+
 @media (max-width: 760px) {
     .reader-loan-card {
         grid-template-columns: 1fr;
@@ -1639,5 +1828,10 @@
     .recommendation-cover {
         width: 100%;
         height: 220px;
+    }
+
+    .penalty-layout,
+    .rules-hero {
+        grid-template-columns: 1fr;
     }
 }

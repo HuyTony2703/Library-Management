@@ -11,15 +11,9 @@ import ReaderNotificationsPage from "../pages/reader/ReaderNotificationsPage";
 import ReaderMembershipPage from "../pages/reader/ReaderMembershipPage";
 import ReaderFavoritesPage from "../pages/reader/ReaderFavoritesPage";
 import ReaderRecommendationsPage from "../pages/reader/ReaderRecommendationsPage";
-
-function PlaceholderPage({ title }) {
-    return (
-        <div className="reader-card">
-            <h1>{title}</h1>
-            <p>Trang này sẽ được hoàn thiện trong các bước tiếp theo.</p>
-        </div>
-    );
-}
+import PenaltyRulesPage from "../pages/reader/PenaltyRulesPage";
+import ReaderGuidePage from "../pages/reader/ReaderGuidePage";
+import ReaderRulesPage from "../pages/reader/ReaderRulesPage";
 
 export const readerRoutes = (
     <Route
@@ -40,6 +34,8 @@ export const readerRoutes = (
         <Route path="membership" element={<ReaderMembershipPage />} />
         <Route path="favorites" element={<ReaderFavoritesPage />} />
         <Route path="recommendations" element={<ReaderRecommendationsPage />} />
-        <Route path="guide" element={<PlaceholderPage title="Điều khoản và hướng dẫn" />} />
+        <Route path="guide" element={<ReaderGuidePage />} />
+        <Route path="rules" element={<ReaderRulesPage />} />
+        <Route path="penalty-rules" element={<PenaltyRulesPage />} />
     </Route>
 );

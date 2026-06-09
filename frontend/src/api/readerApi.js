@@ -143,5 +143,6 @@ export const readerApi = {
     apiFetch(`/api/reader/recommendations/random?limit=${limit}`),
 
   // Rules and guide
-  currentRules: () => apiFetch("/api/reader/rules/current")
+  currentRules: () => apiFetch("/api/reader/rules/current"),
+  getCurrentRules: () => apiFetch("/api/reader/rules/current")
 };
