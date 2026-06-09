@@ -5,6 +5,7 @@ import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
+import { displayCode, formatDateTime, formatMoney } from "../../utils/displayUtils";
 
 export default function StaffPaymentsPage() {
     const toast = useToast();
@@ -38,8 +39,7 @@ export default function StaffPaymentsPage() {
     async function loadDebts() {
         try {
             const data = await staffApi.getReaderDebts(maDocGia);
-            const list = Array.isArray(data) ? data : [];
-            setDebts(list);
+            setDebts(Array.isArray(data) ? data : []);
             setSelected({});
             toast.success("Đã tải khoản nợ");
         } catch (err) {
@@ -64,10 +64,7 @@ export default function StaffPaymentsPage() {
     }
 
     function updateDebtAmount(maKhoanNo, value) {
-        setSelected((prev) => ({
-            ...prev,
-            [maKhoanNo]: Number(value)
-        }));
+        setSelected((prev) => ({ ...prev, [maKhoanNo]: Number(value) }));
     }
 
     const selectedTotal = useMemo(() => {
@@ -207,21 +204,9 @@ export default function StaffPaymentsPage() {
                         { key: "maKhoanNo", title: "Mã nợ" },
                         { key: "maLoaiKhoanNo", title: "Loại" },
                         { key: "lyDo", title: "Lý do" },
-                        {
-                            key: "soTienPhatSinh",
-                            title: "Phát sinh",
-                            render: (row) => `${Number(row.soTienPhatSinh || 0).toLocaleString()}đ`
-                        },
-                        {
-                            key: "soTienDaThanhToan",
-                            title: "Đã trả",
-                            render: (row) => `${Number(row.soTienDaThanhToan || 0).toLocaleString()}đ`
-                        },
-                        {
-                            key: "soTienConLai",
-                            title: "Còn lại",
-                            render: (row) => `${Number(row.soTienConLai || 0).toLocaleString()}đ`
-                        },
+                        { key: "soTienPhatSinh", title: "Phát sinh", render: (row) => formatMoney(row.soTienPhatSinh) },
+                        { key: "soTienDaThanhToan", title: "Đã trả", render: (row) => formatMoney(row.soTienDaThanhToan) },
+                        { key: "soTienConLai", title: "Còn lại", render: (row) => formatMoney(row.soTienConLai) },
                         {
                             key: "soTienApDung",
                             title: "Tiền áp dụng",
@@ -236,11 +221,7 @@ export default function StaffPaymentsPage() {
                                     "-"
                                 )
                         },
-                        {
-                            key: "trangThai",
-                            title: "Trạng thái",
-                            render: (row) => <StatusBadge value={row.trangThai} />
-                        }
+                        { key: "trangThai", title: "Trạng thái", render: (row) => <StatusBadge value={row.trangThai} /> }
                     ]}
                 />
             </div>
@@ -250,10 +231,7 @@ export default function StaffPaymentsPage() {
                     <div className="form-row">
                         <label>Mã phiếu thu</label>
                         <div className="inline-control">
-                            <input
-                                value={form.maPhieuThu}
-                                onChange={(e) => updateField("maPhieuThu", e.target.value)}
-                            />
+                            <input value={form.maPhieuThu} onChange={(e) => updateField("maPhieuThu", e.target.value)} />
                             <button type="button" className="icon-button" onClick={regenerateCode}>
                                 <RefreshCcw size={17} />
                             </button>
@@ -263,63 +241,85 @@ export default function StaffPaymentsPage() {
                     <div className="form-grid-2">
                         <div className="form-row">
                             <label>Mã nhân viên thu</label>
-                            <input
-                                value={form.maNhanVienThu}
-                                onChange={(e) => updateField("maNhanVienThu", e.target.value)}
-                            />
+                            <input value={form.maNhanVienThu} onChange={(e) => updateField("maNhanVienThu", e.target.value)} />
                         </div>
 
                         <div className="form-row">
                             <label>Phương thức</label>
-                            <input
-                                value={form.maPhuongThuc}
-                                onChange={(e) => updateField("maPhuongThuc", e.target.value)}
-                            />
+                            <input value={form.maPhuongThuc} onChange={(e) => updateField("maPhuongThuc", e.target.value)} />
                         </div>
                     </div>
 
                     <div className="form-row">
                         <label>Số tiền thu</label>
                         <div className="inline-control">
-                            <input
-                                type="number"
-                                value={form.soTienThu}
-                                onChange={(e) => updateField("soTienThu", e.target.value)}
-                            />
+                            <input type="number" value={form.soTienThu} onChange={(e) => updateField("soTienThu", e.target.value)} />
                             <button type="button" className="soft-button" onClick={syncSelectedTotalToForm}>
                                 Lấy tổng đã chọn
                             </button>
                         </div>
-                        <small>Tổng tiền đang chọn: {selectedTotal.toLocaleString()}đ</small>
+                        <small>Tổng tiền đang chọn: {formatMoney(selectedTotal)}</small>
                     </div>
 
                     <div className="form-row">
                         <label>Ghi chú</label>
-                        <textarea
-                            value={form.ghiChu}
-                            onChange={(e) => updateField("ghiChu", e.target.value)}
-                        />
+                        <textarea value={form.ghiChu} onChange={(e) => updateField("ghiChu", e.target.value)} />
                     </div>
 
                     <button className="primary-button" disabled={loading}>
                         Thu khoản đã chọn
                     </button>
 
-                    <button
-                        type="button"
-                        className="soft-button"
-                        disabled={loading}
-                        onClick={createAutoPayment}
-                    >
+                    <button type="button" className="soft-button" disabled={loading} onClick={createAutoPayment}>
                         Tự động phân bổ
                     </button>
                 </form>
 
-                <div className="panel preview-panel">
-                    <h2>Kết quả phiếu thu</h2>
-                    <pre>{result ? JSON.stringify(result, null, 2) : "Chưa có dữ liệu"}</pre>
-                </div>
+                <PaymentResultPanel result={result} />
             </div>
+        </div>
+    );
+}
+
+function PaymentResultPanel({ result }) {
+    return (
+        <div className="panel preview-panel">
+            <h2>Kết quả phiếu thu</h2>
+
+            {!result ? (
+                <p className="muted-text">Chưa có dữ liệu</p>
+            ) : (
+                <div className="result-stack">
+                    <div className="result-grid">
+                        <ResultItem label="Mã phiếu" value={result.maPhieuThu} />
+                        <ResultItem label="Độc giả" value={result.maDocGia} />
+                        <ResultItem label="Nhân viên thu" value={result.maNhanVienThu} />
+                        <ResultItem label="Phương thức" value={displayCode(result.maPhuongThuc)} />
+                        <ResultItem label="Loại thu" value={result.loaiThu} />
+                        <ResultItem label="Số tiền thu" value={formatMoney(result.soTienThu)} />
+                        <ResultItem label="Ngày thu" value={formatDateTime(result.ngayThu)} />
+                        <ResultItem label="Trạng thái" value={<StatusBadge value={result.trangThai} />} />
+                    </div>
+
+                    <DataTable
+                        data={result.chiTietNo || []}
+                        columns={[
+                            { key: "maChiTietPhieuThu", title: "Mã chi tiết" },
+                            { key: "maKhoanNo", title: "Khoản nợ" },
+                            { key: "soTienApDung", title: "Tiền áp dụng", render: (row) => formatMoney(row.soTienApDung) }
+                        ]}
+                    />
+                </div>
+            )}
+        </div>
+    );
+}
+
+function ResultItem({ label, value }) {
+    return (
+        <div className="result-item">
+            <span>{label}</span>
+            <strong>{value || "-"}</strong>
         </div>
     );
 }

@@ -29,6 +29,11 @@ export const adminApi = {
             body: JSON.stringify(payload)
         }),
 
+    deleteLibrarian: (id) =>
+        apiFetch(`/api/admin/librarians/${id}`, {
+            method: "DELETE"
+        }),
+
     getCurrentRule: () => apiFetch("/api/admin/rules/current"),
 
     getRuleHistory: () => apiFetch("/api/admin/rules/history"),

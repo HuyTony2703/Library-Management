@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { RefreshCcw, Plus, Lock, Unlock, KeyRound, Save } from "lucide-react";
+import { RefreshCcw, Plus, Lock, Unlock, KeyRound, Save, Trash2 } from "lucide-react";
 import { adminApi } from "../../api/adminApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
@@ -139,12 +139,35 @@ export default function AdminLibrariansPage() {
         }
     }
 
+    async function deleteLibrarian(maNhanVien) {
+        if (!window.confirm(`Xóa thủ thư ${maNhanVien}? Tài khoản sẽ bị ngừng hoạt động.`)) {
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            await adminApi.deleteLibrarian(maNhanVien);
+            toast.success("Xóa thủ thư thành công");
+
+            if (selected?.maNhanVien === maNhanVien) {
+                setSelected(null);
+            }
+
+            await loadLibrarians();
+        } catch (err) {
+            toast.error(err.message || "Xóa thủ thư thất bại");
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
         <div>
             <PageHeader
                 eyebrow="Admin"
                 title="Quản lý thủ thư"
-                description="Thêm, sửa, khóa, mở khóa và reset mật khẩu tài khoản thủ thư."
+                description="Thêm, sửa, khóa, mở khóa, xóa và reset mật khẩu tài khoản thủ thư."
                 right={
                     <button className="soft-button" onClick={loadLibrarians}>
                         <RefreshCcw size={17} />
@@ -166,16 +189,8 @@ export default function AdminLibrariansPage() {
                         { key: "tenDangNhap", title: "Tên đăng nhập" },
                         { key: "hoTen", title: "Họ tên" },
                         { key: "maChiNhanh", title: "Chi nhánh" },
-                        {
-                            key: "trangThaiTaiKhoan",
-                            title: "Tài khoản",
-                            render: (row) => <StatusBadge value={row.trangThaiTaiKhoan} />
-                        },
-                        {
-                            key: "trangThaiNhanVien",
-                            title: "Nhân viên",
-                            render: (row) => <StatusBadge value={row.trangThaiNhanVien} />
-                        },
+                        { key: "trangThaiTaiKhoan", title: "Tài khoản", render: (row) => <StatusBadge value={row.trangThaiTaiKhoan} /> },
+                        { key: "trangThaiNhanVien", title: "Nhân viên", render: (row) => <StatusBadge value={row.trangThaiNhanVien} /> },
                         {
                             key: "actions",
                             title: "Thao tác",
@@ -186,28 +201,24 @@ export default function AdminLibrariansPage() {
                                     </button>
 
                                     {row.trangThaiNhanVien === "Đang làm" ? (
-                                        <button
-                                            className="soft-button"
-                                            onClick={() => changeStatus(row.maNhanVien, "Tạm khóa")}
-                                        >
+                                        <button className="soft-button" onClick={() => changeStatus(row.maNhanVien, "Tạm khóa")}>
                                             <Lock size={15} />
                                             Khóa
                                         </button>
                                     ) : (
-                                        <button
-                                            className="soft-button"
-                                            onClick={() => changeStatus(row.maNhanVien, "Đang làm")}
-                                        >
+                                        <button className="soft-button" onClick={() => changeStatus(row.maNhanVien, "Đang làm")}>
                                             <Unlock size={15} />
                                             Mở
                                         </button>
                                     )}
 
-                                    <button
-                                        className="soft-button"
-                                        onClick={() => changeStatus(row.maNhanVien, "Nghỉ việc")}
-                                    >
+                                    <button className="soft-button" onClick={() => changeStatus(row.maNhanVien, "Nghỉ việc")}>
                                         Nghỉ
+                                    </button>
+
+                                    <button className="soft-button danger-button" onClick={() => deleteLibrarian(row.maNhanVien)}>
+                                        <Trash2 size={15} />
+                                        Xóa
                                     </button>
                                 </div>
                             )
@@ -226,82 +237,53 @@ export default function AdminLibrariansPage() {
                     <div className="form-grid-2">
                         <div className="form-row">
                             <label>Mã nhân viên</label>
-                            <input
-                                value={createForm.maNhanVien}
-                                onChange={(e) => updateCreateField("maNhanVien", e.target.value)}
-                            />
+                            <input value={createForm.maNhanVien} onChange={(e) => updateCreateField("maNhanVien", e.target.value)} />
                         </div>
 
                         <div className="form-row">
                             <label>Mã tài khoản</label>
-                            <input
-                                value={createForm.maTaiKhoan}
-                                onChange={(e) => updateCreateField("maTaiKhoan", e.target.value)}
-                            />
+                            <input value={createForm.maTaiKhoan} onChange={(e) => updateCreateField("maTaiKhoan", e.target.value)} />
                         </div>
                     </div>
 
                     <div className="form-grid-2">
                         <div className="form-row">
                             <label>Tên đăng nhập</label>
-                            <input
-                                value={createForm.tenDangNhap}
-                                onChange={(e) => updateCreateField("tenDangNhap", e.target.value)}
-                            />
+                            <input value={createForm.tenDangNhap} onChange={(e) => updateCreateField("tenDangNhap", e.target.value)} />
                         </div>
 
                         <div className="form-row">
                             <label>Mật khẩu</label>
-                            <input
-                                type="password"
-                                value={createForm.matKhau}
-                                onChange={(e) => updateCreateField("matKhau", e.target.value)}
-                            />
+                            <input type="password" value={createForm.matKhau} onChange={(e) => updateCreateField("matKhau", e.target.value)} />
                         </div>
                     </div>
 
                     <div className="form-row">
                         <label>Email đăng nhập</label>
-                        <input
-                            value={createForm.emailDangNhap}
-                            onChange={(e) => updateCreateField("emailDangNhap", e.target.value)}
-                        />
+                        <input value={createForm.emailDangNhap} onChange={(e) => updateCreateField("emailDangNhap", e.target.value)} />
                     </div>
 
                     <div className="form-grid-2">
                         <div className="form-row">
                             <label>Họ tên</label>
-                            <input
-                                value={createForm.hoTen}
-                                onChange={(e) => updateCreateField("hoTen", e.target.value)}
-                            />
+                            <input value={createForm.hoTen} onChange={(e) => updateCreateField("hoTen", e.target.value)} />
                         </div>
 
                         <div className="form-row">
                             <label>Ngày sinh</label>
-                            <input
-                                type="date"
-                                value={createForm.ngaySinh}
-                                onChange={(e) => updateCreateField("ngaySinh", e.target.value)}
-                            />
+                            <input type="date" value={createForm.ngaySinh} onChange={(e) => updateCreateField("ngaySinh", e.target.value)} />
                         </div>
                     </div>
 
                     <div className="form-grid-2">
                         <div className="form-row">
                             <label>Chi nhánh</label>
-                            <input
-                                value={createForm.maChiNhanh}
-                                onChange={(e) => updateCreateField("maChiNhanh", e.target.value)}
-                            />
+                            <input value={createForm.maChiNhanh} onChange={(e) => updateCreateField("maChiNhanh", e.target.value)} />
                         </div>
 
                         <div className="form-row">
                             <label>Số điện thoại</label>
-                            <input
-                                value={createForm.soDienThoai}
-                                onChange={(e) => updateCreateField("soDienThoai", e.target.value)}
-                            />
+                            <input value={createForm.soDienThoai} onChange={(e) => updateCreateField("soDienThoai", e.target.value)} />
                         </div>
                     </div>
 
@@ -348,19 +330,12 @@ export default function AdminLibrariansPage() {
                             <div className="form-grid-2">
                                 <div className="form-row">
                                     <label>Ngày sinh</label>
-                                    <input
-                                        type="date"
-                                        value={selected.ngaySinh || ""}
-                                        onChange={(e) => updateSelectedField("ngaySinh", e.target.value)}
-                                    />
+                                    <input type="date" value={selected.ngaySinh || ""} onChange={(e) => updateSelectedField("ngaySinh", e.target.value)} />
                                 </div>
 
                                 <div className="form-row">
                                     <label>Chi nhánh</label>
-                                    <input
-                                        value={selected.maChiNhanh || ""}
-                                        onChange={(e) => updateSelectedField("maChiNhanh", e.target.value)}
-                                    />
+                                    <input value={selected.maChiNhanh || ""} onChange={(e) => updateSelectedField("maChiNhanh", e.target.value)} />
                                 </div>
                             </div>
 
@@ -372,10 +347,7 @@ export default function AdminLibrariansPage() {
 
                                 <div className="form-row">
                                     <label>Số điện thoại</label>
-                                    <input
-                                        value={selected.soDienThoai || ""}
-                                        onChange={(e) => updateSelectedField("soDienThoai", e.target.value)}
-                                    />
+                                    <input value={selected.soDienThoai || ""} onChange={(e) => updateSelectedField("soDienThoai", e.target.value)} />
                                 </div>
                             </div>
 
@@ -391,11 +363,7 @@ export default function AdminLibrariansPage() {
                             <div className="form-row">
                                 <label>Mật khẩu mới</label>
                                 <div className="inline-control">
-                                    <input
-                                        type="password"
-                                        value={resetPassword}
-                                        onChange={(e) => setResetPassword(e.target.value)}
-                                    />
+                                    <input type="password" value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} />
                                     <button type="button" className="soft-button" onClick={resetSelectedPassword}>
                                         <KeyRound size={16} />
                                         Reset

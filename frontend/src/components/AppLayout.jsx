@@ -17,8 +17,18 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { normalizeRole } from "../utils/roleUtils";
 
+const staffTools = [
+    { to: "/staff/loans", label: "Mượn sách", icon: RefreshCcw },
+    { to: "/staff/returns", label: "Trả sách", icon: RotateCcw },
+    { to: "/staff/payments", label: "Thu tiền phạt", icon: ReceiptText },
+    { to: "/readers", label: "Độc giả", icon: UsersRound },
+    { to: "/books", label: "Đầu sách", icon: BookOpen },
+    { to: "/book-copies", label: "Cuốn sách", icon: Boxes }
+];
+
 const adminMenu = [
     { to: "/dashboard", label: "Tổng quan", icon: Home },
+    ...staffTools,
     { to: "/admin/librarians", label: "Quản lý thủ thư", icon: UsersRound },
     { to: "/admin/rules", label: "Quy định hệ thống", icon: Settings },
     { to: "/admin/reports", label: "Báo cáo", icon: BarChart3 },
@@ -27,12 +37,7 @@ const adminMenu = [
 
 const staffMenu = [
     { to: "/dashboard", label: "Tổng quan", icon: Home },
-    { to: "/staff/loans", label: "Mượn sách", icon: RefreshCcw },
-    { to: "/staff/returns", label: "Trả sách", icon: RotateCcw },
-    { to: "/staff/payments", label: "Thu tiền phạt", icon: ReceiptText },
-    { to: "/readers", label: "Độc giả", icon: UsersRound },
-    { to: "/books", label: "Đầu sách", icon: BookOpen },
-    { to: "/book-copies", label: "Cuốn sách", icon: Boxes }
+    ...staffTools
 ];
 
 export default function AppLayout() {

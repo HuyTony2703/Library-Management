@@ -5,6 +5,7 @@ import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
+import { displayCode, formatDateTime, formatMoney } from "../../utils/displayUtils";
 
 export default function StaffReturnsPage() {
     const toast = useToast();
@@ -25,10 +26,7 @@ export default function StaffReturnsPage() {
     const [loading, setLoading] = useState(false);
 
     function updateField(field, value) {
-        setForm((prev) => ({
-            ...prev,
-            [field]: value
-        }));
+        setForm((prev) => ({ ...prev, [field]: value }));
     }
 
     function regenerateCode() {
@@ -57,18 +55,12 @@ export default function StaffReturnsPage() {
             return;
         }
 
-        if (
-            (form.tinhTrangKhiTra === "Hỏng" || form.tinhTrangKhiTra === "Mất") &&
-            Number(form.tienPhatHongMat) <= 0
-        ) {
+        if ((form.tinhTrangKhiTra === "Hỏng" || form.tinhTrangKhiTra === "Mất") && Number(form.tienPhatHongMat) <= 0) {
             toast.error("Sách hỏng/mất phải nhập tiền phạt lớn hơn 0");
             return;
         }
 
-        if (
-            form.tinhTrangKhiTra === "Bình thường" &&
-            Number(form.tienPhatHongMat) > 0
-        ) {
+        if (form.tinhTrangKhiTra === "Bình thường" && Number(form.tienPhatHongMat) > 0) {
             toast.error("Sách bình thường không được nhập tiền phạt hỏng/mất");
             return;
         }
@@ -76,7 +68,7 @@ export default function StaffReturnsPage() {
         setLoading(true);
 
         try {
-            const payload = {
+            const data = await staffApi.createReturn({
                 maPhieuTra: form.maPhieuTra,
                 maDocGia: form.maDocGia,
                 maNhanVienNhan: form.maNhanVienNhan,
@@ -90,9 +82,7 @@ export default function StaffReturnsPage() {
                         ghiChu: form.ghiChu
                     }
                 ]
-            };
-
-            const data = await staffApi.createReturn(payload);
+            });
 
             setResult(data);
             toast.success("Tạo phiếu trả thành công");
@@ -123,10 +113,7 @@ export default function StaffReturnsPage() {
                     <div className="form-row">
                         <label>Mã phiếu trả</label>
                         <div className="inline-control">
-                            <input
-                                value={form.maPhieuTra}
-                                onChange={(e) => updateField("maPhieuTra", e.target.value)}
-                            />
+                            <input value={form.maPhieuTra} onChange={(e) => updateField("maPhieuTra", e.target.value)} />
                             <button type="button" className="icon-button" onClick={regenerateCode}>
                                 <RefreshCcw size={17} />
                             </button>
@@ -136,28 +123,19 @@ export default function StaffReturnsPage() {
                     <div className="form-grid-2">
                         <div className="form-row">
                             <label>Mã độc giả</label>
-                            <input
-                                value={form.maDocGia}
-                                onChange={(e) => updateField("maDocGia", e.target.value)}
-                            />
+                            <input value={form.maDocGia} onChange={(e) => updateField("maDocGia", e.target.value)} />
                         </div>
 
                         <div className="form-row">
                             <label>Mã nhân viên nhận</label>
-                            <input
-                                value={form.maNhanVienNhan}
-                                onChange={(e) => updateField("maNhanVienNhan", e.target.value)}
-                            />
+                            <input value={form.maNhanVienNhan} onChange={(e) => updateField("maNhanVienNhan", e.target.value)} />
                         </div>
                     </div>
 
                     <div className="form-grid-2">
                         <div className="form-row">
                             <label>Mã chi nhánh</label>
-                            <input
-                                value={form.maChiNhanh}
-                                onChange={(e) => updateField("maChiNhanh", e.target.value)}
-                            />
+                            <input value={form.maChiNhanh} onChange={(e) => updateField("maChiNhanh", e.target.value)} />
                         </div>
 
                         <div className="form-row">
@@ -173,10 +151,7 @@ export default function StaffReturnsPage() {
                     <div className="form-grid-2">
                         <div className="form-row">
                             <label>Tình trạng khi trả</label>
-                            <select
-                                value={form.tinhTrangKhiTra}
-                                onChange={(e) => updateField("tinhTrangKhiTra", e.target.value)}
-                            >
+                            <select value={form.tinhTrangKhiTra} onChange={(e) => updateField("tinhTrangKhiTra", e.target.value)}>
                                 <option value="Bình thường">Bình thường</option>
                                 <option value="Hỏng">Hỏng</option>
                                 <option value="Mất">Mất</option>
@@ -185,20 +160,13 @@ export default function StaffReturnsPage() {
 
                         <div className="form-row">
                             <label>Tiền phạt hỏng/mất</label>
-                            <input
-                                type="number"
-                                value={form.tienPhatHongMat}
-                                onChange={(e) => updateField("tienPhatHongMat", e.target.value)}
-                            />
+                            <input type="number" value={form.tienPhatHongMat} onChange={(e) => updateField("tienPhatHongMat", e.target.value)} />
                         </div>
                     </div>
 
                     <div className="form-row">
                         <label>Ghi chú</label>
-                        <textarea
-                            value={form.ghiChu}
-                            onChange={(e) => updateField("ghiChu", e.target.value)}
-                        />
+                        <textarea value={form.ghiChu} onChange={(e) => updateField("ghiChu", e.target.value)} />
                     </div>
 
                     <button className="primary-button" disabled={loading}>
@@ -206,10 +174,7 @@ export default function StaffReturnsPage() {
                     </button>
                 </form>
 
-                <div className="panel preview-panel">
-                    <h2>Kết quả phiếu trả</h2>
-                    <pre>{result ? JSON.stringify(result, null, 2) : "Chưa có dữ liệu"}</pre>
-                </div>
+                <ReturnResultPanel result={result} />
             </div>
 
             <div className="panel">
@@ -223,21 +188,14 @@ export default function StaffReturnsPage() {
                     columns={[
                         { key: "maChiTietMuon", title: "Mã CT mượn" },
                         { key: "maCuonSach", title: "Mã cuốn" },
-                        { key: "hanTra", title: "Hạn trả" },
-                        {
-                            key: "trangThai",
-                            title: "Trạng thái",
-                            render: (row) => <StatusBadge value={row.trangThai} />
-                        },
+                        { key: "maQuyDinhMuon", title: "Quy định", render: (row) => displayCode(row.maQuyDinhMuon) },
+                        { key: "hanTra", title: "Hạn trả", render: (row) => formatDateTime(row.hanTra) },
+                        { key: "trangThai", title: "Trạng thái", render: (row) => <StatusBadge value={row.trangThai} /> },
                         {
                             key: "action",
                             title: "Chọn",
                             render: (row) => (
-                                <button
-                                    type="button"
-                                    className="soft-button"
-                                    onClick={() => selectLoan(row)}
-                                >
+                                <button type="button" className="soft-button" onClick={() => selectLoan(row)}>
                                     Chọn
                                 </button>
                             )
@@ -245,6 +203,57 @@ export default function StaffReturnsPage() {
                     ]}
                 />
             </div>
+        </div>
+    );
+}
+
+function ReturnResultPanel({ result }) {
+    return (
+        <div className="panel preview-panel">
+            <h2>Kết quả phiếu trả</h2>
+
+            {!result ? (
+                <p className="muted-text">Chưa có dữ liệu</p>
+            ) : (
+                <div className="result-stack">
+                    <div className="result-grid">
+                        <ResultItem label="Mã phiếu" value={result.maPhieuTra} />
+                        <ResultItem label="Độc giả" value={result.maDocGia} />
+                        <ResultItem label="Nhân viên nhận" value={result.maNhanVienNhan} />
+                        <ResultItem label="Chi nhánh" value={result.maChiNhanh} />
+                        <ResultItem label="Ngày trả" value={formatDateTime(result.ngayTra)} />
+                        <ResultItem label="Tổng phạt" value={formatMoney(getReturnFineTotal(result))} />
+                    </div>
+
+                    <DataTable
+                        data={result.chiTiet || []}
+                        columns={[
+                            { key: "maChiTietTra", title: "Mã CT trả" },
+                            { key: "maChiTietMuon", title: "Mã CT mượn" },
+                            { key: "tinhTrangKhiTra", title: "Tình trạng" },
+                            { key: "soNgayTre", title: "Số ngày trễ" },
+                            { key: "tienPhatTre", title: "Phạt trễ", render: (row) => formatMoney(row.tienPhatTre) },
+                            { key: "tienPhatHongMat", title: "Phạt hỏng/mất", render: (row) => formatMoney(row.tienPhatHongMat) }
+                        ]}
+                    />
+                </div>
+            )}
+        </div>
+    );
+}
+
+function getReturnFineTotal(result) {
+    return (result?.chiTiet || []).reduce(
+        (sum, row) => sum + Number(row.tienPhatTre || 0) + Number(row.tienPhatHongMat || 0),
+        0
+    );
+}
+
+function ResultItem({ label, value }) {
+    return (
+        <div className="result-item">
+            <span>{label}</span>
+            <strong>{value || "-"}</strong>
         </div>
     );
 }

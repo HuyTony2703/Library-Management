@@ -5,6 +5,7 @@ import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
+import { displayCode, formatDateTime } from "../../utils/displayUtils";
 
 export default function StaffLoansPage() {
     const toast = useToast();
@@ -23,10 +24,7 @@ export default function StaffLoansPage() {
     const [loading, setLoading] = useState(false);
 
     function updateField(field, value) {
-        setForm((prev) => ({
-            ...prev,
-            [field]: value
-        }));
+        setForm((prev) => ({ ...prev, [field]: value }));
     }
 
     function regenerateCode() {
@@ -63,16 +61,14 @@ export default function StaffLoansPage() {
         setLoading(true);
 
         try {
-            const payload = {
+            const data = await staffApi.createLoan({
                 maPhieuMuon: form.maPhieuMuon,
                 maDocGia: form.maDocGia,
                 maNhanVienLap: form.maNhanVienLap,
                 maChiNhanh: form.maChiNhanh,
                 maCuonSachs,
                 ghiChu: form.ghiChu
-            };
-
-            const data = await staffApi.createLoan(payload);
+            });
 
             setResult(data);
             toast.success("Tạo phiếu mượn thành công");
@@ -103,10 +99,7 @@ export default function StaffLoansPage() {
                     <div className="form-row">
                         <label>Mã phiếu mượn</label>
                         <div className="inline-control">
-                            <input
-                                value={form.maPhieuMuon}
-                                onChange={(e) => updateField("maPhieuMuon", e.target.value)}
-                            />
+                            <input value={form.maPhieuMuon} onChange={(e) => updateField("maPhieuMuon", e.target.value)} />
                             <button type="button" className="icon-button" onClick={regenerateCode}>
                                 <RefreshCcw size={17} />
                             </button>
@@ -116,28 +109,19 @@ export default function StaffLoansPage() {
                     <div className="form-grid-2">
                         <div className="form-row">
                             <label>Mã độc giả</label>
-                            <input
-                                value={form.maDocGia}
-                                onChange={(e) => updateField("maDocGia", e.target.value)}
-                            />
+                            <input value={form.maDocGia} onChange={(e) => updateField("maDocGia", e.target.value)} />
                         </div>
 
                         <div className="form-row">
                             <label>Mã nhân viên lập</label>
-                            <input
-                                value={form.maNhanVienLap}
-                                onChange={(e) => updateField("maNhanVienLap", e.target.value)}
-                            />
+                            <input value={form.maNhanVienLap} onChange={(e) => updateField("maNhanVienLap", e.target.value)} />
                         </div>
                     </div>
 
                     <div className="form-grid-2">
                         <div className="form-row">
                             <label>Mã chi nhánh</label>
-                            <input
-                                value={form.maChiNhanh}
-                                onChange={(e) => updateField("maChiNhanh", e.target.value)}
-                            />
+                            <input value={form.maChiNhanh} onChange={(e) => updateField("maChiNhanh", e.target.value)} />
                         </div>
 
                         <div className="form-row">
@@ -152,10 +136,7 @@ export default function StaffLoansPage() {
 
                     <div className="form-row">
                         <label>Ghi chú</label>
-                        <textarea
-                            value={form.ghiChu}
-                            onChange={(e) => updateField("ghiChu", e.target.value)}
-                        />
+                        <textarea value={form.ghiChu} onChange={(e) => updateField("ghiChu", e.target.value)} />
                     </div>
 
                     <button className="primary-button" disabled={loading}>
@@ -163,10 +144,7 @@ export default function StaffLoansPage() {
                     </button>
                 </form>
 
-                <div className="panel preview-panel">
-                    <h2>Kết quả phiếu mượn</h2>
-                    <pre>{result ? JSON.stringify(result, null, 2) : "Chưa có dữ liệu"}</pre>
-                </div>
+                <LoanResultPanel result={result} />
             </div>
 
             <div className="panel">
@@ -180,17 +158,56 @@ export default function StaffLoansPage() {
                     columns={[
                         { key: "maChiTietMuon", title: "Mã CT mượn" },
                         { key: "maCuonSach", title: "Mã cuốn" },
-                        { key: "maQuyDinhMuon", title: "Quy định" },
-                        { key: "ngayMuon", title: "Ngày mượn" },
-                        { key: "hanTra", title: "Hạn trả" },
-                        {
-                            key: "trangThai",
-                            title: "Trạng thái",
-                            render: (row) => <StatusBadge value={row.trangThai} />
-                        }
+                        { key: "maQuyDinhMuon", title: "Quy định", render: (row) => displayCode(row.maQuyDinhMuon) },
+                        { key: "ngayMuon", title: "Ngày mượn", render: (row) => formatDateTime(row.ngayMuon) },
+                        { key: "hanTra", title: "Hạn trả", render: (row) => formatDateTime(row.hanTra) },
+                        { key: "trangThai", title: "Trạng thái", render: (row) => <StatusBadge value={row.trangThai} /> }
                     ]}
                 />
             </div>
+        </div>
+    );
+}
+
+function LoanResultPanel({ result }) {
+    return (
+        <div className="panel preview-panel">
+            <h2>Kết quả phiếu mượn</h2>
+
+            {!result ? (
+                <p className="muted-text">Chưa có dữ liệu</p>
+            ) : (
+                <div className="result-stack">
+                    <div className="result-grid">
+                        <ResultItem label="Mã phiếu" value={result.maPhieuMuon} />
+                        <ResultItem label="Độc giả" value={result.maDocGia} />
+                        <ResultItem label="Nhân viên lập" value={result.maNhanVienLap} />
+                        <ResultItem label="Chi nhánh" value={result.maChiNhanh} />
+                        <ResultItem label="Ngày mượn" value={formatDateTime(result.ngayMuon)} />
+                        <ResultItem label="Trạng thái" value={<StatusBadge value={result.trangThai} />} />
+                    </div>
+
+                    <DataTable
+                        data={result.chiTiet || []}
+                        columns={[
+                            { key: "maChiTietMuon", title: "Mã chi tiết" },
+                            { key: "maCuonSach", title: "Mã cuốn" },
+                            { key: "maQuyDinhMuon", title: "Quy định", render: (row) => displayCode(row.maQuyDinhMuon) },
+                            { key: "hanTra", title: "Hạn trả", render: (row) => formatDateTime(row.hanTra) },
+                            { key: "trangThai", title: "Trạng thái", render: (row) => <StatusBadge value={row.trangThai} /> }
+                        ]}
+                    />
+                </div>
+            )}
+        </div>
+    );
+}
+
+function ResultItem({ label, value }) {
+    return (
+        <div className="result-item">
+            <span>{label}</span>
+            <strong>{value || "-"}</strong>
         </div>
     );
 }

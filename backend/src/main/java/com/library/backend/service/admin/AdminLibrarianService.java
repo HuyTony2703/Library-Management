@@ -262,6 +262,30 @@ public class AdminLibrarianService {
         );
     }
 
+    @Transactional
+    public void delete(String maNhanVien) {
+        AdminLibrarianResponse current = getById(maNhanVien);
+
+        jdbcTemplate.update(
+                "UPDATE NHANVIEN SET TrangThai = ? WHERE MaNhanVien = ?",
+                NHAN_VIEN_NGHI_VIEC,
+                maNhanVien
+        );
+
+        jdbcTemplate.update(
+                "UPDATE TAIKHOAN SET TrangThai = ? WHERE MaTaiKhoan = ?",
+                TAI_KHOAN_NGUNG_HOAT_DONG,
+                current.getMaTaiKhoan()
+        );
+
+        activityLogService.logSafe(
+                "Xóa thủ thư",
+                "NHANVIEN",
+                maNhanVien,
+                "Admin vô hiệu hóa thủ thư " + current.getTenDangNhap()
+        );
+    }
+
     private String baseSelectSql() {
         return """
                 SELECT

@@ -1,5 +1,7 @@
+import { displayStatus } from "../utils/displayUtils";
+
 export default function StatusBadge({ value }) {
-    const text = value || "Không rõ";
+    const text = displayStatus(value);
 
     const type =
         text.includes("Sẵn") || text.includes("Hoạt động") || text.includes("Thành công") || text.includes("Đã")
