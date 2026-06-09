@@ -7,6 +7,7 @@ import ReaderBookDetailPage from "../pages/reader/ReaderBookDetailPage";
 import ReaderLoansPage from "../pages/reader/ReaderLoansPage";
 import ReaderRenewalHistoryPage from "../pages/reader/ReaderRenewalHistoryPage";
 import ReaderReservationsPage from "../pages/reader/ReaderReservationsPage";
+import ReaderNotificationsPage from "../pages/reader/ReaderNotificationsPage";
 
 function PlaceholderPage({ title }) {
     return (
@@ -32,7 +33,7 @@ export const readerRoutes = (
         <Route path="loans" element={<ReaderLoansPage />} />
         <Route path="loans/renewal-history" element={<ReaderRenewalHistoryPage />} />
         <Route path="reservations" element={<ReaderReservationsPage />} />
-        <Route path="notifications" element={<PlaceholderPage title="Thông báo" />} />
+        <Route path="notifications" element={<ReaderNotificationsPage />} />
         <Route path="membership" element={<PlaceholderPage title="Gói thành viên" />} />
         <Route path="favorites" element={<PlaceholderPage title="Sách yêu thích" />} />
         <Route path="recommendations" element={<PlaceholderPage title="Gợi ý sách" />} />

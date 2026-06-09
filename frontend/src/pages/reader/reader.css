@@ -106,9 +106,15 @@
     align-items: center;
 }
 
-.reader-topbar div {
+.reader-topbar-title {
     display: grid;
     gap: 4px;
+}
+
+.reader-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .reader-topbar span {
@@ -902,6 +908,111 @@
     background: rgba(15, 23, 42, 0.04);
 }
 
+.notification-bell {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+}
+
+.notification-bell:hover {
+    background: white;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #dc2626;
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    display: grid;
+    place-items: center;
+}
+
+.notification-list {
+    display: grid;
+    gap: 14px;
+}
+
+.notification-item {
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    gap: 14px;
+    align-items: start;
+    padding: 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+}
+
+.notification-item.is-unread {
+    border-color: rgba(37, 99, 235, 0.35);
+    background: rgba(239, 246, 255, 0.95);
+}
+
+.notification-item.is-read {
+    opacity: 0.75;
+}
+
+.notification-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+}
+
+.notification-content h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.notification-content p {
+    margin: 8px 0;
+    color: #475569;
+    line-height: 1.5;
+}
+
+.notification-title-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+}
+
+.notification-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.unread-pill {
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #2563eb;
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+}
+
 @media (max-width: 760px) {
     .reader-loan-card {
         grid-template-columns: 1fr;
@@ -915,5 +1026,26 @@
     .reader-page-actions {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .reader-topbar {
+        height: auto;
+        align-items: flex-start;
+        gap: 14px;
+        flex-direction: column;
+    }
+
+    .reader-topbar-actions,
+    .notification-item {
+        width: 100%;
+    }
+
+    .notification-item {
+        grid-template-columns: 44px 1fr;
+    }
+
+    .notification-item .reader-secondary-button {
+        grid-column: 1 / -1;
+        justify-self: flex-start;
     }
 }

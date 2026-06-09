@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import NotificationBell from "../../components/reader/NotificationBell";
 import "./reader.css";
 
 const menuItems = [
@@ -75,15 +76,19 @@ export default function ReaderLayout() {
 
             <main className="reader-content">
                 <header className="reader-topbar">
-                    <div>
+                    <div className="reader-topbar-title">
                         <strong>Cổng độc giả</strong>
                         <span>Theo dõi sách, đặt trước, gia hạn và thông báo</span>
                     </div>
 
-                    <button className="reader-logout-button" onClick={handleLogout}>
-                        <LogOut size={18} />
+                    <div className="reader-topbar-actions">
+                        <NotificationBell />
+
+                        <button className="reader-logout-button" onClick={handleLogout}>
+                            <LogOut size={18} />
                         Đăng xuất
-                    </button>
+                        </button>
+                    </div>
                 </header>
 
                 <section className="reader-page">

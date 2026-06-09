@@ -49,12 +49,22 @@ export const readerApi = {
 
   // Notifications
   notifications: () => apiFetch("/api/reader/notifications"),
+  getNotifications: () => apiFetch("/api/reader/notifications"),
   unreadNotificationCount: () => apiFetch("/api/reader/notifications/unread-count"),
+  getUnreadNotificationCount: () => apiFetch("/api/reader/notifications/unread-count"),
   markNotificationRead: (maThongBao) =>
     apiFetch(`/api/reader/notifications/${maThongBao}/read`, {
       method: "PATCH"
     }),
+  markNotificationAsRead: (maThongBao) =>
+    apiFetch(`/api/reader/notifications/${maThongBao}/read`, {
+      method: "PATCH"
+    }),
   markAllNotificationsRead: () =>
+    apiFetch("/api/reader/notifications/read-all", {
+      method: "PATCH"
+    }),
+  markAllNotificationsAsRead: () =>
     apiFetch("/api/reader/notifications/read-all", {
       method: "PATCH"
     }),
