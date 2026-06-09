@@ -124,6 +124,7 @@ export const readerApi = {
 
   // Favorites
   favorites: () => apiFetch("/api/reader/favorites"),
+  getFavorites: () => apiFetch("/api/reader/favorites"),
   addFavorite: (maDauSach) =>
     apiFetch(`/api/reader/favorites/${maDauSach}`, {
       method: "POST"
@@ -133,6 +134,7 @@ export const readerApi = {
       method: "DELETE"
     }),
   favoriteExists: (maDauSach) => apiFetch(`/api/reader/favorites/${maDauSach}/exists`),
+  isFavorite: (maDauSach) => apiFetch(`/api/reader/favorites/${maDauSach}/exists`),
 
   // Recommendations
   randomRecommendations: (limit = 6) =>

@@ -1,5 +1,6 @@
 import { BookOpen, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import FavoriteButton from "./FavoriteButton";
 
 function formatMoney(value) {
     return `${Number(value || 0).toLocaleString("vi-VN")}đ`;
@@ -37,11 +38,13 @@ export default function ReaderBookCard({ book }) {
 
                     <div className="reader-book-footer">
                         <span className="reader-book-status">{book.trangThai}</span>
-                        <Link to={`/reader/books/${book.maDauSach}`}>Xem chi tiết</Link>
+                        <div className="reader-book-actions">
+                            <Link to={`/reader/books/${book.maDauSach}`}>Xem chi tiết</Link>
+                            <FavoriteButton maDauSach={book.maDauSach} compact />
+                        </div>
                     </div>
                 </div>
             </div>
         </article>
     );
 }
-

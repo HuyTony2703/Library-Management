@@ -1,7 +1,8 @@
-import { ArrowLeft, Heart } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { readerApi } from "../../api/readerApi";
+import FavoriteButton from "../../components/reader/FavoriteButton";
 import ReaderBookComments from "../../components/reader/ReaderBookComments";
 import ReaderBookCopyList from "../../components/reader/ReaderBookCopyList";
 import ReaderBookRating from "../../components/reader/ReaderBookRating";
@@ -146,13 +147,7 @@ export default function ReaderBookDetailPage() {
                             onSuccess={handleReserved}
                         />
 
-                        <button
-                            type="button"
-                            onClick={() => alert("Chức năng yêu thích sẽ làm ở Module 8")}
-                        >
-                            <Heart size={18} />
-                            Yêu thích
-                        </button>
+                        <FavoriteButton maDauSach={book.maDauSach} />
                     </div>
                 </div>
             </div>
