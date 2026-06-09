@@ -95,7 +95,7 @@ public class SecurityConfig {
                                 "/api/payment-methods/**"
                         ).hasAnyRole("THU_THU", "QUAN_TRI_VIEN")
 
-                        .requestMatchers("/api/reports", "/api/reports/**").hasRole("QUAN_TRI_VIEN")
+                        .requestMatchers("/api/reports", "/api/reports/**").hasAnyRole("THU_THU", "QUAN_TRI_VIEN")
                         .requestMatchers("/api/activity-logs/**").hasRole("QUAN_TRI_VIEN")
 
                         .anyRequest().authenticated()

@@ -43,7 +43,7 @@ export async function apiFetch(path, options = {}) {
     if (!response.ok) {
         const message = data?.message || data?.error || `Lỗi API ${response.status}`;
 
-        if (response.status === 401 || response.status === 403) {
+        if (response.status === 401) {
             clearToken();
         }
 
