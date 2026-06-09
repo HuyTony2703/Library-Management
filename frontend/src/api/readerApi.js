@@ -139,6 +139,8 @@ export const readerApi = {
   // Recommendations
   randomRecommendations: (limit = 6) =>
     apiFetch(`/api/reader/recommendations/random?limit=${limit}`),
+  getRandomRecommendations: (limit = 6) =>
+    apiFetch(`/api/reader/recommendations/random?limit=${limit}`),
 
   // Rules and guide
   currentRules: () => apiFetch("/api/reader/rules/current")

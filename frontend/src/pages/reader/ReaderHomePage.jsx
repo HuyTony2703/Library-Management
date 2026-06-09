@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
+import RandomBookSection from "../../components/reader/RandomBookSection";
 
 export default function ReaderHomePage() {
     const [profile, setProfile] = useState(null);
@@ -32,6 +33,7 @@ export default function ReaderHomePage() {
             {!error && !profile && <p>Đang tải thông tin độc giả...</p>}
 
             {profile && (
+                <>
                 <div className="reader-profile-grid">
                     <div className="reader-card">
                         <h2>Thông tin thẻ độc giả</h2>
@@ -90,6 +92,9 @@ export default function ReaderHomePage() {
                         </div>
                     </div>
                 </div>
+
+                <RandomBookSection limit={6} />
+                </>
             )}
         </div>
     );

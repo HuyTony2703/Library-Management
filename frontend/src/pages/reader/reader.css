@@ -1478,6 +1478,102 @@
     margin: 0;
 }
 
+.random-book-section {
+    margin-top: 24px;
+    padding: 22px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+}
+
+.recommendation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 18px;
+}
+
+.recommendation-card {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 22px;
+    background: rgba(248, 250, 252, 0.9);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    cursor: pointer;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.recommendation-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+    background: white;
+}
+
+.recommendation-cover {
+    width: 96px;
+    height: 132px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #dbeafe, #f1f5f9);
+    display: grid;
+    place-items: center;
+    color: #2563eb;
+    font-size: 34px;
+    font-weight: 900;
+}
+
+.recommendation-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.recommendation-content {
+    display: grid;
+    gap: 8px;
+    align-content: start;
+    min-width: 0;
+}
+
+.recommendation-title-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.recommendation-title-row h3 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.35;
+}
+
+.recommendation-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.recommendation-price {
+    font-size: 18px;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.recommendation-empty {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.recommendation-empty p {
+    margin: 0;
+}
+
 @media (max-width: 760px) {
     .reader-loan-card {
         grid-template-columns: 1fr;
@@ -1533,11 +1629,14 @@
     }
 
     .favorite-grid,
-    .favorite-card {
+    .favorite-card,
+    .recommendation-grid,
+    .recommendation-card {
         grid-template-columns: 1fr;
     }
 
-    .favorite-cover {
+    .favorite-cover,
+    .recommendation-cover {
         width: 100%;
         height: 220px;
     }
