@@ -46,7 +46,8 @@ export const adminApi = {
             method: "POST"
         }),
 
-    getReportOverview: () => apiFetch("/api/admin/reports/overview"),
+    getReportOverview: (month, year) =>
+        apiFetch(`/api/admin/reports/overview?month=${month}&year=${year}`),
 
     getDebtReport: () => apiFetch("/api/admin/reports/debts"),
 

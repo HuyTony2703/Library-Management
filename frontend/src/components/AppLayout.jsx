@@ -28,7 +28,8 @@ const menu = [
 ];
 
 const adminMenu = [
-    { to: "/admin/rules", label: "Quy định", icon: Settings }
+    { to: "/admin/rules", label: "Quy định", icon: Settings },
+    { to: "/admin/reports", label: "Báo cáo admin", icon: BarChart3 }
 ];
 
 export default function AppLayout() {
