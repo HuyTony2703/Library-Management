@@ -62,7 +62,27 @@ export const adminApi = {
     getPaymentsReport: (month, year) =>
         apiFetch(`/api/admin/reports/payments?month=${month}&year=${year}`),
 
-    getComments: () => apiFetch("/api/admin/comments"),
+    getComments: ({ status, maDauSach, keyword } = {}) => {
+        const params = new URLSearchParams();
+
+        if (status && status !== "Tất cả") {
+            params.append("status", status);
+        }
+
+        if (maDauSach) {
+            params.append("maDauSach", maDauSach);
+        }
+
+        if (keyword) {
+            params.append("keyword", keyword);
+        }
+
+        const query = params.toString();
+
+        return apiFetch(`/api/admin/comments${query ? `?${query}` : ""}`);
+    },
+
+    getComment: (id) => apiFetch(`/api/admin/comments/${id}`),
 
     hideComment: (id, payload) =>
         apiFetch(`/api/admin/comments/${id}/hide`, {

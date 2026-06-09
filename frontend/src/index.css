@@ -708,6 +708,13 @@ textarea:focus {
   margin: 0;
 }
 
+.comment-content {
+  display: inline-block;
+  max-width: 360px;
+  white-space: normal;
+  line-height: 1.45;
+}
+
 .report-card-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

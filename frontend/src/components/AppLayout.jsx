@@ -6,6 +6,7 @@ import {
     Home,
     Library,
     LogOut,
+    MessageSquareText,
     RefreshCcw,
     RotateCcw,
     Settings,
@@ -29,7 +30,8 @@ const menu = [
 
 const adminMenu = [
     { to: "/admin/rules", label: "Quy định", icon: Settings },
-    { to: "/admin/reports", label: "Báo cáo admin", icon: BarChart3 }
+    { to: "/admin/reports", label: "Báo cáo admin", icon: BarChart3 },
+    { to: "/admin/comments", label: "Bình luận", icon: MessageSquareText }
 ];
 
 export default function AppLayout() {
