@@ -1,8 +1,10 @@
-import { ArrowLeft, Heart, MessageSquare, Star } from "lucide-react";
+import { ArrowLeft, Heart } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { readerApi } from "../../api/readerApi";
+import ReaderBookComments from "../../components/reader/ReaderBookComments";
 import ReaderBookCopyList from "../../components/reader/ReaderBookCopyList";
+import ReaderBookRating from "../../components/reader/ReaderBookRating";
 import ReservationButton from "../../components/reader/ReservationButton";
 
 function formatMoney(value) {
@@ -164,19 +166,9 @@ export default function ReaderBookDetailPage() {
                 />
             </section>
 
-            <section className="reader-card">
-                <div className="reader-section-title">
-                    <h2>Đánh giá và bình luận</h2>
-                    <div>
-                        <Star size={18} />
-                        <MessageSquare size={18} />
-                    </div>
-                </div>
+            <ReaderBookRating maDauSach={book.maDauSach} />
 
-                <div className="reader-empty-box">
-                    Khu vực đánh giá và bình luận sẽ được hoàn thiện ở module sau.
-                </div>
-            </section>
+            <ReaderBookComments maDauSach={book.maDauSach} />
 
             <div className="reader-bottom-link">
                 <Link to="/reader/books">Quay lại danh sách sách</Link>

@@ -84,7 +84,13 @@ export const readerApi = {
 
   // Comments and ratings
   comments: (maDauSach) => apiFetch(`/api/reader/books/${maDauSach}/comments`),
+  getBookComments: (maDauSach) => apiFetch(`/api/reader/books/${maDauSach}/comments`),
   createComment: (maDauSach, payload) =>
+    apiFetch(`/api/reader/books/${maDauSach}/comments`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  createBookComment: (maDauSach, payload) =>
     apiFetch(`/api/reader/books/${maDauSach}/comments`, {
       method: "POST",
       body: JSON.stringify(payload)
@@ -99,9 +105,20 @@ export const readerApi = {
       method: "DELETE"
     }),
   ratingSummary: (maDauSach) => apiFetch(`/api/reader/books/${maDauSach}/ratings/summary`),
+  getRatingSummary: (maDauSach) => apiFetch(`/api/reader/books/${maDauSach}/ratings/summary`),
   rateBook: (maDauSach, payload) =>
     apiFetch(`/api/reader/books/${maDauSach}/ratings`, {
       method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  createRating: (maDauSach, payload) =>
+    apiFetch(`/api/reader/books/${maDauSach}/ratings`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  updateMyRating: (maDauSach, payload) =>
+    apiFetch(`/api/reader/books/${maDauSach}/ratings/me`, {
+      method: "PUT",
       body: JSON.stringify(payload)
     }),
 

@@ -1140,6 +1140,216 @@
     color: #64748b;
 }
 
+.reader-section {
+    margin-top: 24px;
+    padding: 22px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+}
+
+.section-title-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.section-title-row h2 {
+    margin: 0;
+}
+
+.reader-eyebrow {
+    margin: 0 0 4px;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.star-button {
+    border: 0;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 2px;
+    display: grid;
+    place-items: center;
+}
+
+.star-button.active {
+    color: #f59e0b;
+}
+
+.star-button:disabled {
+    cursor: default;
+}
+
+.rating-summary-box {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    align-items: center;
+    padding: 18px;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.04);
+    margin-bottom: 18px;
+}
+
+.rating-score strong {
+    display: block;
+    font-size: 42px;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.rating-score span {
+    display: block;
+    color: #64748b;
+    margin-top: 8px;
+}
+
+.rating-bars {
+    display: grid;
+    gap: 8px;
+}
+
+.rating-bar-row {
+    display: grid;
+    grid-template-columns: 56px 1fr 32px;
+    gap: 10px;
+    align-items: center;
+    font-size: 13px;
+    color: #475569;
+}
+
+.rating-bar-track {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.1);
+    overflow: hidden;
+}
+
+.rating-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: #f59e0b;
+}
+
+.rating-form,
+.comment-form {
+    display: grid;
+    gap: 12px;
+}
+
+.rating-form label {
+    color: #0f172a;
+    font-weight: 900;
+}
+
+.rating-form textarea,
+.comment-form textarea {
+    width: 100%;
+    min-height: 90px;
+    resize: vertical;
+    border: 1px solid rgba(15, 23, 42, 0.14);
+    border-radius: 16px;
+    padding: 12px 14px;
+    font: inherit;
+}
+
+.comment-form {
+    margin-bottom: 18px;
+}
+
+.comment-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.comment-list {
+    display: grid;
+    gap: 14px;
+}
+
+.comment-item {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.035);
+}
+
+.comment-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+}
+
+.comment-body {
+    min-width: 0;
+}
+
+.comment-body p {
+    margin: 8px 0 0;
+    color: #334155;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.comment-header span {
+    display: block;
+    color: #64748b;
+    font-size: 13px;
+    margin-top: 3px;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.ghost-icon-button {
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: rgba(15, 23, 42, 0.06);
+    cursor: pointer;
+}
+
+.ghost-icon-button:hover {
+    background: rgba(15, 23, 42, 0.1);
+}
+
+.ghost-icon-button.danger {
+    color: #dc2626;
+}
+
 @media (max-width: 760px) {
     .reader-loan-card {
         grid-template-columns: 1fr;
@@ -1177,6 +1387,20 @@
     }
 
     .current-membership-content {
+        grid-template-columns: 1fr;
+    }
+
+    .section-title-row,
+    .comment-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .rating-summary-box {
+        grid-template-columns: 1fr;
+    }
+
+    .comment-item {
         grid-template-columns: 1fr;
     }
 }
