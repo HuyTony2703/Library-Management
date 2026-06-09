@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/dev/**").hasRole("QUAN_TRI_VIEN")
 
                         .requestMatchers("/api/auth/me").authenticated()
+                        .requestMatchers("/api/reader/**").hasRole("DOC_GIA")
 
                         // Tra cứu sách: tài khoản đăng nhập nào cũng xem được.
                         .requestMatchers(HttpMethod.GET,

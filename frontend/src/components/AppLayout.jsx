@@ -12,8 +12,9 @@ import {
     UserRound,
     UsersRound
 } from "lucide-react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { isReaderUser } from "../utils/authRole";
 
 const menu = [
     { to: "/", label: "Tổng quan", icon: Home },
@@ -29,6 +30,10 @@ const menu = [
 export default function AppLayout() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+
+    if (isReaderUser(user)) {
+        return <Navigate to="/reader" replace />;
+    }
 
     function handleLogout() {
         logout();

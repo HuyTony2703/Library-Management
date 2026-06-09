@@ -26,7 +26,7 @@ VALUES
 IF NOT EXISTS (SELECT 1 FROM TAIKHOAN WHERE MaTaiKhoan = 'TK_DG001')
 INSERT INTO TAIKHOAN(MaTaiKhoan, TenDangNhap, MatKhauHash, EmailDangNhap, MaVaiTro)
 VALUES
-('TK_DG001', N'docgia01', N'$2a$10$demo_hash_docgia', 'docgia01@gmail.com', 'VT_DOC_GIA');
+('TK_DG001', N'docgia01', N'$2a$10$jd8Oy3CRckc/x3lKiuID4.9ZyqQrvDnrgLir8gcigbYENUtv5dAQm', 'docgia01@gmail.com', 'VT_DOC_GIA');
 
 /* 3. Nhân viên */
 IF NOT EXISTS (SELECT 1 FROM NHANVIEN WHERE MaNhanVien = 'NV_ADMIN')
@@ -797,7 +797,7 @@ GO
 
 UPDATE TAIKHOAN
 SET MatKhauHash = '$2a$10$jd8Oy3CRckc/x3lKiuID4.9ZyqQrvDnrgLir8gcigbYENUtv5dAQm'
-WHERE MaTaiKhoan IN ('TK_ADMIN', 'TK_THUTHU01');
+WHERE MaTaiKhoan IN ('TK_ADMIN', 'TK_THUTHU01', 'TK_DG001');
 
 USE QuanLyThuVien;
 GO

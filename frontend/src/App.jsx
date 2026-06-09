@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import { useAuth } from "./context/AuthContext";
+import { readerRoutes } from "./routes/readerRoutes";
+import { isReaderUser } from "./utils/authRole";
 
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -23,6 +25,10 @@ function ProtectedRoute({ children }) {
         return <Navigate to="/login" replace />;
     }
 
+    if (isReaderUser(user)) {
+        return <Navigate to="/reader" replace />;
+    }
+
     return children;
 }
 
@@ -30,6 +36,8 @@ export default function App() {
     return (
         <Routes>
             <Route path="/login" element={<LoginPage />} />
+
+            {readerRoutes}
 
             <Route
                 element={
