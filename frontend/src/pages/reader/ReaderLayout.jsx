@@ -11,7 +11,6 @@ import {
     LogOut,
     Search,
     ShieldCheck,
-    Sparkles,
     UserRound
 } from "lucide-react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -27,7 +26,6 @@ const menuItems = [
     { to: "/reader/notifications", label: "Thông báo", icon: Bell },
     { to: "/reader/membership", label: "Gói thành viên", icon: CreditCard },
     { to: "/reader/favorites", label: "Sách yêu thích", icon: Heart },
-    { to: "/reader/recommendations", label: "Gợi ý sách", icon: Sparkles },
     { to: "/reader/guide", label: "Hướng dẫn", icon: CircleHelp },
     { to: "/reader/rules", label: "Quy định", icon: ShieldCheck },
     { to: "/reader/penalty-rules", label: "Cách tính phạt", icon: Calculator }

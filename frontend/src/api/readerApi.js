@@ -137,6 +137,10 @@ export const readerApi = {
   isFavorite: (maDauSach) => apiFetch(`/api/reader/favorites/${maDauSach}/exists`),
 
   // Recommendations
+  recommendations: ({ type = "new", limit = 12 } = {}) =>
+    apiFetch(`/api/reader/recommendations?type=${encodeURIComponent(type)}&limit=${limit}`),
+  getRecommendations: ({ type = "new", limit = 12 } = {}) =>
+    apiFetch(`/api/reader/recommendations?type=${encodeURIComponent(type)}&limit=${limit}`),
   randomRecommendations: (limit = 6) =>
     apiFetch(`/api/reader/recommendations/random?limit=${limit}`),
   getRandomRecommendations: (limit = 6) =>

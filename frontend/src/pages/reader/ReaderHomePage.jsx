@@ -94,7 +94,7 @@ export default function ReaderHomePage() {
         </div>
       )}
 
-      <RandomBookSection limit={6} />
+      <RandomBookSection limit={12} />
     </div>
   );
 }

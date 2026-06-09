@@ -13,6 +13,7 @@ public class ReaderRecommendationBookResponse {
     private final Integer soCuonSanCo;
     private final Integer tongSoCuon;
     private final boolean daYeuThich;
+    private final String thongTinNoiBat;
 
     public ReaderRecommendationBookResponse(
             String maDauSach,
@@ -23,7 +24,8 @@ public class ReaderRecommendationBookResponse {
             String trangThai,
             Integer soCuonSanCo,
             Integer tongSoCuon,
-            boolean daYeuThich
+            boolean daYeuThich,
+            String thongTinNoiBat
     ) {
         this.maDauSach = maDauSach;
         this.tenDauSach = tenDauSach;
@@ -34,6 +36,7 @@ public class ReaderRecommendationBookResponse {
         this.soCuonSanCo = soCuonSanCo;
         this.tongSoCuon = tongSoCuon;
         this.daYeuThich = daYeuThich;
+        this.thongTinNoiBat = thongTinNoiBat;
     }
 
     public String getMaDauSach() { return maDauSach; }
@@ -45,4 +48,5 @@ public class ReaderRecommendationBookResponse {
     public Integer getSoCuonSanCo() { return soCuonSanCo; }
     public Integer getTongSoCuon() { return tongSoCuon; }
     public boolean isDaYeuThich() { return daYeuThich; }
+    public String getThongTinNoiBat() { return thongTinNoiBat; }
 }

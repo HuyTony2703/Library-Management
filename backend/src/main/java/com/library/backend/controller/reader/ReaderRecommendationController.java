@@ -22,6 +22,15 @@ public class ReaderRecommendationController {
         this.readerRecommendationService = readerRecommendationService;
     }
 
+    @GetMapping
+    public List<ReaderRecommendationBookResponse> getRecommendations(
+            @AuthenticationPrincipal AuthUser user,
+            @RequestParam(defaultValue = "new") String type,
+            @RequestParam(defaultValue = "12") Integer limit
+    ) {
+        return readerRecommendationService.getRecommendations(requireReader(user), type, limit);
+    }
+
     @GetMapping("/random")
     public List<ReaderRecommendationBookResponse> getRandomRecommendations(
             @AuthenticationPrincipal AuthUser user,
