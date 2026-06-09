@@ -1474,3 +1474,679 @@ INSERT INTO NHATKYHOATDONG(MaTaiKhoan, HanhDong, DoiTuongTacDong, MaDoiTuongTacD
 VALUES ('TK_THUTHU01', N'Tạo phiếu đặt trước demo', N'PHIEUDATTRUOC', 'PDT_DG006_HEADJAVA', SYSDATETIME(), '127.0.0.1', N'Tạo phiếu đặt trước và giữ chỗ sách Head First Java');
 
 GO
+
+USE QuanLyThuVien;
+GO
+
+/* =========================================================
+   05_seed_special_cases.sql
+   Dữ liệu đặc biệt để demo:
+   - Độc giả còn nợ
+   - Độc giả làm hỏng sách
+   - Độc giả làm mất sách
+   - Độc giả bị phạt trả trễ
+   - Độc giả đã thanh toán đủ tiền phạt
+   - Độc giả đang mượn quá hạn chưa trả
+   - Một vài sách mới phục vụ test
+   ========================================================= */
+
+SET NOCOUNT ON;
+
+/* =========================================================
+   0. ĐẢM BẢO DỮ LIỆU DANH MỤC CẦN CÓ
+   ========================================================= */
+
+IF NOT EXISTS (SELECT 1 FROM NHOMDOCGIA WHERE MaNhomDocGia = 'NHOM_SINHVIEN')
+INSERT INTO NHOMDOCGIA(MaNhomDocGia, TenNhomDocGia, MoTa)
+VALUES ('NHOM_SINHVIEN', N'Sinh viên', N'Nhóm độc giả sinh viên');
+
+IF NOT EXISTS (SELECT 1 FROM GOITHANHVIEN WHERE MaGoiThanhVien = 'GOI_THUONG')
+INSERT INTO GOITHANHVIEN(MaGoiThanhVien, TenGoi, MoTa)
+VALUES ('GOI_THUONG', N'Thường', N'Gói thành viên cơ bản');
+
+IF NOT EXISTS (SELECT 1 FROM THELOAI WHERE MaTheLoai = 'TL_CNTT')
+INSERT INTO THELOAI(MaTheLoai, TenTheLoai, MoTa)
+VALUES ('TL_CNTT', N'Công nghệ thông tin', N'Sách chuyên ngành CNTT');
+
+IF NOT EXISTS (SELECT 1 FROM NHAXUATBAN WHERE MaNhaXuatBan = 'NXB_DHQG')
+INSERT INTO NHAXUATBAN(MaNhaXuatBan, TenNhaXuatBan, DiaChi)
+VALUES ('NXB_DHQG', N'Nhà xuất bản Đại học Quốc gia TP.HCM', N'TP.HCM');
+
+IF NOT EXISTS (SELECT 1 FROM LOAIKHOANNO WHERE MaLoaiKhoanNo = 'NO_TRA_TRE')
+INSERT INTO LOAIKHOANNO(MaLoaiKhoanNo, TenLoaiKhoanNo, MoTa)
+VALUES ('NO_TRA_TRE', N'Trả trễ', N'Nợ phát sinh do trả sách trễ hạn');
+
+IF NOT EXISTS (SELECT 1 FROM LOAIKHOANNO WHERE MaLoaiKhoanNo = 'NO_HONG_SACH')
+INSERT INTO LOAIKHOANNO(MaLoaiKhoanNo, TenLoaiKhoanNo, MoTa)
+VALUES ('NO_HONG_SACH', N'Hỏng sách', N'Nợ phát sinh do làm hỏng sách');
+
+IF NOT EXISTS (SELECT 1 FROM LOAIKHOANNO WHERE MaLoaiKhoanNo = 'NO_MAT_SACH')
+INSERT INTO LOAIKHOANNO(MaLoaiKhoanNo, TenLoaiKhoanNo, MoTa)
+VALUES ('NO_MAT_SACH', N'Mất sách', N'Nợ phát sinh do làm mất sách');
+
+IF NOT EXISTS (SELECT 1 FROM PHUONGTHUCTHANHTOAN WHERE MaPhuongThuc = 'PT_TIEN_MAT')
+INSERT INTO PHUONGTHUCTHANHTOAN(MaPhuongThuc, TenPhuongThuc, MoTa)
+VALUES ('PT_TIEN_MAT', N'Tiền mặt', N'Thanh toán bằng tiền mặt');
+
+IF NOT EXISTS (SELECT 1 FROM TRANGTHAICUONSACH WHERE MaTrangThai = 'TT_SANCO')
+INSERT INTO TRANGTHAICUONSACH(MaTrangThai, TenTrangThai, MoTa)
+VALUES ('TT_SANCO', N'Sẵn có', N'Cuốn sách đang sẵn sàng cho mượn');
+
+IF NOT EXISTS (SELECT 1 FROM TRANGTHAICUONSACH WHERE MaTrangThai = 'TT_DANGMUON')
+INSERT INTO TRANGTHAICUONSACH(MaTrangThai, TenTrangThai, MoTa)
+VALUES ('TT_DANGMUON', N'Đang được mượn', N'Cuốn sách đang được độc giả mượn');
+
+IF NOT EXISTS (SELECT 1 FROM TRANGTHAICUONSACH WHERE MaTrangThai = 'TT_HONG')
+INSERT INTO TRANGTHAICUONSACH(MaTrangThai, TenTrangThai, MoTa)
+VALUES ('TT_HONG', N'Bị hỏng', N'Cuốn sách bị hư hỏng');
+
+IF NOT EXISTS (SELECT 1 FROM TRANGTHAICUONSACH WHERE MaTrangThai = 'TT_MAT')
+INSERT INTO TRANGTHAICUONSACH(MaTrangThai, TenTrangThai, MoTa)
+VALUES ('TT_MAT', N'Bị mất', N'Cuốn sách đã bị mất');
+
+IF NOT EXISTS (SELECT 1 FROM LOAITHONGBAO WHERE MaLoaiThongBao = 'TB_BI_PHAT')
+INSERT INTO LOAITHONGBAO(MaLoaiThongBao, TenLoaiThongBao, MoTa)
+VALUES ('TB_BI_PHAT', N'Bị tính tiền phạt', N'Thông báo phát sinh tiền phạt');
+
+DECLARE @MaLoaiTB_QuaHan NVARCHAR(50);
+
+SELECT TOP 1 @MaLoaiTB_QuaHan = MaLoaiThongBao
+FROM LOAITHONGBAO
+WHERE MaLoaiThongBao = 'TB_QUA_HAN'
+   OR TenLoaiThongBao = N'Quá hạn trả sách';
+
+IF @MaLoaiTB_QuaHan IS NULL
+BEGIN
+    INSERT INTO LOAITHONGBAO(MaLoaiThongBao, TenLoaiThongBao, MoTa)
+    VALUES ('TB_QUA_HAN', N'Quá hạn trả sách', N'Thông báo độc giả đã quá hạn trả sách');
+
+    SET @MaLoaiTB_QuaHan = 'TB_QUA_HAN';
+END
+
+/* Vị trí sách giáo trình/CNTT nếu chưa có */
+IF NOT EXISTS (SELECT 1 FROM KHU WHERE MaKhu = 'KHU_GIAOTRINH')
+INSERT INTO KHU(MaKhu, MaChiNhanh, TenKhu, MoTa)
+VALUES ('KHU_GIAOTRINH', 'CN_TD', N'Khu Giáo trình', N'Khu sách học tập và giáo trình');
+
+IF NOT EXISTS (SELECT 1 FROM KESACH WHERE MaKeSach = 'KE_G01')
+INSERT INTO KESACH(MaKeSach, MaKhu, TenKeSach, MoTa)
+VALUES ('KE_G01', 'KHU_GIAOTRINH', N'Kệ Giáo trình 01', N'Kệ giáo trình và sách chuyên ngành');
+
+IF NOT EXISTS (SELECT 1 FROM VITRISACH WHERE MaViTri = 'VT_G01_N01')
+INSERT INTO VITRISACH(MaViTri, MaKeSach, MaViTriHienThi, MoTa)
+VALUES ('VT_G01_N01', 'KE_G01', N'Ngăn 01', N'Ngăn sách giáo trình');
+
+/* Quy định mượn sách CNTT cho gói thường */
+IF NOT EXISTS (SELECT 1 FROM QUYDINHMUON_THELOAI WHERE MaQuyDinhMuon = 'QDM_THUONG_CNTT_V1')
+INSERT INTO QUYDINHMUON_THELOAI(
+    MaQuyDinhMuon, MaPhienBan, MaGoiThanhVien, MaTheLoai,
+    SoNgayMuon, SoNgayGiaHanMoiLan
+)
+VALUES ('QDM_THUONG_CNTT_V1', 'QD_V1', 'GOI_THUONG', 'TL_CNTT', 7, 3);
+
+/* =========================================================
+   1. THÊM MỘT VÀI SÁCH MỚI
+   ========================================================= */
+
+IF NOT EXISTS (SELECT 1 FROM TACGIA WHERE MaTacGia = 'TG_TANENBAUM')
+INSERT INTO TACGIA(MaTacGia, TenTacGia, MoTa)
+VALUES ('TG_TANENBAUM', N'Andrew S. Tanenbaum', N'Tác giả sách hệ điều hành và mạng máy tính');
+
+IF NOT EXISTS (SELECT 1 FROM TACGIA WHERE MaTacGia = 'TG_HORSTMANN')
+INSERT INTO TACGIA(MaTacGia, TenTacGia, MoTa)
+VALUES ('TG_HORSTMANN', N'Cay S. Horstmann', N'Tác giả sách lập trình Java');
+
+IF NOT EXISTS (SELECT 1 FROM TACGIA WHERE MaTacGia = 'TG_LUTZ')
+INSERT INTO TACGIA(MaTacGia, TenTacGia, MoTa)
+VALUES ('TG_LUTZ', N'Mark Lutz', N'Tác giả sách lập trình Python');
+
+IF NOT EXISTS (SELECT 1 FROM DAUSACH WHERE MaDauSach = 'OS01')
+INSERT INTO DAUSACH(
+    MaDauSach, MaNhaXuatBan, TenDauSach, ISBN,
+    NamXuatBan, NgonNgu, SoTrang, MoTa, AnhBia, TriGia
+)
+VALUES (
+    'OS01', 'NXB_DHQG', N'Hệ điều hành hiện đại', '9780000000201',
+    2022, N'Tiếng Việt', 520, N'Sách chuyên ngành hệ điều hành', NULL, 200000
+);
+
+IF NOT EXISTS (SELECT 1 FROM DAUSACH WHERE MaDauSach = 'NET01')
+INSERT INTO DAUSACH(
+    MaDauSach, MaNhaXuatBan, TenDauSach, ISBN,
+    NamXuatBan, NgonNgu, SoTrang, MoTa, AnhBia, TriGia
+)
+VALUES (
+    'NET01', 'NXB_DHQG', N'Mạng máy tính căn bản', '9780000000202',
+    2021, N'Tiếng Việt', 410, N'Sách nhập môn mạng máy tính', NULL, 150000
+);
+
+IF NOT EXISTS (SELECT 1 FROM DAUSACH WHERE MaDauSach = 'PYTHON01')
+INSERT INTO DAUSACH(
+    MaDauSach, MaNhaXuatBan, TenDauSach, ISBN,
+    NamXuatBan, NgonNgu, SoTrang, MoTa, AnhBia, TriGia
+)
+VALUES (
+    'PYTHON01', 'NXB_DHQG', N'Lập trình Python cơ bản', '9780000000203',
+    2024, N'Tiếng Việt', 360, N'Sách nhập môn Python cho sinh viên CNTT', NULL, 125000
+);
+
+IF NOT EXISTS (SELECT 1 FROM DAUSACH_TACGIA WHERE MaDauSach = 'OS01' AND MaTacGia = 'TG_TANENBAUM')
+INSERT INTO DAUSACH_TACGIA(MaDauSach, MaTacGia, VaiTro)
+VALUES ('OS01', 'TG_TANENBAUM', N'Tác giả');
+
+IF NOT EXISTS (SELECT 1 FROM DAUSACH_TACGIA WHERE MaDauSach = 'NET01' AND MaTacGia = 'TG_TANENBAUM')
+INSERT INTO DAUSACH_TACGIA(MaDauSach, MaTacGia, VaiTro)
+VALUES ('NET01', 'TG_TANENBAUM', N'Tác giả');
+
+IF NOT EXISTS (SELECT 1 FROM DAUSACH_TACGIA WHERE MaDauSach = 'PYTHON01' AND MaTacGia = 'TG_LUTZ')
+INSERT INTO DAUSACH_TACGIA(MaDauSach, MaTacGia, VaiTro)
+VALUES ('PYTHON01', 'TG_LUTZ', N'Tác giả');
+
+IF NOT EXISTS (SELECT 1 FROM DAUSACH_THELOAI WHERE MaDauSach = 'OS01' AND MaTheLoai = 'TL_CNTT')
+INSERT INTO DAUSACH_THELOAI(MaDauSach, MaTheLoai)
+VALUES ('OS01', 'TL_CNTT');
+
+IF NOT EXISTS (SELECT 1 FROM DAUSACH_THELOAI WHERE MaDauSach = 'NET01' AND MaTheLoai = 'TL_CNTT')
+INSERT INTO DAUSACH_THELOAI(MaDauSach, MaTheLoai)
+VALUES ('NET01', 'TL_CNTT');
+
+IF NOT EXISTS (SELECT 1 FROM DAUSACH_THELOAI WHERE MaDauSach = 'PYTHON01' AND MaTheLoai = 'TL_CNTT')
+INSERT INTO DAUSACH_THELOAI(MaDauSach, MaTheLoai)
+VALUES ('PYTHON01', 'TL_CNTT');
+
+IF NOT EXISTS (SELECT 1 FROM CUONSACH WHERE MaCuonSach = 'OS01-001')
+INSERT INTO CUONSACH(MaCuonSach, MaDauSach, MaChiNhanh, MaViTri, MaTrangThai, MaVach, MaQRCode)
+VALUES ('OS01-001', 'OS01', 'CN_TD', 'VT_G01_N01', 'TT_SANCO', 'BAR-OS01-001', 'QR-OS01-001');
+
+IF NOT EXISTS (SELECT 1 FROM CUONSACH WHERE MaCuonSach = 'OS01-002')
+INSERT INTO CUONSACH(MaCuonSach, MaDauSach, MaChiNhanh, MaViTri, MaTrangThai, MaVach, MaQRCode)
+VALUES ('OS01-002', 'OS01', 'CN_TD', 'VT_G01_N01', 'TT_SANCO', 'BAR-OS01-002', 'QR-OS01-002');
+
+IF NOT EXISTS (SELECT 1 FROM CUONSACH WHERE MaCuonSach = 'NET01-001')
+INSERT INTO CUONSACH(MaCuonSach, MaDauSach, MaChiNhanh, MaViTri, MaTrangThai, MaVach, MaQRCode)
+VALUES ('NET01-001', 'NET01', 'CN_TD', 'VT_G01_N01', 'TT_SANCO', 'BAR-NET01-001', 'QR-NET01-001');
+
+IF NOT EXISTS (SELECT 1 FROM CUONSACH WHERE MaCuonSach = 'NET01-002')
+INSERT INTO CUONSACH(MaCuonSach, MaDauSach, MaChiNhanh, MaViTri, MaTrangThai, MaVach, MaQRCode)
+VALUES ('NET01-002', 'NET01', 'CN_TD', 'VT_G01_N01', 'TT_SANCO', 'BAR-NET01-002', 'QR-NET01-002');
+
+IF NOT EXISTS (SELECT 1 FROM CUONSACH WHERE MaCuonSach = 'PYTHON01-001')
+INSERT INTO CUONSACH(MaCuonSach, MaDauSach, MaChiNhanh, MaViTri, MaTrangThai, MaVach, MaQRCode)
+VALUES ('PYTHON01-001', 'PYTHON01', 'CN_TD', 'VT_G01_N01', 'TT_SANCO', 'BAR-PYTHON01-001', 'QR-PYTHON01-001');
+
+/* =========================================================
+   2. THÊM ĐỘC GIẢ PHỤC VỤ CASE ĐẶC BIỆT
+   ========================================================= */
+
+IF NOT EXISTS (SELECT 1 FROM TAIKHOAN WHERE MaTaiKhoan = 'TK_DG020')
+INSERT INTO TAIKHOAN(MaTaiKhoan, TenDangNhap, MatKhauHash, EmailDangNhap, MaVaiTro)
+VALUES ('TK_DG020', N'docgia20', N'$2a$10$demo_hash_docgia20', 'docgia20@gmail.com', 'VT_DOC_GIA');
+
+IF NOT EXISTS (SELECT 1 FROM DOCGIA WHERE MaDocGia = 'DG020')
+INSERT INTO DOCGIA(
+    MaDocGia, MaTaiKhoan, MaNhomDocGia, HoTen,
+    NgaySinh, DiaChi, Email, SoDienThoai,
+    NgayLapThe, NgayHetHanThe
+)
+VALUES (
+    'DG020', 'TK_DG020', 'NHOM_SINHVIEN', N'Trần Quốc Bảo',
+    '2004-09-10', N'Thủ Đức, TP.HCM', 'docgia20@gmail.com', '0922222220',
+    CAST(GETDATE() AS DATE), DATEADD(MONTH, 6, CAST(GETDATE() AS DATE))
+);
+
+IF NOT EXISTS (SELECT 1 FROM TAIKHOAN WHERE MaTaiKhoan = 'TK_DG021')
+INSERT INTO TAIKHOAN(MaTaiKhoan, TenDangNhap, MatKhauHash, EmailDangNhap, MaVaiTro)
+VALUES ('TK_DG021', N'docgia21', N'$2a$10$demo_hash_docgia21', 'docgia21@gmail.com', 'VT_DOC_GIA');
+
+IF NOT EXISTS (SELECT 1 FROM DOCGIA WHERE MaDocGia = 'DG021')
+INSERT INTO DOCGIA(
+    MaDocGia, MaTaiKhoan, MaNhomDocGia, HoTen,
+    NgaySinh, DiaChi, Email, SoDienThoai,
+    NgayLapThe, NgayHetHanThe
+)
+VALUES (
+    'DG021', 'TK_DG021', 'NHOM_SINHVIEN', N'Mai Anh Thư',
+    '2005-01-22', N'Bình Thạnh, TP.HCM', 'docgia21@gmail.com', '0922222221',
+    CAST(GETDATE() AS DATE), DATEADD(MONTH, 6, CAST(GETDATE() AS DATE))
+);
+
+IF NOT EXISTS (SELECT 1 FROM TAIKHOAN WHERE MaTaiKhoan = 'TK_DG022')
+INSERT INTO TAIKHOAN(MaTaiKhoan, TenDangNhap, MatKhauHash, EmailDangNhap, MaVaiTro)
+VALUES ('TK_DG022', N'docgia22', N'$2a$10$demo_hash_docgia22', 'docgia22@gmail.com', 'VT_DOC_GIA');
+
+IF NOT EXISTS (SELECT 1 FROM DOCGIA WHERE MaDocGia = 'DG022')
+INSERT INTO DOCGIA(
+    MaDocGia, MaTaiKhoan, MaNhomDocGia, HoTen,
+    NgaySinh, DiaChi, Email, SoDienThoai,
+    NgayLapThe, NgayHetHanThe
+)
+VALUES (
+    'DG022', 'TK_DG022', 'NHOM_SINHVIEN', N'Nguyễn Đức Phúc',
+    '2003-12-05', N'Gò Vấp, TP.HCM', 'docgia22@gmail.com', '0922222222',
+    CAST(GETDATE() AS DATE), DATEADD(MONTH, 6, CAST(GETDATE() AS DATE))
+);
+
+IF NOT EXISTS (SELECT 1 FROM TAIKHOAN WHERE MaTaiKhoan = 'TK_DG023')
+INSERT INTO TAIKHOAN(MaTaiKhoan, TenDangNhap, MatKhauHash, EmailDangNhap, MaVaiTro)
+VALUES ('TK_DG023', N'docgia23', N'$2a$10$demo_hash_docgia23', 'docgia23@gmail.com', 'VT_DOC_GIA');
+
+IF NOT EXISTS (SELECT 1 FROM DOCGIA WHERE MaDocGia = 'DG023')
+INSERT INTO DOCGIA(
+    MaDocGia, MaTaiKhoan, MaNhomDocGia, HoTen,
+    NgaySinh, DiaChi, Email, SoDienThoai,
+    NgayLapThe, NgayHetHanThe
+)
+VALUES (
+    'DG023', 'TK_DG023', 'NHOM_SINHVIEN', N'Lâm Minh Quân',
+    '2004-04-18', N'Quận 7, TP.HCM', 'docgia23@gmail.com', '0922222223',
+    CAST(GETDATE() AS DATE), DATEADD(MONTH, 6, CAST(GETDATE() AS DATE))
+);
+
+IF NOT EXISTS (SELECT 1 FROM LICHSUGOITHANHVIEN WHERE MaLichSuGoi = 'LSG_DG020_01')
+INSERT INTO LICHSUGOITHANHVIEN(MaLichSuGoi, MaDocGia, MaGoiThanhVien, MaPhieuThu, NgayBatDau, NgayKetThuc, TrangThai, GhiChu)
+VALUES ('LSG_DG020_01', 'DG020', 'GOI_THUONG', NULL, CAST(GETDATE() AS DATE), DATEADD(DAY, 180, CAST(GETDATE() AS DATE)), N'Đang sử dụng', N'Gói thường demo');
+
+IF NOT EXISTS (SELECT 1 FROM LICHSUGOITHANHVIEN WHERE MaLichSuGoi = 'LSG_DG021_01')
+INSERT INTO LICHSUGOITHANHVIEN(MaLichSuGoi, MaDocGia, MaGoiThanhVien, MaPhieuThu, NgayBatDau, NgayKetThuc, TrangThai, GhiChu)
+VALUES ('LSG_DG021_01', 'DG021', 'GOI_THUONG', NULL, CAST(GETDATE() AS DATE), DATEADD(DAY, 180, CAST(GETDATE() AS DATE)), N'Đang sử dụng', N'Gói thường demo');
+
+IF NOT EXISTS (SELECT 1 FROM LICHSUGOITHANHVIEN WHERE MaLichSuGoi = 'LSG_DG022_01')
+INSERT INTO LICHSUGOITHANHVIEN(MaLichSuGoi, MaDocGia, MaGoiThanhVien, MaPhieuThu, NgayBatDau, NgayKetThuc, TrangThai, GhiChu)
+VALUES ('LSG_DG022_01', 'DG022', 'GOI_THUONG', NULL, CAST(GETDATE() AS DATE), DATEADD(DAY, 180, CAST(GETDATE() AS DATE)), N'Đang sử dụng', N'Gói thường demo');
+
+IF NOT EXISTS (SELECT 1 FROM LICHSUGOITHANHVIEN WHERE MaLichSuGoi = 'LSG_DG023_01')
+INSERT INTO LICHSUGOITHANHVIEN(MaLichSuGoi, MaDocGia, MaGoiThanhVien, MaPhieuThu, NgayBatDau, NgayKetThuc, TrangThai, GhiChu)
+VALUES ('LSG_DG023_01', 'DG023', 'GOI_THUONG', NULL, CAST(GETDATE() AS DATE), DATEADD(DAY, 180, CAST(GETDATE() AS DATE)), N'Đang sử dụng', N'Gói thường demo');
+
+/* =========================================================
+   3. CASE 1 — DG020 LÀM HỎNG SÁCH, CÒN NỢ MỘT PHẦN
+   Sách: OS01-001
+   Phạt hỏng: 70.000
+   Đã trả: 20.000
+   Còn nợ: 50.000
+   ========================================================= */
+
+IF NOT EXISTS (SELECT 1 FROM PHIEUMUON WHERE MaPhieuMuon = 'PM_DG020_HONG_01')
+INSERT INTO PHIEUMUON(
+    MaPhieuMuon, MaDocGia, MaNhanVienLap, MaChiNhanh,
+    MaPhienBanQuyDinh, NgayMuon, TrangThai, GhiChu
+)
+VALUES (
+    'PM_DG020_HONG_01', 'DG020', 'NV_TT001', 'CN_TD',
+    'QD_V1', DATEADD(DAY, -5, SYSDATETIME()), N'Đã trả hết',
+    N'Phiếu mượn demo: độc giả làm hỏng sách'
+);
+
+IF NOT EXISTS (SELECT 1 FROM CHITIETPHIEUMUON WHERE MaChiTietMuon = 'CTM_DG020_OS01_001')
+INSERT INTO CHITIETPHIEUMUON(
+    MaChiTietMuon, MaPhieuMuon, MaCuonSach, MaQuyDinhMuon,
+    NgayMuon, HanTra, NgayTraThucTe, TrangThai
+)
+VALUES (
+    'CTM_DG020_OS01_001', 'PM_DG020_HONG_01', 'OS01-001', 'QDM_THUONG_CNTT_V1',
+    DATEADD(DAY, -5, SYSDATETIME()), DATEADD(DAY, -1, SYSDATETIME()),
+    DATEADD(DAY, -1, SYSDATETIME()), N'Đã trả'
+);
+
+IF NOT EXISTS (SELECT 1 FROM PHIEUTRA WHERE MaPhieuTra = 'PTR_DG020_HONG_01')
+INSERT INTO PHIEUTRA(MaPhieuTra, MaDocGia, MaNhanVienNhan, MaChiNhanh, NgayTra, GhiChu)
+VALUES (
+    'PTR_DG020_HONG_01', 'DG020', 'NV_TT001', 'CN_TD',
+    DATEADD(DAY, -1, SYSDATETIME()), N'Phiếu trả có ghi nhận sách bị hỏng'
+);
+
+IF NOT EXISTS (SELECT 1 FROM CHITIETPHIEUTRA WHERE MaChiTietTra = 'CTT_DG020_OS01_001')
+INSERT INTO CHITIETPHIEUTRA(
+    MaChiTietTra, MaPhieuTra, MaChiTietMuon,
+    TinhTrangKhiTra, SoNgayTre, TienPhatTre, TienPhatHongMat, GhiChu
+)
+VALUES (
+    'CTT_DG020_OS01_001', 'PTR_DG020_HONG_01', 'CTM_DG020_OS01_001',
+    N'Bình thường', 0, 0, 70000,
+    N'Độc giả DG020 làm rách bìa và bung gáy sách OS01-001. Phạt hỏng sách 70.000đ.'
+);
+
+IF NOT EXISTS (SELECT 1 FROM KHOANNO WHERE MaKhoanNo = 'NO_DG020_HONG_01')
+INSERT INTO KHOANNO(
+    MaKhoanNo, MaDocGia, MaLoaiKhoanNo, MaChiTietTra,
+    SoTienPhatSinh, SoTienDaThanhToan, NgayPhatSinh, LyDo, TrangThai
+)
+VALUES (
+    'NO_DG020_HONG_01', 'DG020', 'NO_HONG_SACH', 'CTT_DG020_OS01_001',
+    70000, 20000, DATEADD(DAY, -1, SYSDATETIME()),
+    N'Làm hỏng sách Hệ điều hành hiện đại - OS01-001',
+    N'Thanh toán một phần'
+);
+
+IF NOT EXISTS (SELECT 1 FROM PHIEUTHU WHERE MaPhieuThu = 'PT_NO_DG020_HONG_01')
+INSERT INTO PHIEUTHU(
+    MaPhieuThu, MaDocGia, MaNhanVienThu, MaPhuongThuc,
+    LoaiThu, SoTienThu, NgayThu, TrangThai, GhiChu
+)
+VALUES (
+    'PT_NO_DG020_HONG_01', 'DG020', 'NV_TT001', 'PT_TIEN_MAT',
+    N'Thu tiền phạt', 20000, SYSDATETIME(), N'Thành công',
+    N'Độc giả DG020 đóng trước 20.000đ tiền phạt hỏng sách'
+);
+
+IF NOT EXISTS (SELECT 1 FROM CHITIETPHIEUTHU_NO WHERE MaChiTietPhieuThu = 'CTPT_NO_DG020_HONG_01')
+INSERT INTO CHITIETPHIEUTHU_NO(MaChiTietPhieuThu, MaPhieuThu, MaKhoanNo, SoTienApDung)
+VALUES ('CTPT_NO_DG020_HONG_01', 'PT_NO_DG020_HONG_01', 'NO_DG020_HONG_01', 20000);
+
+UPDATE CUONSACH
+SET MaTrangThai = 'TT_HONG'
+WHERE MaCuonSach = 'OS01-001'
+  AND MaTrangThai <> 'TT_HONG';
+
+/* =========================================================
+   4. CASE 2 — DG021 LÀM MẤT SÁCH, CHƯA THANH TOÁN
+   Sách: NET01-001
+   Trễ: 6 ngày x 1.000 = 6.000
+   Phạt mất sách: 150.000
+   Tổng còn nợ: 156.000
+   ========================================================= */
+
+IF NOT EXISTS (SELECT 1 FROM PHIEUMUON WHERE MaPhieuMuon = 'PM_DG021_MAT_01')
+INSERT INTO PHIEUMUON(
+    MaPhieuMuon, MaDocGia, MaNhanVienLap, MaChiNhanh,
+    MaPhienBanQuyDinh, NgayMuon, TrangThai, GhiChu
+)
+VALUES (
+    'PM_DG021_MAT_01', 'DG021', 'NV_TT001', 'CN_TD',
+    'QD_V1', DATEADD(DAY, -15, SYSDATETIME()), N'Đã trả hết',
+    N'Phiếu mượn demo: độc giả báo mất sách khi trả'
+);
+
+IF NOT EXISTS (SELECT 1 FROM CHITIETPHIEUMUON WHERE MaChiTietMuon = 'CTM_DG021_NET01_001')
+INSERT INTO CHITIETPHIEUMUON(
+    MaChiTietMuon, MaPhieuMuon, MaCuonSach, MaQuyDinhMuon,
+    NgayMuon, HanTra, NgayTraThucTe, TrangThai
+)
+VALUES (
+    'CTM_DG021_NET01_001', 'PM_DG021_MAT_01', 'NET01-001', 'QDM_THUONG_CNTT_V1',
+    DATEADD(DAY, -15, SYSDATETIME()), DATEADD(DAY, -8, SYSDATETIME()),
+    DATEADD(DAY, -2, SYSDATETIME()), N'Đã trả'
+);
+
+IF NOT EXISTS (SELECT 1 FROM PHIEUTRA WHERE MaPhieuTra = 'PTR_DG021_MAT_01')
+INSERT INTO PHIEUTRA(MaPhieuTra, MaDocGia, MaNhanVienNhan, MaChiNhanh, NgayTra, GhiChu)
+VALUES (
+    'PTR_DG021_MAT_01', 'DG021', 'NV_TT001', 'CN_TD',
+    DATEADD(DAY, -2, SYSDATETIME()), N'Phiếu trả có ghi nhận sách bị mất'
+);
+
+IF NOT EXISTS (SELECT 1 FROM CHITIETPHIEUTRA WHERE MaChiTietTra = 'CTT_DG021_NET01_001')
+INSERT INTO CHITIETPHIEUTRA(
+    MaChiTietTra, MaPhieuTra, MaChiTietMuon,
+    TinhTrangKhiTra, SoNgayTre, TienPhatTre, TienPhatHongMat, GhiChu
+)
+VALUES (
+    'CTT_DG021_NET01_001', 'PTR_DG021_MAT_01', 'CTM_DG021_NET01_001',
+    N'Bình thường', 6, 6000, 150000,
+    N'Độc giả DG021 làm mất sách NET01-001. Trễ 6 ngày, phạt trễ 6.000đ và phạt mất sách 150.000đ.'
+);
+
+IF NOT EXISTS (SELECT 1 FROM KHOANNO WHERE MaKhoanNo = 'NO_DG021_TRE_01')
+INSERT INTO KHOANNO(
+    MaKhoanNo, MaDocGia, MaLoaiKhoanNo, MaChiTietTra,
+    SoTienPhatSinh, SoTienDaThanhToan, NgayPhatSinh, LyDo, TrangThai
+)
+VALUES (
+    'NO_DG021_TRE_01', 'DG021', 'NO_TRA_TRE', 'CTT_DG021_NET01_001',
+    6000, 0, DATEADD(DAY, -2, SYSDATETIME()),
+    N'Trả trễ sách Mạng máy tính căn bản 6 ngày',
+    N'Chưa thanh toán'
+);
+
+IF NOT EXISTS (SELECT 1 FROM KHOANNO WHERE MaKhoanNo = 'NO_DG021_MAT_01')
+INSERT INTO KHOANNO(
+    MaKhoanNo, MaDocGia, MaLoaiKhoanNo, MaChiTietTra,
+    SoTienPhatSinh, SoTienDaThanhToan, NgayPhatSinh, LyDo, TrangThai
+)
+VALUES (
+    'NO_DG021_MAT_01', 'DG021', 'NO_MAT_SACH', 'CTT_DG021_NET01_001',
+    150000, 0, DATEADD(DAY, -2, SYSDATETIME()),
+    N'Làm mất sách Mạng máy tính căn bản - NET01-001',
+    N'Chưa thanh toán'
+);
+
+UPDATE CUONSACH
+SET MaTrangThai = 'TT_MAT'
+WHERE MaCuonSach = 'NET01-001'
+  AND MaTrangThai <> 'TT_MAT';
+
+/* =========================================================
+   5. CASE 3 — DG022 TRẢ TRỄ NHƯNG ĐÃ THANH TOÁN ĐỦ
+   Sách: PYTHON01-001
+   Trễ: 4 ngày x 1.000 = 4.000
+   Đã thanh toán đủ: 4.000
+   Sách quay lại trạng thái sẵn có
+   ========================================================= */
+
+IF NOT EXISTS (SELECT 1 FROM PHIEUMUON WHERE MaPhieuMuon = 'PM_DG022_TRE_01')
+INSERT INTO PHIEUMUON(
+    MaPhieuMuon, MaDocGia, MaNhanVienLap, MaChiNhanh,
+    MaPhienBanQuyDinh, NgayMuon, TrangThai, GhiChu
+)
+VALUES (
+    'PM_DG022_TRE_01', 'DG022', 'NV_TT001', 'CN_TD',
+    'QD_V1', DATEADD(DAY, -12, SYSDATETIME()), N'Đã trả hết',
+    N'Phiếu mượn demo: trả trễ nhưng đã thanh toán đủ'
+);
+
+IF NOT EXISTS (SELECT 1 FROM CHITIETPHIEUMUON WHERE MaChiTietMuon = 'CTM_DG022_PYTHON01_001')
+INSERT INTO CHITIETPHIEUMUON(
+    MaChiTietMuon, MaPhieuMuon, MaCuonSach, MaQuyDinhMuon,
+    NgayMuon, HanTra, NgayTraThucTe, TrangThai
+)
+VALUES (
+    'CTM_DG022_PYTHON01_001', 'PM_DG022_TRE_01', 'PYTHON01-001', 'QDM_THUONG_CNTT_V1',
+    DATEADD(DAY, -12, SYSDATETIME()), DATEADD(DAY, -8, SYSDATETIME()),
+    DATEADD(DAY, -4, SYSDATETIME()), N'Đã trả'
+);
+
+IF NOT EXISTS (SELECT 1 FROM PHIEUTRA WHERE MaPhieuTra = 'PTR_DG022_TRE_01')
+INSERT INTO PHIEUTRA(MaPhieuTra, MaDocGia, MaNhanVienNhan, MaChiNhanh, NgayTra, GhiChu)
+VALUES (
+    'PTR_DG022_TRE_01', 'DG022', 'NV_TT001', 'CN_TD',
+    DATEADD(DAY, -4, SYSDATETIME()), N'Phiếu trả trễ đã thu đủ tiền phạt'
+);
+
+IF NOT EXISTS (SELECT 1 FROM CHITIETPHIEUTRA WHERE MaChiTietTra = 'CTT_DG022_PYTHON01_001')
+INSERT INTO CHITIETPHIEUTRA(
+    MaChiTietTra, MaPhieuTra, MaChiTietMuon,
+    TinhTrangKhiTra, SoNgayTre, TienPhatTre, TienPhatHongMat, GhiChu
+)
+VALUES (
+    'CTT_DG022_PYTHON01_001', 'PTR_DG022_TRE_01', 'CTM_DG022_PYTHON01_001',
+    N'Bình thường', 4, 4000, 0,
+    N'Độc giả DG022 trả trễ 4 ngày, sách bình thường'
+);
+
+IF NOT EXISTS (SELECT 1 FROM KHOANNO WHERE MaKhoanNo = 'NO_DG022_TRE_01')
+INSERT INTO KHOANNO(
+    MaKhoanNo, MaDocGia, MaLoaiKhoanNo, MaChiTietTra,
+    SoTienPhatSinh, SoTienDaThanhToan, NgayPhatSinh, LyDo, TrangThai
+)
+VALUES (
+    'NO_DG022_TRE_01', 'DG022', 'NO_TRA_TRE', 'CTT_DG022_PYTHON01_001',
+    4000, 4000, DATEADD(DAY, -4, SYSDATETIME()),
+    N'Trả trễ sách Lập trình Python cơ bản 4 ngày',
+    N'Đã thanh toán'
+);
+
+IF NOT EXISTS (SELECT 1 FROM PHIEUTHU WHERE MaPhieuThu = 'PT_NO_DG022_TRE_01')
+INSERT INTO PHIEUTHU(
+    MaPhieuThu, MaDocGia, MaNhanVienThu, MaPhuongThuc,
+    LoaiThu, SoTienThu, NgayThu, TrangThai, GhiChu
+)
+VALUES (
+    'PT_NO_DG022_TRE_01', 'DG022', 'NV_TT001', 'PT_TIEN_MAT',
+    N'Thu tiền phạt', 4000, DATEADD(DAY, -4, SYSDATETIME()), N'Thành công',
+    N'Độc giả DG022 thanh toán đủ tiền phạt trả trễ'
+);
+
+IF NOT EXISTS (SELECT 1 FROM CHITIETPHIEUTHU_NO WHERE MaChiTietPhieuThu = 'CTPT_NO_DG022_TRE_01')
+INSERT INTO CHITIETPHIEUTHU_NO(MaChiTietPhieuThu, MaPhieuThu, MaKhoanNo, SoTienApDung)
+VALUES ('CTPT_NO_DG022_TRE_01', 'PT_NO_DG022_TRE_01', 'NO_DG022_TRE_01', 4000);
+
+UPDATE CUONSACH
+SET MaTrangThai = 'TT_SANCO'
+WHERE MaCuonSach = 'PYTHON01-001'
+  AND MaTrangThai <> 'TT_SANCO';
+
+/* =========================================================
+   6. CASE 4 — DG023 ĐANG MƯỢN QUÁ HẠN, CHƯA TRẢ
+   Sách: OS01-002
+   Chưa tạo KHOANNO vì chưa trả sách
+   Dùng để test màn hình nhắc quá hạn / gửi thông báo
+   ========================================================= */
+
+IF NOT EXISTS (SELECT 1 FROM PHIEUMUON WHERE MaPhieuMuon = 'PM_DG023_QUAHAN_01')
+INSERT INTO PHIEUMUON(
+    MaPhieuMuon, MaDocGia, MaNhanVienLap, MaChiNhanh,
+    MaPhienBanQuyDinh, NgayMuon, TrangThai, GhiChu
+)
+VALUES (
+    'PM_DG023_QUAHAN_01', 'DG023', 'NV_TT001', 'CN_TD',
+    'QD_V1', DATEADD(DAY, -10, SYSDATETIME()), N'Đang mượn',
+    N'Phiếu mượn demo: đang quá hạn nhưng chưa trả'
+);
+
+IF NOT EXISTS (SELECT 1 FROM CHITIETPHIEUMUON WHERE MaChiTietMuon = 'CTM_DG023_OS01_002')
+INSERT INTO CHITIETPHIEUMUON(
+    MaChiTietMuon, MaPhieuMuon, MaCuonSach, MaQuyDinhMuon,
+    NgayMuon, HanTra, NgayTraThucTe, TrangThai
+)
+VALUES (
+    'CTM_DG023_OS01_002', 'PM_DG023_QUAHAN_01', 'OS01-002', 'QDM_THUONG_CNTT_V1',
+    DATEADD(DAY, -10, SYSDATETIME()), DATEADD(DAY, -3, SYSDATETIME()),
+    NULL, N'Đang mượn'
+);
+
+UPDATE CUONSACH
+SET MaTrangThai = 'TT_DANGMUON'
+WHERE MaCuonSach = 'OS01-002'
+  AND MaTrangThai <> 'TT_DANGMUON';
+
+/* =========================================================
+   7. THÔNG BÁO CHO CÁC CASE ĐẶC BIỆT
+   ========================================================= */
+
+IF NOT EXISTS (SELECT 1 FROM THONGBAO WHERE MaThongBao = 'TB_DG020_HONG_01')
+INSERT INTO THONGBAO(
+    MaThongBao, MaTaiKhoanNhan, MaLoaiThongBao,
+    TieuDe, NoiDung, NgayTao,
+    GuiTrongApp, GuiEmail, TrangThaiEmail, SoLanThuGuiEmail
+)
+VALUES (
+    'TB_DG020_HONG_01', 'TK_DG020', 'TB_BI_PHAT',
+    N'Bạn có khoản phạt hỏng sách',
+    N'Bạn bị phạt 70.000đ do làm hỏng sách Hệ điều hành hiện đại. Bạn đã thanh toán 20.000đ, còn nợ 50.000đ.',
+    SYSDATETIME(), 1, 1, N'Chờ gửi', 0
+);
+
+IF NOT EXISTS (SELECT 1 FROM THONGBAO WHERE MaThongBao = 'TB_DG021_MAT_01')
+INSERT INTO THONGBAO(
+    MaThongBao, MaTaiKhoanNhan, MaLoaiThongBao,
+    TieuDe, NoiDung, NgayTao,
+    GuiTrongApp, GuiEmail, TrangThaiEmail, SoLanThuGuiEmail
+)
+VALUES (
+    'TB_DG021_MAT_01', 'TK_DG021', 'TB_BI_PHAT',
+    N'Bạn có khoản phạt mất sách',
+    N'Bạn bị phạt 156.000đ do trả trễ 6 ngày và làm mất sách Mạng máy tính căn bản.',
+    SYSDATETIME(), 1, 1, N'Chờ gửi', 0
+);
+
+IF NOT EXISTS (SELECT 1 FROM THONGBAO WHERE MaThongBao = 'TB_DG022_TRE_01')
+INSERT INTO THONGBAO(
+    MaThongBao, MaTaiKhoanNhan, MaLoaiThongBao,
+    TieuDe, NoiDung, NgayTao,
+    GuiTrongApp, GuiEmail, TrangThaiEmail, SoLanThuGuiEmail
+)
+VALUES (
+    'TB_DG022_TRE_01', 'TK_DG022', 'TB_BI_PHAT',
+    N'Bạn đã thanh toán tiền phạt',
+    N'Bạn đã thanh toán đủ 4.000đ tiền phạt trả trễ sách Lập trình Python cơ bản.',
+    SYSDATETIME(), 1, 1, N'Chờ gửi', 0
+);
+
+IF NOT EXISTS (SELECT 1 FROM THONGBAO WHERE MaThongBao = 'TB_DG023_QUAHAN_01')
+INSERT INTO THONGBAO(
+    MaThongBao, MaTaiKhoanNhan, MaLoaiThongBao,
+    TieuDe, NoiDung, NgayTao,
+    GuiTrongApp, GuiEmail, TrangThaiEmail, SoLanThuGuiEmail
+)
+VALUES (
+    'TB_DG023_QUAHAN_01', 'TK_DG023', @MaLoaiTB_QuaHan,
+    N'Sách đã quá hạn trả',
+    N'Bạn đang mượn sách Hệ điều hành hiện đại quá hạn 3 ngày. Vui lòng trả sách sớm để tránh phát sinh thêm tiền phạt.',
+    SYSDATETIME(), 1, 1, N'Chờ gửi', 0
+);
+
+/* =========================================================
+   8. NHẬT KÝ HOẠT ĐỘNG
+   ========================================================= */
+
+IF NOT EXISTS (
+    SELECT 1 FROM NHATKYHOATDONG
+    WHERE HanhDong = N'Xử lý hỏng sách demo'
+      AND MaDoiTuongTacDong = 'NO_DG020_HONG_01'
+)
+INSERT INTO NHATKYHOATDONG(
+    MaTaiKhoan, HanhDong, DoiTuongTacDong,
+    MaDoiTuongTacDong, ThoiGian, DiaChiIP, MoTaChiTiet
+)
+VALUES (
+    'TK_THUTHU01', N'Xử lý hỏng sách demo', N'KHOANNO',
+    'NO_DG020_HONG_01', SYSDATETIME(), '127.0.0.1',
+    N'Tạo khoản nợ do độc giả DG020 làm hỏng sách OS01-001'
+);
+
+IF NOT EXISTS (
+    SELECT 1 FROM NHATKYHOATDONG
+    WHERE HanhDong = N'Xử lý mất sách demo'
+      AND MaDoiTuongTacDong = 'NO_DG021_MAT_01'
+)
+INSERT INTO NHATKYHOATDONG(
+    MaTaiKhoan, HanhDong, DoiTuongTacDong,
+    MaDoiTuongTacDong, ThoiGian, DiaChiIP, MoTaChiTiet
+)
+VALUES (
+    'TK_THUTHU01', N'Xử lý mất sách demo', N'KHOANNO',
+    'NO_DG021_MAT_01', SYSDATETIME(), '127.0.0.1',
+    N'Tạo khoản nợ do độc giả DG021 làm mất sách NET01-001'
+);
+
+IF NOT EXISTS (
+    SELECT 1 FROM NHATKYHOATDONG
+    WHERE HanhDong = N'Thu tiền phạt demo'
+      AND MaDoiTuongTacDong = 'PT_NO_DG020_HONG_01'
+)
+INSERT INTO NHATKYHOATDONG(
+    MaTaiKhoan, HanhDong, DoiTuongTacDong,
+    MaDoiTuongTacDong, ThoiGian, DiaChiIP, MoTaChiTiet
+)
+VALUES (
+    'TK_THUTHU01', N'Thu tiền phạt demo', N'PHIEUTHU',
+    'PT_NO_DG020_HONG_01', SYSDATETIME(), '127.0.0.1',
+    N'Thu một phần 20.000đ tiền phạt hỏng sách của DG020'
+);
+
+IF NOT EXISTS (
+    SELECT 1 FROM NHATKYHOATDONG
+    WHERE HanhDong = N'Tạo phiếu mượn quá hạn demo'
+      AND MaDoiTuongTacDong = 'PM_DG023_QUAHAN_01'
+)
+INSERT INTO NHATKYHOATDONG(
+    MaTaiKhoan, HanhDong, DoiTuongTacDong,
+    MaDoiTuongTacDong, ThoiGian, DiaChiIP, MoTaChiTiet
+)
+VALUES (
+    'TK_THUTHU01', N'Tạo phiếu mượn quá hạn demo', N'PHIEUMUON',
+    'PM_DG023_QUAHAN_01', SYSDATETIME(), '127.0.0.1',
+    N'Tạo dữ liệu demo độc giả đang mượn sách quá hạn chưa trả'
+);
+
+GO
