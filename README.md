@@ -19,7 +19,7 @@ Trước khi dùng LibraDesk, nên mở app bằng file chạy nhanh:
 start-libradesk.bat
 ```
 
-File này sẽ tự động:
+File này sẽ tự động khởi chạy:
 
 ```text
 1. Kiểm tra backend tại http://localhost:8080/api/health.
