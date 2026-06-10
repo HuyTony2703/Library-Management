@@ -1,11 +1,13 @@
 import { MessageCircle, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { readerApi } from "../../api/readerApi";
+import { useActionDialog } from "../ActionDialogProvider";
 import { useToast } from "../ToastProvider";
 import CommentForm from "./CommentForm";
 
-export default function ReaderBookComments({ maDauSach }) {
+export default function ReaderBookComments({ maDauSach, embedded = false }) {
     const toast = useToast();
+    const actionDialog = useActionDialog();
 
     const [comments, setComments] = useState([]);
     const [editingId, setEditingId] = useState(null);
@@ -46,7 +48,12 @@ export default function ReaderBookComments({ maDauSach }) {
     }
 
     async function handleDelete(maBinhLuan) {
-        const ok = window.confirm("Bạn có chắc muốn xóa bình luận này không?");
+        const ok = await actionDialog.confirm({
+            title: "Xóa bình luận",
+            message: "Bạn có chắc muốn xóa bình luận này không?",
+            confirmLabel: "Xóa",
+            danger: true
+        });
 
         if (!ok) {
             return;
@@ -67,8 +74,10 @@ export default function ReaderBookComments({ maDauSach }) {
         }
     }, [maDauSach]);
 
+    const Container = embedded ? "div" : "section";
+
     return (
-        <section className="reader-section">
+        <Container className={embedded ? "feedback-block" : "reader-section"}>
             <div className="section-title-row">
                 <div>
                     <p className="reader-eyebrow">Comments</p>
@@ -139,7 +148,7 @@ export default function ReaderBookComments({ maDauSach }) {
                     ))
                 )}
             </div>
-        </section>
+        </Container>
     );
 }
 

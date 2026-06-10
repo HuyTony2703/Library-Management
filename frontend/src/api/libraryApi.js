@@ -10,8 +10,8 @@ export const libraryApi = {
             method: "POST",
             body: JSON.stringify(payload)
         }),
-    deleteBook: (id) =>
-        apiFetch(`/api/books/${id}`, {
+    deleteBook: (id, mode = "soft") =>
+        apiFetch(`/api/books/${id}?mode=${encodeURIComponent(mode)}`, {
             method: "DELETE"
         }),
 
@@ -22,8 +22,8 @@ export const libraryApi = {
             method: "POST",
             body: JSON.stringify(payload)
         }),
-    deleteBookCopy: (id) =>
-        apiFetch(`/api/book-copies/${id}`, {
+    deleteBookCopy: (id, mode = "soft") =>
+        apiFetch(`/api/book-copies/${id}?mode=${encodeURIComponent(mode)}`, {
             method: "DELETE"
         }),
 
@@ -34,8 +34,8 @@ export const libraryApi = {
             method: "POST",
             body: JSON.stringify(payload)
         }),
-    deleteReader: (id) =>
-        apiFetch(`/api/readers/${id}`, {
+    deleteReader: (id, mode = "soft") =>
+        apiFetch(`/api/readers/${id}?mode=${encodeURIComponent(mode)}`, {
             method: "DELETE"
         }),
     currentLoans: (readerId) => apiFetch(`/api/readers/${readerId}/current-loans`),

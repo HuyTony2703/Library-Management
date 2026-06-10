@@ -4,6 +4,7 @@ import { libraryApi } from "../../api/libraryApi";
 import { staffApi } from "../../api/staffApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
+import ResultModal from "../../components/ResultModal";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
 import { displayCode, formatDateTime } from "../../utils/displayUtils";
@@ -23,6 +24,7 @@ export default function StaffLoansPage() {
     const [currentLoans, setCurrentLoans] = useState([]);
     const [availableCopies, setAvailableCopies] = useState([]);
     const [result, setResult] = useState(null);
+    const [showResult, setShowResult] = useState(false);
     const [loading, setLoading] = useState(false);
 
     function updateField(field, value) {
@@ -86,6 +88,7 @@ export default function StaffLoansPage() {
             });
 
             setResult(data);
+            setShowResult(true);
             toast.success("Tạo phiếu mượn thành công");
             await loadAvailableCopies();
             await loadCurrentLoans();
@@ -103,10 +106,17 @@ export default function StaffLoansPage() {
                 title="Mượn sách"
                 description="Lập phiếu mượn cho độc giả, tự kiểm tra thẻ, nợ, quy định mượn và trạng thái cuốn sách."
                 right={
-                    <button className="soft-button" onClick={loadCurrentLoans}>
-                        <Search size={17} />
-                        Xem sách đang mượn
-                    </button>
+                    <div className="table-actions">
+                        {result && (
+                            <button className="soft-button" type="button" onClick={() => setShowResult(true)}>
+                                Xem lại kết quả
+                            </button>
+                        )}
+                        <button className="soft-button" type="button" onClick={loadCurrentLoans}>
+                            <Search size={17} />
+                            Xem sách đang mượn
+                        </button>
+                    </div>
                 }
             />
 
@@ -160,8 +170,15 @@ export default function StaffLoansPage() {
                     </button>
                 </form>
 
-                {result ? <LoanResultPanel result={result} /> : <AvailableCopiesPanel copies={availableCopies} />}
+                <AvailableCopiesPanel copies={availableCopies} />
             </div>
+
+            {result && showResult && (
+                <LoanResultPanel
+                    result={result}
+                    onClose={() => setShowResult(false)}
+                />
+            )}
 
             <div className="panel">
                 <div className="panel-title">
@@ -194,7 +211,7 @@ function AvailableCopiesPanel({ copies }) {
             </div>
 
             <DataTable
-                data={copies.slice(0, 8)}
+                data={copies}
                 columns={[
                     { key: "maCuonSach", title: "Mã cuốn" },
                     { key: "maDauSach", title: "Đầu sách" },
@@ -206,9 +223,9 @@ function AvailableCopiesPanel({ copies }) {
     );
 }
 
-function LoanResultPanel({ result }) {
+function LoanResultPanel({ result, onClose }) {
     return (
-        <div className="panel preview-panel">
+        <ResultModal title="Kết quả phiếu mượn" onClose={onClose}>
             <h2>Kết quả phiếu mượn</h2>
 
             {!result ? (
@@ -236,7 +253,7 @@ function LoanResultPanel({ result }) {
                     />
                 </div>
             )}
-        </div>
+        </ResultModal>
     );
 }
 

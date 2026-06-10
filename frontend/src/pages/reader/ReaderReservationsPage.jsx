@@ -2,10 +2,12 @@ import { RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import ReservationHistoryTable from "../../components/reader/ReservationHistoryTable";
+import { useActionDialog } from "../../components/ActionDialogProvider";
 import { useToast } from "../../components/ToastProvider";
 
 export default function ReaderReservationsPage() {
     const toast = useToast();
+    const actionDialog = useActionDialog();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -23,7 +25,12 @@ export default function ReaderReservationsPage() {
     }
 
     async function handleCancel(maPhieuDatTruoc) {
-        const ok = window.confirm("Bạn có chắc muốn hủy phiếu đặt trước này không?");
+        const ok = await actionDialog.confirm({
+            title: "Hủy đặt trước",
+            message: "Bạn có chắc muốn hủy phiếu đặt trước này không?",
+            confirmLabel: "Hủy phiếu",
+            danger: true
+        });
 
         if (!ok) {
             return;

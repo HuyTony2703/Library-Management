@@ -4,6 +4,7 @@ import { libraryApi } from "../../api/libraryApi";
 import { staffApi } from "../../api/staffApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
+import ResultModal from "../../components/ResultModal";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
 import { displayCode, formatDateTime, formatMoney } from "../../utils/displayUtils";
@@ -25,6 +26,7 @@ export default function StaffReturnsPage() {
     const [currentLoans, setCurrentLoans] = useState([]);
     const [loanOverview, setLoanOverview] = useState([]);
     const [result, setResult] = useState(null);
+    const [showResult, setShowResult] = useState(false);
     const [loading, setLoading] = useState(false);
 
     function updateField(field, value) {
@@ -100,6 +102,7 @@ export default function StaffReturnsPage() {
             });
 
             setResult(data);
+            setShowResult(true);
             toast.success("Tạo phiếu trả thành công");
             await loadLoanOverview();
             await loadCurrentLoans();
@@ -117,10 +120,17 @@ export default function StaffReturnsPage() {
                 title="Trả sách"
                 description="Lập phiếu trả, tự tính trả trễ và tạo khoản phạt khi sách hỏng hoặc mất."
                 right={
-                    <button className="soft-button" onClick={loadCurrentLoans}>
-                        <Search size={17} />
-                        Xem sách đang mượn
-                    </button>
+                    <div className="table-actions">
+                        {result && (
+                            <button className="soft-button" type="button" onClick={() => setShowResult(true)}>
+                                Xem lại kết quả
+                            </button>
+                        )}
+                        <button className="soft-button" type="button" onClick={loadCurrentLoans}>
+                            <Search size={17} />
+                            Xem sách đang mượn
+                        </button>
+                    </div>
                 }
             />
 
@@ -190,8 +200,15 @@ export default function StaffReturnsPage() {
                     </button>
                 </form>
 
-                {result ? <ReturnResultPanel result={result} /> : <LoanOverviewPanel rows={loanOverview} />}
+                <LoanOverviewPanel rows={loanOverview} />
             </div>
+
+            {result && showResult && (
+                <ReturnResultPanel
+                    result={result}
+                    onClose={() => setShowResult(false)}
+                />
+            )}
 
             <div className="panel">
                 <div className="panel-title">
@@ -232,7 +249,7 @@ function LoanOverviewPanel({ rows }) {
             </div>
 
             <DataTable
-                data={rows.slice(0, 8)}
+                data={rows}
                 columns={[
                     { key: "maDocGia", title: "Mã độc giả" },
                     { key: "hoTen", title: "Họ tên" },
@@ -243,9 +260,9 @@ function LoanOverviewPanel({ rows }) {
     );
 }
 
-function ReturnResultPanel({ result }) {
+function ReturnResultPanel({ result, onClose }) {
     return (
-        <div className="panel preview-panel">
+        <ResultModal title="Kết quả phiếu trả" onClose={onClose}>
             <h2>Kết quả phiếu trả</h2>
 
             {!result ? (
@@ -274,7 +291,7 @@ function ReturnResultPanel({ result }) {
                     />
                 </div>
             )}
-        </div>
+        </ResultModal>
     );
 }
 

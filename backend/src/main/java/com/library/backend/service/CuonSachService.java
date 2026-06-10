@@ -134,6 +134,15 @@ public class CuonSachService {
         cuonSachRepository.save(cuonSach);
     }
 
+    @Transactional
+    public void hardDelete(String maCuonSach) {
+        CuonSach cuonSach = cuonSachRepository.findById(maCuonSach)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy cuốn sách"));
+
+        cuonSachRepository.delete(cuonSach);
+        cuonSachRepository.flush();
+    }
+
     private void validateForeignKeys(CuonSachRequest request) {
         if (!dauSachRepository.existsById(request.getMaDauSach())) {
             throw new RuntimeException("Đầu sách không tồn tại");

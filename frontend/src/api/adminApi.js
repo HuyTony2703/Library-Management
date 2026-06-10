@@ -29,8 +29,8 @@ export const adminApi = {
             body: JSON.stringify(payload)
         }),
 
-    deleteLibrarian: (id) =>
-        apiFetch(`/api/admin/librarians/${id}`, {
+    deleteLibrarian: (id, mode = "soft") =>
+        apiFetch(`/api/admin/librarians/${id}?mode=${encodeURIComponent(mode)}`, {
             method: "DELETE"
         }),
 

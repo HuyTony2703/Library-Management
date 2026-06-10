@@ -13,7 +13,7 @@ import {
     ShieldCheck,
     UserRound
 } from "lucide-react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import NotificationBell from "../../components/reader/NotificationBell";
 import { useAuth } from "../../context/AuthContext";
 import "./reader.css";
@@ -33,14 +33,7 @@ const menuItems = [
 
 export default function ReaderLayout() {
     const { user, logout } = useAuth();
-    const location = useLocation();
     const navigate = useNavigate();
-
-    const currentMenuItem =
-        [...menuItems]
-            .sort((a, b) => b.to.length - a.to.length)
-            .find((item) => location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)) ??
-        menuItems[0];
 
     function handleLogout() {
         logout();
@@ -78,7 +71,7 @@ export default function ReaderLayout() {
                         <UserRound size={20} />
                     </div>
                     <div>
-                        <b>{user?.tenDangNhap || user?.hoTen || "reader"}</b>
+                        <b>{user?.hoTen || user?.tenDangNhap || "reader"}</b>
                         <span>{user?.maDocGia || user?.maTaiKhoan || "Độc giả"}</span>
                     </div>
                 </div>
@@ -86,11 +79,6 @@ export default function ReaderLayout() {
 
             <main className="reader-content">
                 <header className="reader-topbar">
-                    <div className="reader-topbar-title">
-                        <b>{currentMenuItem.label}</b>
-                        <span>Quản lý thông tin và hoạt động thư viện của bạn</span>
-                    </div>
-
                     <div className="reader-topbar-actions">
                         <NotificationBell />
                         <button type="button" className="reader-logout-button" onClick={handleLogout}>

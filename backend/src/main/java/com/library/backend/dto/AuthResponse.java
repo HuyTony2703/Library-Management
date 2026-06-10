@@ -10,6 +10,7 @@ public class AuthResponse {
     private String tenVaiTro;
     private String maDocGia;
     private String maNhanVien;
+    private String hoTen;
 
     public AuthResponse(
             String token,
@@ -19,7 +20,8 @@ public class AuthResponse {
             String maVaiTro,
             String tenVaiTro,
             String maDocGia,
-            String maNhanVien
+            String maNhanVien,
+            String hoTen
     ) {
         this.token = token;
         this.tokenType = tokenType;
@@ -29,6 +31,7 @@ public class AuthResponse {
         this.tenVaiTro = tenVaiTro;
         this.maDocGia = maDocGia;
         this.maNhanVien = maNhanVien;
+        this.hoTen = hoTen;
     }
 
     public String getToken() { return token; }
@@ -39,4 +42,5 @@ public class AuthResponse {
     public String getTenVaiTro() { return tenVaiTro; }
     public String getMaDocGia() { return maDocGia; }
     public String getMaNhanVien() { return maNhanVien; }
+    public String getHoTen() { return hoTen; }
 }

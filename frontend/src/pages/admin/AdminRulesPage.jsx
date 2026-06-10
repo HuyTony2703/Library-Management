@@ -5,10 +5,12 @@ import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
+import { useActionDialog } from "../../components/ActionDialogProvider";
 import { displayCode, formatMoney } from "../../utils/displayUtils";
 
 export default function AdminRulesPage() {
   const toast = useToast();
+  const actionDialog = useActionDialog();
 
   const [current, setCurrent] = useState(null);
   const [history, setHistory] = useState([]);
@@ -128,7 +130,13 @@ export default function AdminRulesPage() {
   }
 
   async function activateRule(maPhienBan) {
-    if (!window.confirm(`Áp dụng phiên bản ${maPhienBan}? Phiên bản đang áp dụng hiện tại sẽ bị ngừng áp dụng.`)) {
+    const confirmed = await actionDialog.confirm({
+      title: "Áp dụng quy định",
+      message: `Áp dụng phiên bản ${maPhienBan}? Phiên bản đang áp dụng hiện tại sẽ bị ngừng áp dụng.`,
+      confirmLabel: "Áp dụng"
+    });
+
+    if (!confirmed) {
       return;
     }
 

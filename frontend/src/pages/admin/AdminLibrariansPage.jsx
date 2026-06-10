@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
-import { RefreshCcw, Plus, Lock, Unlock, KeyRound, Save, Trash2 } from "lucide-react";
+import { Plus, Lock, Unlock, KeyRound, Save, Trash2 } from "lucide-react";
 import { adminApi } from "../../api/adminApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
+import ResultModal from "../../components/ResultModal";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
+import { useActionDialog } from "../../components/ActionDialogProvider";
 
 export default function AdminLibrariansPage() {
     const toast = useToast();
+    const actionDialog = useActionDialog();
 
     const [librarians, setLibrarians] = useState([]);
     const [selected, setSelected] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [selectedIds, setSelectedIds] = useState([]);
 
     const [createForm, setCreateForm] = useState({
         maNhanVien: "NV_TT_TEST_001",
@@ -42,6 +47,24 @@ export default function AdminLibrariansPage() {
         loadLibrarians();
     }, []);
 
+    useEffect(() => {
+        setSelectedIds((prev) => prev.filter((id) => librarians.some((row) => row.maNhanVien === id)));
+    }, [librarians]);
+
+    function toggleSelected(id) {
+        setSelectedIds((prev) => prev.includes(id)
+            ? prev.filter((value) => value !== id)
+            : [...prev, id]);
+    }
+
+    function selectAllLibrarians() {
+        setSelectedIds(librarians.map((row) => row.maNhanVien));
+    }
+
+    function clearSelected() {
+        setSelectedIds([]);
+    }
+
     function updateCreateField(field, value) {
         setCreateForm((prev) => ({ ...prev, [field]: value }));
     }
@@ -57,6 +80,7 @@ export default function AdminLibrariansPage() {
         try {
             await adminApi.createLibrarian(createForm);
             toast.success("Thêm thủ thư thành công");
+            setShowCreateModal(false);
             await loadLibrarians();
         } catch (err) {
             toast.error(err.message || "Thêm thủ thư thất bại");
@@ -86,6 +110,7 @@ export default function AdminLibrariansPage() {
             });
 
             toast.success("Cập nhật thủ thư thành công");
+            setSelected(null);
             await loadLibrarians();
         } catch (err) {
             toast.error(err.message || "Cập nhật thủ thư thất bại");
@@ -140,23 +165,56 @@ export default function AdminLibrariansPage() {
     }
 
     async function deleteLibrarian(maNhanVien) {
-        if (!window.confirm(`Xóa thủ thư ${maNhanVien}? Tài khoản sẽ bị ngừng hoạt động.`)) {
+        const mode = await actionDialog.chooseDeleteMode(`thủ thư ${maNhanVien}`);
+
+        if (!mode) {
             return;
         }
 
         setLoading(true);
 
         try {
-            await adminApi.deleteLibrarian(maNhanVien);
-            toast.success("Xóa thủ thư thành công");
+            await adminApi.deleteLibrarian(maNhanVien, mode);
+            toast.success(mode === "hard" ? "Đã xóa thủ thư" : "Đã ngừng hoạt động thủ thư");
 
             if (selected?.maNhanVien === maNhanVien) {
                 setSelected(null);
             }
 
+            setSelectedIds((prev) => prev.filter((id) => id !== maNhanVien));
             await loadLibrarians();
         } catch (err) {
             toast.error(err.message || "Xóa thủ thư thất bại");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function deleteSelectedLibrarians() {
+        if (selectedIds.length === 0) {
+            toast.error("Vui lòng chọn ít nhất một thủ thư");
+            return;
+        }
+
+        const mode = await actionDialog.chooseDeleteMode(`${selectedIds.length} thủ thư đã chọn`);
+
+        if (!mode) {
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            for (const id of selectedIds) {
+                await adminApi.deleteLibrarian(id, mode);
+            }
+
+            toast.success(mode === "hard" ? "Đã xóa các thủ thư đã chọn" : "Đã ngừng hoạt động các thủ thư đã chọn");
+            setSelectedIds([]);
+            setSelected(null);
+            await loadLibrarians();
+        } catch (err) {
+            toast.error(err.message || "Xóa các thủ thư đã chọn thất bại");
         } finally {
             setLoading(false);
         }
@@ -168,12 +226,6 @@ export default function AdminLibrariansPage() {
                 eyebrow="Admin"
                 title="Quản lý thủ thư"
                 description="Thêm, sửa, khóa, mở khóa, xóa và reset mật khẩu tài khoản thủ thư."
-                right={
-                    <button className="soft-button" onClick={loadLibrarians}>
-                        <RefreshCcw size={17} />
-                        Tải lại
-                    </button>
-                }
             />
 
             <div className="panel">
@@ -182,9 +234,42 @@ export default function AdminLibrariansPage() {
                     <span>{librarians.length} người</span>
                 </div>
 
+                <div className="list-toolbar">
+                    <button className="primary-button" type="button" onClick={() => setShowCreateModal(true)}>
+                        <Plus size={17} />
+                        Thêm thủ thư
+                    </button>
+
+                    <div className="selection-toolbar">
+                        <button className="soft-button" type="button" onClick={selectAllLibrarians}>
+                            Chọn tất cả
+                        </button>
+                        <button className="ghost-button" type="button" onClick={clearSelected}>
+                            Bỏ chọn tất cả
+                        </button>
+                        <button className="soft-button danger-button" type="button" onClick={deleteSelectedLibrarians} disabled={selectedIds.length === 0 || loading}>
+                            <Trash2 size={15} />
+                            Xóa
+                        </button>
+                        <span>{selectedIds.length} mục đã chọn</span>
+                    </div>
+                </div>
+
                 <DataTable
                     data={librarians}
                     columns={[
+                        {
+                            key: "select",
+                            title: "",
+                            render: (row) => (
+                                <input
+                                    className="table-checkbox"
+                                    type="checkbox"
+                                    checked={selectedIds.includes(row.maNhanVien)}
+                                    onChange={() => toggleSelected(row.maNhanVien)}
+                                />
+                            )
+                        },
                         { key: "maNhanVien", title: "Mã NV" },
                         { key: "tenDangNhap", title: "Tên đăng nhập" },
                         { key: "hoTen", title: "Họ tên" },
@@ -227,8 +312,9 @@ export default function AdminLibrariansPage() {
                 />
             </div>
 
-            <div className="grid-2">
-                <form className="panel form-panel" onSubmit={createLibrarian}>
+            {showCreateModal && (
+                <ResultModal title="Thêm thủ thư" onClose={() => setShowCreateModal(false)} className="form-modal-card">
+                <form className="form-panel modal-form" onSubmit={createLibrarian}>
                     <div className="panel-title">
                         <h2>Thêm thủ thư</h2>
                         <Plus size={20} />
@@ -301,8 +387,12 @@ export default function AdminLibrariansPage() {
                         Thêm thủ thư
                     </button>
                 </form>
+                </ResultModal>
+            )}
 
-                <form className="panel form-panel" onSubmit={saveSelected}>
+            {selected && (
+                <ResultModal title="Sửa thủ thư" onClose={() => setSelected(null)} className="form-modal-card">
+                <form className="form-panel modal-form" onSubmit={saveSelected}>
                     <div className="panel-title">
                         <h2>Sửa thủ thư</h2>
                         <Save size={20} />
@@ -375,7 +465,8 @@ export default function AdminLibrariansPage() {
                         <p>Chọn một thủ thư trong bảng để sửa thông tin.</p>
                     )}
                 </form>
-            </div>
+                </ResultModal>
+            )}
         </div>
     );
 }

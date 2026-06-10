@@ -3,7 +3,7 @@ import { readerApi } from "../../api/readerApi";
 import { useToast } from "../ToastProvider";
 import RatingStars from "./RatingStars";
 
-export default function ReaderBookRating({ maDauSach }) {
+export default function ReaderBookRating({ maDauSach, embedded = false }) {
     const toast = useToast();
 
     const [summary, setSummary] = useState(null);
@@ -53,8 +53,10 @@ export default function ReaderBookRating({ maDauSach }) {
     const average = Number(summary?.diemTrungBinh || 0);
     const total = summary?.tongSoDanhGia || 0;
 
+    const Container = embedded ? "div" : "section";
+
     return (
-        <section className="reader-section">
+        <Container className={embedded ? "feedback-block" : "reader-section"}>
             <div className="section-title-row">
                 <div>
                     <p className="reader-eyebrow">Rating</p>
@@ -98,7 +100,7 @@ export default function ReaderBookRating({ maDauSach }) {
                           : "Gửi đánh giá"}
                 </button>
             </form>
-        </section>
+        </Container>
     );
 }
 

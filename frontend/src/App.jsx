@@ -1,7 +1,9 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import { useAuth } from "./context/AuthContext";
+import { adminRoutes } from "./routes/adminRoutes";
 import { readerRoutes } from "./routes/readerRoutes";
+import { staffRoutes } from "./routes/staffRoutes";
 import { isReaderUser } from "./utils/authRole";
 
 import LoginPage from "./pages/LoginPage";
@@ -54,6 +56,12 @@ export default function App() {
                 <Route path="/returns" element={<ReturnsPage />} />
                 <Route path="/payments" element={<PaymentsPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
+                {staffRoutes.map((route) => (
+                    <Route key={route.path} path={route.path} element={route.element} />
+                ))}
+                {adminRoutes.map((route) => (
+                    <Route key={route.path} path={route.path} element={route.element} />
+                ))}
             </Route>
         </Routes>
     );

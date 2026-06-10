@@ -4,6 +4,7 @@ import { libraryApi } from "../../api/libraryApi";
 import { staffApi } from "../../api/staffApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
+import ResultModal from "../../components/ResultModal";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
 import { displayCode, formatDateTime, formatMoney } from "../../utils/displayUtils";
@@ -16,6 +17,7 @@ export default function StaffPaymentsPage() {
     const [debtors, setDebtors] = useState([]);
     const [selected, setSelected] = useState({});
     const [result, setResult] = useState(null);
+    const [showResult, setShowResult] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const [form, setForm] = useState({
@@ -90,6 +92,24 @@ export default function StaffPaymentsPage() {
         updateField("soTienThu", selectedTotal);
     }
 
+    function selectAllDebts() {
+        const nextSelected = {};
+
+        debts.forEach((row) => {
+            const remaining = getDebtRemaining(row);
+
+            if (remaining > 0) {
+                nextSelected[row.maKhoanNo] = remaining;
+            }
+        });
+
+        setSelected(nextSelected);
+    }
+
+    function clearSelectedDebts() {
+        setSelected({});
+    }
+
     function buildSelectedDetails() {
         return Object.entries(selected).map(([maKhoanNo, soTienApDung]) => ({
             maKhoanNo,
@@ -136,6 +156,7 @@ export default function StaffPaymentsPage() {
             });
 
             setResult(data);
+            setShowResult(true);
             toast.success("Thu tiền thành công");
             await loadDebtors();
             await loadDebts();
@@ -166,6 +187,7 @@ export default function StaffPaymentsPage() {
             });
 
             setResult(data);
+            setShowResult(true);
             toast.success("Tự động phân bổ thu tiền thành công");
             await loadDebtors();
             await loadDebts();
@@ -183,10 +205,17 @@ export default function StaffPaymentsPage() {
                 title="Thu tiền phạt"
                 description="Xem khoản nợ của độc giả, chọn khoản nợ cụ thể để thu hoặc để hệ thống tự động phân bổ."
                 right={
-                    <button className="soft-button" onClick={loadDebts}>
-                        <Search size={17} />
-                        Xem nợ
-                    </button>
+                    <div className="table-actions">
+                        {result && (
+                            <button className="soft-button" type="button" onClick={() => setShowResult(true)}>
+                                Xem lại kết quả
+                            </button>
+                        )}
+                        <button className="soft-button" type="button" onClick={loadDebts}>
+                            <Search size={17} />
+                            Xem nợ
+                        </button>
+                    </div>
                 }
             />
 
@@ -202,6 +231,15 @@ export default function StaffPaymentsPage() {
                 <div className="panel-title">
                     <h2>Danh sách khoản nợ</h2>
                     <span>{debts.length} khoản</span>
+                </div>
+
+                <div className="selection-toolbar">
+                    <button type="button" className="soft-button" onClick={selectAllDebts}>
+                        Chọn tất cả
+                    </button>
+                    <button type="button" className="soft-button" onClick={clearSelectedDebts}>
+                        Bỏ chọn tất cả
+                    </button>
                 </div>
 
                 <DataTable
@@ -292,8 +330,15 @@ export default function StaffPaymentsPage() {
                     </button>
                 </form>
 
-                {result ? <PaymentResultPanel result={result} /> : <DebtorOverviewPanel debtors={debtors} />}
+                <DebtorOverviewPanel debtors={debtors} />
             </div>
+
+            {result && showResult && (
+                <PaymentResultPanel
+                    result={result}
+                    onClose={() => setShowResult(false)}
+                />
+            )}
         </div>
     );
 }
@@ -307,7 +352,7 @@ function DebtorOverviewPanel({ debtors }) {
             </div>
 
             <DataTable
-                data={debtors.slice(0, 8)}
+                data={debtors}
                 columns={[
                     { key: "maDocGia", title: "Mã độc giả" },
                     { key: "hoTen", title: "Họ tên" },
@@ -318,9 +363,9 @@ function DebtorOverviewPanel({ debtors }) {
     );
 }
 
-function PaymentResultPanel({ result }) {
+function PaymentResultPanel({ result, onClose }) {
     return (
-        <div className="panel preview-panel">
+        <ResultModal title="Kết quả phiếu thu" onClose={onClose}>
             <h2>Kết quả phiếu thu</h2>
 
             {!result ? (
@@ -348,7 +393,7 @@ function PaymentResultPanel({ result }) {
                     />
                 </div>
             )}
-        </div>
+        </ResultModal>
     );
 }
 

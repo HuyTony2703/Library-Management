@@ -185,6 +185,22 @@ public class DocGiaService {
         docGiaRepository.save(docGia);
     }
 
+    @Transactional
+    public void hardDelete(String maDocGia) {
+        DocGia docGia = docGiaRepository.findById(maDocGia)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy độc giả"));
+        String maTaiKhoan = docGia.getMaTaiKhoan();
+
+        jdbcTemplate.update("DELETE FROM LICHSUGOITHANHVIEN WHERE MaDocGia = ?", maDocGia);
+        docGiaRepository.delete(docGia);
+        docGiaRepository.flush();
+
+        if (maTaiKhoan != null && !maTaiKhoan.isBlank()) {
+            taiKhoanRepository.deleteById(maTaiKhoan);
+            taiKhoanRepository.flush();
+        }
+    }
+
     private DocGiaResponse toResponse(DocGia docGia) {
         String tenDangNhap = taiKhoanRepository.findById(docGia.getMaTaiKhoan())
                 .map(TaiKhoan::getTenDangNhap)

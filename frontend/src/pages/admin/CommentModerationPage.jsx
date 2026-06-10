@@ -1,29 +1,32 @@
 import { useEffect, useState } from "react";
 import { EyeOff, RefreshCcw, RotateCcw, Search, Trash2 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { adminApi } from "../../api/adminApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
+import { useActionDialog } from "../../components/ActionDialogProvider";
+import { useAuth } from "../../context/AuthContext";
+
+const DEFAULT_REASONS = {
+    hide: "Bình luận không phù hợp",
+    delete: "Nội dung vi phạm quy định thư viện"
+};
 
 export default function CommentModerationPage() {
     const toast = useToast();
+    const actionDialog = useActionDialog();
+    const { user } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [comments, setComments] = useState([]);
-    const [selected, setSelected] = useState(null);
-    const [action, setAction] = useState("hide");
     const [loading, setLoading] = useState(false);
-
-    const [filter, setFilter] = useState({
-        status: "Tất cả",
-        maDauSach: "",
-        keyword: ""
-    });
-
-    const [form, setForm] = useState({
-        maNhanVienXuLy: "NV_ADMIN",
-        lyDoAnXoa: ""
-    });
+    const [filter, setFilter] = useState(() => ({
+        status: searchParams.get("status") || "Tất cả",
+        maDauSach: searchParams.get("maDauSach") || "",
+        keyword: searchParams.get("keyword") || ""
+    }));
 
     function updateFilter(field, value) {
         setFilter((prev) => ({
@@ -32,20 +35,12 @@ export default function CommentModerationPage() {
         }));
     }
 
-    function updateForm(field, value) {
-        setForm((prev) => ({
-            ...prev,
-            [field]: value
-        }));
-    }
-
-    async function loadComments() {
+    async function loadComments(nextFilter = filter) {
         setLoading(true);
 
         try {
-            const data = await adminApi.getComments(filter);
+            const data = await adminApi.getComments(nextFilter);
             setComments(Array.isArray(data) ? data : []);
-            toast.success("Đã tải danh sách bình luận");
         } catch (err) {
             toast.error(err.message || "Không tải được bình luận");
         } finally {
@@ -54,49 +49,72 @@ export default function CommentModerationPage() {
     }
 
     useEffect(() => {
-        loadComments();
-    }, []);
+        const nextFilter = {
+            status: searchParams.get("status") || "Tất cả",
+            maDauSach: searchParams.get("maDauSach") || "",
+            keyword: searchParams.get("keyword") || ""
+        };
 
-    function openAction(row, nextAction) {
-        setSelected(row);
-        setAction(nextAction);
+        setFilter(nextFilter);
+        loadComments(nextFilter);
+    }, [searchParams]);
 
-        if (nextAction === "hide") {
-            updateForm("lyDoAnXoa", "Bình luận không phù hợp");
-        } else if (nextAction === "delete") {
-            updateForm("lyDoAnXoa", "Nội dung vi phạm quy định thư viện");
-        } else {
-            updateForm("lyDoAnXoa", "");
-        }
-    }
-
-    function updateAction(nextAction) {
-        setAction(nextAction);
-
-        if (nextAction === "hide") {
-            updateForm("lyDoAnXoa", "Bình luận không phù hợp");
-        } else if (nextAction === "delete") {
-            updateForm("lyDoAnXoa", "Nội dung vi phạm quy định thư viện");
-        } else {
-            updateForm("lyDoAnXoa", "");
-        }
-    }
-
-    async function submitModeration(event) {
+    function submitFilter(event) {
         event.preventDefault();
 
-        if (!selected) {
-            toast.error("Vui lòng chọn bình luận cần xử lý");
-            return;
+        const params = {};
+
+        if (filter.status && filter.status !== "Tất cả") {
+            params.status = filter.status;
         }
 
-        if (!form.maNhanVienXuLy.trim()) {
-            toast.error("Vui lòng nhập mã nhân viên xử lý");
-            return;
+        if (filter.maDauSach.trim()) {
+            params.maDauSach = filter.maDauSach.trim();
         }
 
-        if ((action === "hide" || action === "delete") && !form.lyDoAnXoa.trim()) {
-            toast.error("Vui lòng nhập lý do xử lý");
+        if (filter.keyword.trim()) {
+            params.keyword = filter.keyword.trim();
+        }
+
+        setSearchParams(params);
+    }
+
+    async function moderate(row, action) {
+        const employeeId = user?.maNhanVien || "NV_ADMIN";
+        const actionLabel = action === "hide"
+            ? "ẩn"
+            : action === "delete"
+                ? "xóa"
+                : "khôi phục";
+
+        let reason = "";
+
+        if (action === "hide" || action === "delete") {
+            reason = await actionDialog.prompt({
+                title: `Lý do ${actionLabel} bình luận`,
+                message: `Nhập lý do xử lý bình luận ${row.maBinhLuan}.`,
+                defaultValue: DEFAULT_REASONS[action],
+                confirmLabel: "Tiếp tục"
+            });
+
+            if (reason === null) {
+                return;
+            }
+
+            if (!reason.trim()) {
+                toast.error("Vui lòng nhập lý do xử lý bình luận");
+                return;
+            }
+        }
+
+        const confirmed = await actionDialog.confirm({
+            title: `Xác nhận ${actionLabel} bình luận`,
+            message: `Bạn chắc chắn muốn ${actionLabel} bình luận ${row.maBinhLuan}?`,
+            confirmLabel: action === "delete" ? "Xóa bình luận" : "Xác nhận",
+            danger: action === "delete"
+        });
+
+        if (!confirmed) {
             return;
         }
 
@@ -104,21 +122,18 @@ export default function CommentModerationPage() {
 
         try {
             const payload = {
-                maNhanVienXuLy: form.maNhanVienXuLy.trim(),
-                lyDoAnXoa: form.lyDoAnXoa
+                maNhanVienXuLy: employeeId,
+                lyDoAnXoa: reason
             };
 
-            let data;
-
             if (action === "hide") {
-                data = await adminApi.hideComment(selected.maBinhLuan, payload);
+                await adminApi.hideComment(row.maBinhLuan, payload);
             } else if (action === "delete") {
-                data = await adminApi.deleteComment(selected.maBinhLuan, payload);
+                await adminApi.deleteComment(row.maBinhLuan, payload);
             } else {
-                data = await adminApi.restoreComment(selected.maBinhLuan, payload);
+                await adminApi.restoreComment(row.maBinhLuan, payload);
             }
 
-            setSelected(data);
             toast.success("Xử lý bình luận thành công");
             await loadComments();
         } catch (err) {
@@ -131,18 +146,18 @@ export default function CommentModerationPage() {
     return (
         <div>
             <PageHeader
-                eyebrow="Admin"
+                eyebrow="Staff"
                 title="Kiểm duyệt bình luận"
-                description="Ẩn, xóa mềm hoặc khôi phục bình luận của độc giả trên đầu sách."
+                description="Lọc, ẩn, xóa mềm hoặc khôi phục bình luận của độc giả trên đầu sách."
                 right={
-                    <button className="soft-button" onClick={loadComments} disabled={loading}>
+                    <button className="soft-button" onClick={() => loadComments()} disabled={loading}>
                         <RefreshCcw size={17} />
                         Tải lại
                     </button>
                 }
             />
 
-            <div className="panel compact-form">
+            <form className="panel comment-filter-form" onSubmit={submitFilter}>
                 <label>Trạng thái</label>
                 <select
                     value={filter.status}
@@ -168,11 +183,11 @@ export default function CommentModerationPage() {
                     placeholder="Tìm nội dung, độc giả, tên sách"
                 />
 
-                <button className="primary-button" onClick={loadComments} disabled={loading}>
+                <button className="primary-button" disabled={loading}>
                     <Search size={17} />
                     Tìm kiếm
                 </button>
-            </div>
+            </form>
 
             <div className="panel">
                 <div className="panel-title">
@@ -209,8 +224,8 @@ export default function CommentModerationPage() {
                                 <div className="table-actions">
                                     <button
                                         className="soft-button"
-                                        onClick={() => openAction(row, "hide")}
-                                        disabled={row.trangThai === "Đã ẩn"}
+                                        onClick={() => moderate(row, "hide")}
+                                        disabled={loading || row.trangThai === "Đã ẩn"}
                                         type="button"
                                     >
                                         <EyeOff size={15} />
@@ -218,9 +233,9 @@ export default function CommentModerationPage() {
                                     </button>
 
                                     <button
-                                        className="soft-button"
-                                        onClick={() => openAction(row, "delete")}
-                                        disabled={row.trangThai === "Đã xóa"}
+                                        className="soft-button danger-button"
+                                        onClick={() => moderate(row, "delete")}
+                                        disabled={loading || row.trangThai === "Đã xóa"}
                                         type="button"
                                     >
                                         <Trash2 size={15} />
@@ -229,8 +244,8 @@ export default function CommentModerationPage() {
 
                                     <button
                                         className="soft-button"
-                                        onClick={() => openAction(row, "restore")}
-                                        disabled={row.trangThai === "Hiển thị"}
+                                        onClick={() => moderate(row, "restore")}
+                                        disabled={loading || row.trangThai === "Hiển thị"}
                                         type="button"
                                     >
                                         <RotateCcw size={15} />
@@ -241,73 +256,6 @@ export default function CommentModerationPage() {
                         }
                     ]}
                 />
-            </div>
-
-            <div className="form-layout">
-                <form className="panel form-panel" onSubmit={submitModeration}>
-                    <div className="panel-title">
-                        <h2>Xử lý bình luận</h2>
-                        {selected && <StatusBadge value={selected.trangThai} />}
-                    </div>
-
-                    {selected ? (
-                        <>
-                            <div className="form-grid-2">
-                                <div className="form-row">
-                                    <label>Mã bình luận</label>
-                                    <input value={selected.maBinhLuan || ""} disabled />
-                                </div>
-
-                                <div className="form-row">
-                                    <label>Hành động</label>
-                                    <select
-                                        value={action}
-                                        onChange={(event) => updateAction(event.target.value)}
-                                    >
-                                        <option value="hide">Ẩn bình luận</option>
-                                        <option value="delete">Xóa bình luận</option>
-                                        <option value="restore">Khôi phục bình luận</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="form-row">
-                                <label>Nội dung bình luận</label>
-                                <textarea value={selected.noiDung || ""} disabled />
-                            </div>
-
-                            <div className="form-grid-2">
-                                <div className="form-row">
-                                    <label>Mã nhân viên xử lý</label>
-                                    <input
-                                        value={form.maNhanVienXuLy}
-                                        onChange={(event) => updateForm("maNhanVienXuLy", event.target.value)}
-                                    />
-                                </div>
-
-                                <div className="form-row">
-                                    <label>Lý do xử lý</label>
-                                    <input
-                                        value={form.lyDoAnXoa}
-                                        onChange={(event) => updateForm("lyDoAnXoa", event.target.value)}
-                                        disabled={action === "restore"}
-                                    />
-                                </div>
-                            </div>
-
-                            <button className="primary-button" disabled={loading}>
-                                Xác nhận xử lý
-                            </button>
-                        </>
-                    ) : (
-                        <p>Chọn một bình luận trong bảng để xử lý.</p>
-                    )}
-                </form>
-
-                <div className="panel preview-panel">
-                    <h2>Chi tiết bình luận</h2>
-                    <pre>{selected ? JSON.stringify(selected, null, 2) : "Chưa chọn bình luận"}</pre>
-                </div>
             </div>
         </div>
     );

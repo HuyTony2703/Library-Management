@@ -42,7 +42,15 @@ public class CuonSachController {
     }
 
     @DeleteMapping("/{maCuonSach}")
-    public String disable(@PathVariable String maCuonSach) {
+    public String disable(
+            @PathVariable String maCuonSach,
+            @RequestParam(defaultValue = "soft") String mode
+    ) {
+        if ("hard".equalsIgnoreCase(mode)) {
+            cuonSachService.hardDelete(maCuonSach);
+            return "Xóa cuốn sách thành công";
+        }
+
         cuonSachService.disable(maCuonSach);
         return "Ngừng lưu thông cuốn sách thành công";
     }

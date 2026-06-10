@@ -8,6 +8,7 @@ public class AuthUser {
     private final String tenVaiTro;
     private final String maDocGia;
     private final String maNhanVien;
+    private final String hoTen;
 
     public AuthUser(
             String maTaiKhoan,
@@ -15,7 +16,8 @@ public class AuthUser {
             String maVaiTro,
             String tenVaiTro,
             String maDocGia,
-            String maNhanVien
+            String maNhanVien,
+            String hoTen
     ) {
         this.maTaiKhoan = maTaiKhoan;
         this.tenDangNhap = tenDangNhap;
@@ -23,6 +25,7 @@ public class AuthUser {
         this.tenVaiTro = tenVaiTro;
         this.maDocGia = maDocGia;
         this.maNhanVien = maNhanVien;
+        this.hoTen = hoTen;
     }
 
     public String getMaTaiKhoan() { return maTaiKhoan; }
@@ -31,6 +34,7 @@ public class AuthUser {
     public String getTenVaiTro() { return tenVaiTro; }
     public String getMaDocGia() { return maDocGia; }
     public String getMaNhanVien() { return maNhanVien; }
+    public String getHoTen() { return hoTen; }
 
     public String getRoleAuthority() {
         return RoleConstants.toAuthority(tenVaiTro);

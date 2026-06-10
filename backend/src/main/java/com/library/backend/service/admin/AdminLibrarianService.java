@@ -286,6 +286,21 @@ public class AdminLibrarianService {
         );
     }
 
+    @Transactional
+    public void hardDelete(String maNhanVien) {
+        AdminLibrarianResponse current = getById(maNhanVien);
+
+        jdbcTemplate.update("DELETE FROM NHANVIEN WHERE MaNhanVien = ?", maNhanVien);
+        jdbcTemplate.update("DELETE FROM TAIKHOAN WHERE MaTaiKhoan = ?", current.getMaTaiKhoan());
+
+        activityLogService.logSafe(
+                "Xóa vĩnh viễn thủ thư",
+                "NHANVIEN",
+                maNhanVien,
+                "Admin xóa vĩnh viễn thủ thư " + current.getTenDangNhap()
+        );
+    }
+
     private String baseSelectSql() {
         return """
                 SELECT

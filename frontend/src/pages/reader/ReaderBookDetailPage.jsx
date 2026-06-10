@@ -166,9 +166,19 @@ export default function ReaderBookDetailPage() {
                 />
             </section>
 
-            <ReaderBookRating maDauSach={book.maDauSach} />
+            <section className="reader-section reader-feedback-section">
+                <div className="section-title-row">
+                    <div>
+                        <p className="reader-eyebrow">Feedback</p>
+                        <h2>Đánh giá & bình luận</h2>
+                    </div>
+                </div>
 
-            <ReaderBookComments maDauSach={book.maDauSach} />
+                <div className="feedback-grid">
+                    <ReaderBookRating maDauSach={book.maDauSach} embedded />
+                    <ReaderBookComments maDauSach={book.maDauSach} embedded />
+                </div>
+            </section>
 
             <div className="reader-bottom-link">
                 <Link to="/reader/books">Quay lại danh sách sách</Link>

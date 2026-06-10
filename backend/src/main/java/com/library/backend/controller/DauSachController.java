@@ -42,7 +42,15 @@ public class DauSachController {
     }
 
     @DeleteMapping("/{maDauSach}")
-    public String disable(@PathVariable String maDauSach) {
+    public String disable(
+            @PathVariable String maDauSach,
+            @RequestParam(defaultValue = "soft") String mode
+    ) {
+        if ("hard".equalsIgnoreCase(mode)) {
+            dauSachService.hardDelete(maDauSach);
+            return "Xóa đầu sách thành công";
+        }
+
         dauSachService.disable(maDauSach);
         return "Ngừng hiển thị đầu sách thành công";
     }
