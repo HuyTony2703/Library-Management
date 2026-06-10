@@ -693,7 +693,7 @@ textarea:focus {
 .list-toolbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   gap: 16px;
   margin-bottom: 12px;
 }
@@ -701,11 +701,21 @@ textarea:focus {
 .list-toolbar .selection-toolbar {
   justify-content: flex-end;
   margin-bottom: 0;
+  margin-left: auto;
+  margin-right: clamp(36px, 6vw, 128px);
+  row-gap: 8px;
 }
 
 .selection-toolbar span {
   color: var(--muted);
   font-weight: 900;
+}
+
+.list-toolbar .selection-toolbar span {
+  order: -1;
+  flex: 0 0 100%;
+  text-align: right;
+  line-height: 1.2;
 }
 
 .table-checkbox {
@@ -940,6 +950,12 @@ textarea:focus {
 
   .list-toolbar .selection-toolbar {
     justify-content: flex-start;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .list-toolbar .selection-toolbar span {
+    text-align: left;
   }
 
   .search-box {
