@@ -42,7 +42,15 @@ public class DocGiaController {
     }
 
     @DeleteMapping("/{maDocGia}")
-    public String disable(@PathVariable String maDocGia) {
+    public String disable(
+            @PathVariable String maDocGia,
+            @RequestParam(defaultValue = "soft") String mode
+    ) {
+        if ("hard".equalsIgnoreCase(mode)) {
+            docGiaService.hardDelete(maDocGia);
+            return "Xóa độc giả thành công";
+        }
+
         docGiaService.disable(maDocGia);
         return "Ngừng hoạt động độc giả thành công";
     }

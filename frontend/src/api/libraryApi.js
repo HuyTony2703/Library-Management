@@ -5,12 +5,39 @@ export const libraryApi = {
 
     books: () => apiFetch("/api/books"),
     book: (id) => apiFetch(`/api/books/${id}`),
+    createBook: (payload) =>
+        apiFetch("/api/books", {
+            method: "POST",
+            body: JSON.stringify(payload)
+        }),
+    deleteBook: (id, mode = "soft") =>
+        apiFetch(`/api/books/${id}?mode=${encodeURIComponent(mode)}`, {
+            method: "DELETE"
+        }),
 
     bookCopies: () => apiFetch("/api/book-copies"),
     bookCopy: (id) => apiFetch(`/api/book-copies/${id}`),
+    createBookCopy: (payload) =>
+        apiFetch("/api/book-copies", {
+            method: "POST",
+            body: JSON.stringify(payload)
+        }),
+    deleteBookCopy: (id, mode = "soft") =>
+        apiFetch(`/api/book-copies/${id}?mode=${encodeURIComponent(mode)}`, {
+            method: "DELETE"
+        }),
 
     readers: () => apiFetch("/api/readers"),
     reader: (id) => apiFetch(`/api/readers/${id}`),
+    createReader: (payload) =>
+        apiFetch("/api/readers", {
+            method: "POST",
+            body: JSON.stringify(payload)
+        }),
+    deleteReader: (id, mode = "soft") =>
+        apiFetch(`/api/readers/${id}?mode=${encodeURIComponent(mode)}`, {
+            method: "DELETE"
+        }),
     currentLoans: (readerId) => apiFetch(`/api/readers/${readerId}/current-loans`),
 
     createLoan: (payload) =>

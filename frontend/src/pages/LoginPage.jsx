@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../components/ToastProvider";
+import { isReaderUser } from "../utils/authRole";
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -18,9 +19,10 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            await login(usernameOrEmail, password);
+            const data = await login(usernameOrEmail, password);
             toast.success("Đăng nhập thành công");
-            navigate("/");
+
+            navigate(isReaderUser(data) ? "/reader" : "/");
         } catch (err) {
             toast.error(err.message || "Đăng nhập thất bại");
         } finally {

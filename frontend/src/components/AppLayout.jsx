@@ -6,29 +6,52 @@ import {
     Home,
     Library,
     LogOut,
+    MessageSquare,
     RefreshCcw,
     RotateCcw,
-    Search,
+    Settings,
+    ShieldCheck,
     UserRound,
     UsersRound
 } from "lucide-react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { isReaderUser } from "../utils/authRole";
+import { isAdmin } from "../utils/roleUtils";
 
-const menu = [
+const staffMenu = [
     { to: "/", label: "Tổng quan", icon: Home },
     { to: "/books", label: "Đầu sách", icon: BookOpen },
     { to: "/book-copies", label: "Cuốn sách", icon: Boxes },
     { to: "/readers", label: "Độc giả", icon: UsersRound },
-    { to: "/loans", label: "Mượn sách", icon: RefreshCcw },
-    { to: "/returns", label: "Trả sách", icon: RotateCcw },
-    { to: "/payments", label: "Thu tiền", icon: CreditCard },
+    { to: "/staff/loans", label: "Mượn sách", icon: RefreshCcw },
+    { to: "/staff/returns", label: "Trả sách", icon: RotateCcw },
+    { to: "/staff/payments", label: "Thu tiền", icon: CreditCard },
+    { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
     { to: "/reports", label: "Báo cáo", icon: BarChart3 }
+];
+
+const adminExtraMenu = [
+    { to: "/admin/reports", label: "Báo cáo hệ thống", icon: BarChart3 },
+    { to: "/admin/rules", label: "Quy định hệ thống", icon: Settings },
+    { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
+    { to: "/admin/librarians", label: "Tài khoản thủ thư", icon: ShieldCheck }
 ];
 
 export default function AppLayout() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const displayName = getUserDisplayName(user);
+    const menu = isAdmin(user)
+        ? [
+            ...staffMenu.filter((item) => item.to !== "/reports" && item.to !== "/admin/comments"),
+            ...adminExtraMenu
+        ]
+        : staffMenu;
+
+    if (isReaderUser(user)) {
+        return <Navigate to="/reader" replace />;
+    }
 
     function handleLogout() {
         logout();
@@ -66,7 +89,7 @@ export default function AppLayout() {
                         <UserRound size={20} />
                     </div>
                     <div className="user-meta">
-                        <b>{user?.tenDangNhap || "user"}</b>
+                        <b>{displayName}</b>
                         <span>{user?.tenVaiTro || "ROLE"}</span>
                     </div>
                 </div>
@@ -74,14 +97,9 @@ export default function AppLayout() {
 
             <main className="workspace">
                 <header className="topbar">
-                    <div className="search-box">
-                        <Search size={18} />
-                        <input placeholder="Tìm sách, độc giả, phiếu mượn..." />
-                    </div>
-
                     <div className="topbar-actions">
                         <div className="user-chip">
-                            {user?.maNhanVien || user?.maDocGia || user?.maTaiKhoan}
+                            {displayName}
                         </div>
                         <button className="ghost-button" onClick={handleLogout}>
                             <LogOut size={18} />
@@ -96,4 +114,15 @@ export default function AppLayout() {
             </main>
         </div>
     );
+}
+
+function getUserDisplayName(user) {
+    return user?.hoTen ||
+        user?.tenNhanVien ||
+        user?.tenDocGia ||
+        user?.tenDangNhap ||
+        user?.maNhanVien ||
+        user?.maDocGia ||
+        user?.maTaiKhoan ||
+        "user";
 }

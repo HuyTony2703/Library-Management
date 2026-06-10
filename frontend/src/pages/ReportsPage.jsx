@@ -4,10 +4,13 @@ import { libraryApi } from "../api/libraryApi";
 import DataTable from "../components/DataTable";
 import PageHeader from "../components/PageHeader";
 import { useToast } from "../components/ToastProvider";
+import { useAuth } from "../context/AuthContext";
 
 export default function ReportsPage() {
     const toast = useToast();
+    const { user } = useAuth();
     const now = new Date();
+    const isAdmin = user?.tenVaiTro === "QUAN_TRI_VIEN" || user?.maVaiTro === "VT_ADMIN";
 
     const [month, setMonth] = useState(now.getMonth() + 1);
     const [year, setYear] = useState(now.getFullYear());
@@ -15,6 +18,11 @@ export default function ReportsPage() {
     const [late, setLate] = useState([]);
 
     async function load() {
+        if (!isAdmin) {
+            toast.error("Chỉ admin được xem báo cáo tổng hợp");
+            return;
+        }
+
         try {
             const [borrowData, lateData] = await Promise.all([
                 libraryApi.borrowByCategoryReport(month, year),
@@ -34,6 +42,25 @@ export default function ReportsPage() {
         value: Number(item.soLuotMuon || 0)
     }));
 
+    if (!isAdmin) {
+        return (
+            <div>
+                <PageHeader
+                    eyebrow="Reports"
+                    title="Báo cáo thư viện"
+                    description="Báo cáo tổng hợp chỉ dành cho admin."
+                />
+
+                <div className="panel">
+                    <div className="panel-title">
+                        <h2>Không có quyền truy cập</h2>
+                    </div>
+                    <p>Tài khoản thủ thư không được gọi API báo cáo admin-only.</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div>
             <PageHeader
@@ -44,10 +71,10 @@ export default function ReportsPage() {
 
             <div className="panel compact-form">
                 <label>Tháng</label>
-                <input type="number" min="1" max="12" value={month} onChange={(e) => setMonth(e.target.value)} />
+                <input type="number" min="1" max="12" value={month} onChange={(event) => setMonth(event.target.value)} />
 
                 <label>Năm</label>
-                <input type="number" value={year} onChange={(e) => setYear(e.target.value)} />
+                <input type="number" value={year} onChange={(event) => setYear(event.target.value)} />
 
                 <button className="primary-button" onClick={load}>Xem báo cáo</button>
             </div>
@@ -83,7 +110,11 @@ export default function ReportsPage() {
                             { key: "tenDauSach", title: "Tên sách" },
                             { key: "hoTenDocGia", title: "Độc giả" },
                             { key: "soNgayTre", title: "Ngày trễ" },
-                            { key: "tienPhatTre", title: "Tiền phạt", render: (r) => `${Number(r.tienPhatTre || 0).toLocaleString()}đ` }
+                            {
+                                key: "tienPhatTre",
+                                title: "Tiền phạt",
+                                render: (row) => `${Number(row.tienPhatTre || 0).toLocaleString()}đ`
+                            }
                         ]}
                     />
                 </div>

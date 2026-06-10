@@ -66,6 +66,10 @@ public class ThanhToanService {
 
     @Transactional
     public PhieuThuResponse createPayment(PhieuThuRequest request) {
+        if (request.getSoTienThu() == null || request.getSoTienThu().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("Số tiền thu phải lớn hơn 0");
+        }
+
         if (phieuThuRepository.existsById(request.getMaPhieuThu())) {
             throw new BusinessException("Mã phiếu thu đã tồn tại");
         }
@@ -181,6 +185,10 @@ public class ThanhToanService {
         Set<String> usedDebts = new HashSet<>();
 
         for (PhieuThuRequest.ChiTietThuNoRequest item : request.getChiTietNo()) {
+            if (item.getSoTienApDung() == null || item.getSoTienApDung().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BusinessException("Số tiền áp dụng phải lớn hơn 0");
+            }
+
             if (!usedDebts.add(item.getMaKhoanNo())) {
                 throw new BusinessException("Khoản nợ bị lặp trong phiếu thu: " + item.getMaKhoanNo());
             }

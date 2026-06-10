@@ -118,6 +118,17 @@ public class DauSachService {
         dauSachRepository.save(dauSach);
     }
 
+    @Transactional
+    public void hardDelete(String maDauSach) {
+        DauSach dauSach = dauSachRepository.findById(maDauSach)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đầu sách"));
+
+        deleteTacGias(maDauSach);
+        deleteTheLoais(maDauSach);
+        dauSachRepository.delete(dauSach);
+        dauSachRepository.flush();
+    }
+
     private void validateRequest(DauSachRequest request, String maDauSachDangUpdate) {
         if (hasText(request.getMaNhaXuatBan())
                 && !nhaXuatBanRepository.existsById(request.getMaNhaXuatBan())) {

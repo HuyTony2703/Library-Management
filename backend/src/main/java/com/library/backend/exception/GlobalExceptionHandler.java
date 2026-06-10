@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -180,6 +181,21 @@ public class GlobalExceptionHandler {
                 sqlErrorMessage.status(),
                 "DATA_INTEGRITY_VIOLATION",
                 sqlErrorMessage.message(),
+                request
+        );
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<ErrorResponse> handleDataAccessException(
+            DataAccessException ex,
+            HttpServletRequest request
+    ) {
+        ex.printStackTrace();
+
+        return buildResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "DATABASE_SYNC_ERROR",
+                buildDatabaseSyncMessage(ex),
                 request
         );
     }
@@ -379,6 +395,19 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 "Dữ liệu không hợp lệ theo ràng buộc database"
         );
+    }
+
+    private String buildDatabaseSyncMessage(Throwable throwable) {
+        String rootMessage = getRootMessage(throwable);
+        String message = "Database chưa đồng bộ với backend. Hãy chạy lại các script database mới nhất.";
+
+        if (rootMessage.contains("Invalid object name")
+                || rootMessage.contains("Invalid column name")
+                || rootMessage.contains("Could not find stored procedure")) {
+            return message + " Chi tiết: " + rootMessage;
+        }
+
+        return message;
     }
 
     private record SqlErrorMessage(HttpStatus status, String message) {

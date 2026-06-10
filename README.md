@@ -9,6 +9,21 @@
 
 LibraDesk là ứng dụng desktop quản lý thư viện. Tài liệu này được dùng để hướng người dùng sử dụng app, không phải tài liệu hướng dẫn lập trình.
 
+## Quy ước API khi phát triển song song
+
+- Admin API: `/api/admin/**`
+- Staff API: `/api/staff/**`
+- Reader API: `/api/reader/**`
+- Public API: `/api/public/**`
+
+Người 1 phụ trách Admin + Staff.
+Người 2 phụ trách Reader.
+
+Không tạo API mới ngoài prefix đã thống nhất.
+Không sửa chung `libraryApi.js`.
+Người 1 dùng `adminApi.js`, `staffApi.js`.
+Người 2 dùng `readerApi.js`.
+
 ---
 
 ## 1. Trước khi mở app

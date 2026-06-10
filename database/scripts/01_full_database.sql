@@ -750,6 +750,22 @@
                 CHECK (TrangThai IN (N'Hiển thị', N'Đã ẩn', N'Đã xóa'))
         );
 
+        CREATE TABLE SACHYEUTHICH (
+            MaYeuThich VARCHAR(30) PRIMARY KEY,
+            MaDocGia VARCHAR(30) NOT NULL,
+            MaDauSach VARCHAR(30) NOT NULL,
+            NgayThem DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+
+            CONSTRAINT FK_SYT_DOCGIA
+                FOREIGN KEY (MaDocGia) REFERENCES DOCGIA(MaDocGia),
+
+            CONSTRAINT FK_SYT_DAUSACH
+                FOREIGN KEY (MaDauSach) REFERENCES DAUSACH(MaDauSach),
+
+            CONSTRAINT UQ_SYT_DOCGIA_DAUSACH
+                UNIQUE (MaDocGia, MaDauSach)
+        );
+
         /* =========================================================
            L. THÔNG BÁO VÀ EMAIL
            ========================================================= */
@@ -772,6 +788,8 @@
             TrangThaiEmail NVARCHAR(30) NOT NULL DEFAULT N'Không gửi',
             SoLanThuGuiEmail INT NOT NULL DEFAULT 0,
             ThoiGianGuiEmailCuoi DATETIME2 NULL,
+            DaDoc BIT NOT NULL DEFAULT 0,
+            ThoiGianDoc DATETIME2 NULL,
 
             CONSTRAINT FK_THONGBAO_TAIKHOAN
                 FOREIGN KEY (MaTaiKhoanNhan) REFERENCES TAIKHOAN(MaTaiKhoan),
@@ -795,6 +813,7 @@
         CREATE INDEX IX_NHANVIEN_CHINHANH ON NHANVIEN(MaChiNhanh);
 
         CREATE INDEX IX_CUONSACH_DAUSACH ON CUONSACH(MaDauSach);
+        CREATE INDEX IX_CUONSACH_DAUSACH_TRANGTHAI_NGAYNHAP ON CUONSACH(MaDauSach, MaTrangThai, NgayNhapSach DESC);
         CREATE INDEX IX_CUONSACH_CHINHANH_TRANGTHAI ON CUONSACH(MaChiNhanh, MaTrangThai);
         CREATE INDEX IX_DAUSACH_TEN ON DAUSACH(TenDauSach);
 
@@ -802,10 +821,15 @@
         CREATE INDEX IX_PHIEUMUON_CHINHANH ON PHIEUMUON(MaChiNhanh);
         CREATE INDEX IX_CTPM_PHIEUMUON ON CHITIETPHIEUMUON(MaPhieuMuon);
         CREATE INDEX IX_CTPM_CUONSACH ON CHITIETPHIEUMUON(MaCuonSach);
+        CREATE INDEX IX_CTPM_CUONSACH_NGAYMUON ON CHITIETPHIEUMUON(MaCuonSach, NgayMuon DESC);
 
         CREATE INDEX IX_PHIEUTRA_DOCGIA ON PHIEUTRA(MaDocGia);
         CREATE INDEX IX_KHOANNO_DOCGIA ON KHOANNO(MaDocGia);
         CREATE INDEX IX_THONGBAO_TAIKHOAN ON THONGBAO(MaTaiKhoanNhan);
+        CREATE INDEX IX_THONGBAO_TAIKHOAN_DADOC ON THONGBAO(MaTaiKhoanNhan, DaDoc, NgayTao);
+        CREATE INDEX IX_SACHYEUTHICH_DOCGIA_NGAYTHEM ON SACHYEUTHICH(MaDocGia, NgayThem DESC);
+        CREATE INDEX IX_SACHYEUTHICH_DAUSACH ON SACHYEUTHICH(MaDauSach);
+        CREATE INDEX IX_DANHGIA_DAUSACH_TRANGTHAI_SOSAO ON DANHGIA(MaDauSach, TrangThai, SoSao);
 
         /* =========================================================
            DỮ LIỆU DANH MỤC MẶC ĐỊNH

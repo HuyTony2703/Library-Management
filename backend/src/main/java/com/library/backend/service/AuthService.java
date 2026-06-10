@@ -80,17 +80,21 @@ public class AuthService {
     }
 
     public AuthResponse me(AuthUser user) {
-        return toResponse(null, user);
+        return toResponse(null, enrichDisplayName(user));
     }
 
     private AuthUser buildAuthUser(TaiKhoan taiKhoan, VaiTro vaiTro) {
-        String maDocGia = docGiaRepository.findByMaTaiKhoan(taiKhoan.getMaTaiKhoan())
-                .map(DocGia::getMaDocGia)
+        DocGia docGia = docGiaRepository.findByMaTaiKhoan(taiKhoan.getMaTaiKhoan())
                 .orElse(null);
 
-        String maNhanVien = nhanVienRepository.findByMaTaiKhoan(taiKhoan.getMaTaiKhoan())
-                .map(NhanVien::getMaNhanVien)
+        NhanVien nhanVien = nhanVienRepository.findByMaTaiKhoan(taiKhoan.getMaTaiKhoan())
                 .orElse(null);
+
+        String maDocGia = docGia == null ? null : docGia.getMaDocGia();
+        String maNhanVien = nhanVien == null ? null : nhanVien.getMaNhanVien();
+        String hoTen = nhanVien != null
+                ? nhanVien.getHoTen()
+                : docGia == null ? null : docGia.getHoTen();
 
         return new AuthUser(
                 taiKhoan.getMaTaiKhoan(),
@@ -98,7 +102,8 @@ public class AuthService {
                 taiKhoan.getMaVaiTro(),
                 vaiTro.getTenVaiTro(),
                 maDocGia,
-                maNhanVien
+                maNhanVien,
+                hoTen
         );
     }
 
@@ -111,7 +116,42 @@ public class AuthService {
                 user.getMaVaiTro(),
                 user.getTenVaiTro(),
                 user.getMaDocGia(),
-                user.getMaNhanVien()
+                user.getMaNhanVien(),
+                user.getHoTen()
         );
+    }
+
+    private AuthUser enrichDisplayName(AuthUser user) {
+        if (hasText(user.getHoTen())) {
+            return user;
+        }
+
+        String hoTen = null;
+
+        if (hasText(user.getMaNhanVien())) {
+            hoTen = nhanVienRepository.findById(user.getMaNhanVien())
+                    .map(NhanVien::getHoTen)
+                    .orElse(null);
+        }
+
+        if (!hasText(hoTen) && hasText(user.getMaDocGia())) {
+            hoTen = docGiaRepository.findById(user.getMaDocGia())
+                    .map(DocGia::getHoTen)
+                    .orElse(null);
+        }
+
+        return new AuthUser(
+                user.getMaTaiKhoan(),
+                user.getTenDangNhap(),
+                user.getMaVaiTro(),
+                user.getTenVaiTro(),
+                user.getMaDocGia(),
+                user.getMaNhanVien(),
+                hoTen
+        );
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

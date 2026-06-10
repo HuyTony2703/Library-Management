@@ -13,13 +13,16 @@ export function AuthProvider({ children }) {
             try {
                 if (!getToken()) {
                     setUser(null);
+                    localStorage.removeItem("user");
                     return;
                 }
 
                 const data = await meApi();
                 setUser(data);
+                localStorage.setItem("user", JSON.stringify(data));
             } catch {
                 setUser(null);
+                localStorage.removeItem("user");
             } finally {
                 setLoadingUser(false);
             }
@@ -31,21 +34,38 @@ export function AuthProvider({ children }) {
     async function login(usernameOrEmail, password) {
         const data = await loginApi(usernameOrEmail, password);
         setUser(data);
+        localStorage.setItem("user", JSON.stringify(data));
         return data;
     }
 
     function logout() {
         logoutApi();
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
         setUser(null);
     }
 
     return (
-        <AuthContext.Provider value={{ user, loadingUser, login, logout }}>
+        <AuthContext.Provider
+            value={{
+                user,
+                loadingUser,
+                login,
+                logout,
+                isAuthenticated: Boolean(user || getToken())
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
 }
 
 export function useAuth() {
-    return useContext(AuthContext);
+    const context = useContext(AuthContext);
+
+    if (!context) {
+        throw new Error("useAuth must be used inside AuthProvider");
+    }
+
+    return context;
 }

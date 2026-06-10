@@ -45,6 +45,7 @@ public class TokenService {
             payload.put("tenVaiTro", user.getTenVaiTro());
             payload.put("maDocGia", user.getMaDocGia());
             payload.put("maNhanVien", user.getMaNhanVien());
+            payload.put("hoTen", user.getHoTen());
             payload.put("exp", Instant.now().plusSeconds(expirationMinutes * 60).getEpochSecond());
 
             String headerPart = base64UrlEncode(objectMapper.writeValueAsBytes(header));
@@ -94,7 +95,8 @@ public class TokenService {
                     (String) payload.get("maVaiTro"),
                     (String) payload.get("tenVaiTro"),
                     (String) payload.get("maDocGia"),
-                    (String) payload.get("maNhanVien")
+                    (String) payload.get("maNhanVien"),
+                    (String) payload.get("hoTen")
             );
         } catch (Exception e) {
             throw new RuntimeException("Token không hợp lệ hoặc đã hết hạn");
