@@ -29,11 +29,6 @@ public class ReaderMembershipService {
     private static final String PAYMENT_SUCCESS = "Thành công";
     private static final String PAYMENT_TYPE_MEMBERSHIP = "Thu tiền mua gói";
     private static final String TB_MUA_GOI_TC = "TB_MUA_GOI_TC";
-    private static final String PLAN_THUONG = "GOI_THUONG";
-    private static final String PLAN_VIP = "GOI_VIP";
-    private static final String PLAN_PREMIUM = "GOI_PREMIUM";
-    private static final BigDecimal DEFAULT_PREMIUM_PRICE = BigDecimal.valueOf(100000);
-    private static final int DEFAULT_PLAN_DURATION_DAYS = 180;
 
     private final JdbcTemplate jdbcTemplate;
     private final ReaderNotificationService readerNotificationService;
@@ -82,11 +77,8 @@ public class ReaderMembershipService {
     }
 
     public List<MembershipPlanResponse> getAvailablePlans(String maDocGia) {
-        ensurePremiumPlanExists();
-
         ReaderInfo reader = getReaderInfo(maDocGia);
         String maPhienBan = getCurrentPolicyVersion();
-        ensurePremiumPlanPriceExists(maPhienBan, reader.maNhomDocGia());
         MembershipPurchaseResponse current = getCurrentMembership(maDocGia);
         String currentPlan = current == null ? null : current.getMaGoiThanhVien();
 
@@ -96,35 +88,15 @@ public class ReaderMembershipService {
                     g.TenGoi,
                     g.MoTa,
                     g.TrangThai,
-                    COALESCE(groupPrice.GiaTien, fallbackPrice.GiaTien,
-                        CASE WHEN g.MaGoiThanhVien = 'GOI_PREMIUM' THEN 100000 ELSE 0 END
-                    ) AS GiaTien,
-                    COALESCE(groupPrice.ThoiHanGoiTheoNgay, fallbackPrice.ThoiHanGoiTheoNgay, 180) AS ThoiHanGoiTheoNgay
+                    gg.GiaTien,
+                    gg.ThoiHanGoiTheoNgay
                 FROM GOITHANHVIEN g
-                OUTER APPLY (
-                    SELECT TOP 1 gg.GiaTien, gg.ThoiHanGoiTheoNgay
-                    FROM GIAGOI_THEONHOM gg
-                    WHERE gg.MaPhienBan = ?
-                      AND gg.MaNhomDocGia = ?
-                      AND gg.MaGoiThanhVien = g.MaGoiThanhVien
-                    ORDER BY gg.GiaTien ASC
-                ) groupPrice
-                OUTER APPLY (
-                    SELECT TOP 1 gg.GiaTien, gg.ThoiHanGoiTheoNgay
-                    FROM GIAGOI_THEONHOM gg
-                    WHERE gg.MaPhienBan = ?
-                      AND gg.MaGoiThanhVien = g.MaGoiThanhVien
-                    ORDER BY gg.GiaTien ASC
-                ) fallbackPrice
-                WHERE g.TrangThai = ?
-                ORDER BY
-                    CASE g.MaGoiThanhVien
-                        WHEN 'GOI_THUONG' THEN 1
-                        WHEN 'GOI_VIP' THEN 2
-                        WHEN 'GOI_PREMIUM' THEN 3
-                        ELSE 9
-                    END,
-                    g.TenGoi ASC
+                INNER JOIN GIAGOI_THEONHOM gg
+                    ON g.MaGoiThanhVien = gg.MaGoiThanhVien
+                WHERE gg.MaPhienBan = ?
+                  AND gg.MaNhomDocGia = ?
+                  AND g.TrangThai = ?
+                ORDER BY gg.GiaTien ASC, g.TenGoi ASC
                 """;
 
         return jdbcTemplate.query(
@@ -140,7 +112,6 @@ public class ReaderMembershipService {
                 ),
                 maPhienBan,
                 reader.maNhomDocGia(),
-                maPhienBan,
                 ACTIVE_PLAN
         );
     }
@@ -179,27 +150,17 @@ public class ReaderMembershipService {
     ) {
         validatePurchaseRequest(request);
 
-        if (PLAN_PREMIUM.equals(request.getMaGoiThanhVien())) {
-            ensurePremiumPlanExists();
-        }
-
         ReaderInfo reader = getReaderInfo(maDocGia);
 
         if (!ACTIVE_READER.equals(reader.trangThai())) {
             throw new BusinessException("Tài khoản độc giả không ở trạng thái hoạt động");
         }
 
-        MembershipPurchaseResponse current = getCurrentMembership(maDocGia);
-        validatePackageUpgrade(current == null ? PLAN_THUONG : current.getMaGoiThanhVien(), request.getMaGoiThanhVien());
-
         if (!existsPaymentMethod(request.getMaPhuongThuc())) {
             throw new ResourceNotFoundException("Phương thức thanh toán không tồn tại");
         }
 
         String maPhienBan = getCurrentPolicyVersion();
-        if (PLAN_PREMIUM.equals(request.getMaGoiThanhVien())) {
-            ensurePremiumPlanPriceExists(maPhienBan, reader.maNhomDocGia());
-        }
         PlanPriceInfo plan = getPlanPrice(
                 maPhienBan,
                 reader.maNhomDocGia(),
@@ -391,164 +352,10 @@ public class ReaderMembershipService {
         );
 
         if (result.isEmpty()) {
-            PlanPriceInfo fallback = getFallbackPlanPrice(maPhienBan, maGoiThanhVien);
-
-            if (fallback != null) {
-                return fallback;
-            }
-
             throw new ResourceNotFoundException("Không tìm thấy giá gói phù hợp với nhóm độc giả hiện tại");
         }
 
         return result.get(0);
-    }
-
-    private PlanPriceInfo getFallbackPlanPrice(String maPhienBan, String maGoiThanhVien) {
-        if (PLAN_PREMIUM.equals(maGoiThanhVien)) {
-            ensurePremiumPlanExists();
-        }
-
-        List<PlanPriceInfo> result = jdbcTemplate.query(
-                """
-                SELECT TOP 1
-                    g.MaGoiThanhVien,
-                    g.TenGoi,
-                    gg.GiaTien,
-                    gg.ThoiHanGoiTheoNgay
-                FROM GOITHANHVIEN g
-                INNER JOIN GIAGOI_THEONHOM gg
-                    ON g.MaGoiThanhVien = gg.MaGoiThanhVien
-                WHERE gg.MaPhienBan = ?
-                  AND gg.MaGoiThanhVien = ?
-                  AND g.TrangThai = ?
-                ORDER BY gg.GiaTien ASC
-                """,
-                (rs, rowNum) -> new PlanPriceInfo(
-                        rs.getString("MaGoiThanhVien"),
-                        rs.getString("TenGoi"),
-                        rs.getBigDecimal("GiaTien"),
-                        rs.getInt("ThoiHanGoiTheoNgay")
-                ),
-                maPhienBan,
-                maGoiThanhVien,
-                ACTIVE_PLAN
-        );
-
-        if (!result.isEmpty()) {
-            return result.get(0);
-        }
-
-        if (!PLAN_PREMIUM.equals(maGoiThanhVien)) {
-            return null;
-        }
-
-        return new PlanPriceInfo(PLAN_PREMIUM, "Premium", DEFAULT_PREMIUM_PRICE, DEFAULT_PLAN_DURATION_DAYS);
-    }
-
-    private void ensurePremiumPlanExists() {
-        Integer exists = jdbcTemplate.queryForObject(
-                """
-                SELECT COUNT(*)
-                FROM GOITHANHVIEN
-                WHERE MaGoiThanhVien = ?
-                """,
-                Integer.class,
-                PLAN_PREMIUM
-        );
-
-        if (exists == null || exists == 0) {
-            jdbcTemplate.update(
-                    """
-                    INSERT INTO GOITHANHVIEN(MaGoiThanhVien, TenGoi, MoTa, TrangThai)
-                    VALUES (?, ?, ?, ?)
-                    """,
-                    PLAN_PREMIUM,
-                    "Premium",
-                    "Gói độc giả cao cấp",
-                    ACTIVE_PLAN
-            );
-            return;
-        }
-
-        jdbcTemplate.update(
-                """
-                UPDATE GOITHANHVIEN
-                SET TrangThai = ?
-                WHERE MaGoiThanhVien = ?
-                """,
-                ACTIVE_PLAN,
-                PLAN_PREMIUM
-        );
-    }
-
-    private void ensurePremiumPlanPriceExists(String maPhienBan, String maNhomDocGia) {
-        Integer exists = jdbcTemplate.queryForObject(
-                """
-                SELECT COUNT(*)
-                FROM GIAGOI_THEONHOM
-                WHERE MaPhienBan = ?
-                  AND MaNhomDocGia = ?
-                  AND MaGoiThanhVien = ?
-                """,
-                Integer.class,
-                maPhienBan,
-                maNhomDocGia,
-                PLAN_PREMIUM
-        );
-
-        if (exists != null && exists > 0) {
-            return;
-        }
-
-        jdbcTemplate.update(
-                """
-                INSERT INTO GIAGOI_THEONHOM(
-                    MaGiaGoi,
-                    MaPhienBan,
-                    MaGoiThanhVien,
-                    MaNhomDocGia,
-                    GiaTien,
-                    ThoiHanGoiTheoNgay
-                )
-                VALUES (?, ?, ?, ?, ?, ?)
-                """,
-                buildPremiumPriceId(maPhienBan, maNhomDocGia),
-                maPhienBan,
-                PLAN_PREMIUM,
-                maNhomDocGia,
-                DEFAULT_PREMIUM_PRICE,
-                DEFAULT_PLAN_DURATION_DAYS
-        );
-    }
-
-    private String buildPremiumPriceId(String maPhienBan, String maNhomDocGia) {
-        String key = maPhienBan + "|" + maNhomDocGia + "|" + PLAN_PREMIUM;
-        return "GG_PR_" + Integer.toUnsignedString(key.hashCode(), 36).toUpperCase();
-    }
-
-    private void validatePackageUpgrade(String currentPlan, String targetPlan) {
-        if (PLAN_THUONG.equals(targetPlan)) {
-            throw new BusinessException("Gói Thường là gói mặc định và không thể mua từ giao diện độc giả");
-        }
-
-        int currentLevel = packageLevel(currentPlan);
-        int targetLevel = packageLevel(targetPlan);
-
-        if (targetLevel <= currentLevel) {
-            throw new BusinessException("Chỉ có thể nâng cấp lên gói cao hơn gói hiện tại");
-        }
-    }
-
-    private int packageLevel(String maGoiThanhVien) {
-        if (PLAN_PREMIUM.equals(maGoiThanhVien)) {
-            return 3;
-        }
-
-        if (PLAN_VIP.equals(maGoiThanhVien)) {
-            return 2;
-        }
-
-        return 1;
     }
 
     private boolean existsPaymentMethod(String maPhuongThuc) {
