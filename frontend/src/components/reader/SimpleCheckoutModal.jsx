@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { readerApi } from "../../api/readerApi";
+import { notifyReaderNotificationsChanged } from "../../utils/notificationEvents";
 import { useToast } from "../ToastProvider";
 
 export default function SimpleCheckoutModal({ plan, onClose, onSuccess }) {
@@ -20,10 +21,14 @@ export default function SimpleCheckoutModal({ plan, onClose, onSuccess }) {
                 ghiChu
             });
 
-            toast.success("Mua gói thành công");
+            toast.success(`${plan.tenGoi} đã được kích hoạt. Vui lòng kiểm tra ngày hết hạn mới.`);
+            notifyReaderNotificationsChanged();
             onSuccess?.(result);
         } catch (err) {
-            toast.error(err.message || "Mua gói thất bại");
+            toast.error(
+                err.message ||
+                "Không thể mua gói. Giao dịch chưa được ghi nhận, vui lòng thử lại hoặc liên hệ thủ thư."
+            );
         } finally {
             setLoading(false);
         }
@@ -33,16 +38,21 @@ export default function SimpleCheckoutModal({ plan, onClose, onSuccess }) {
         <div className="reader-modal-backdrop">
             <form className="reader-modal" onSubmit={handleSubmit}>
                 <div className="reader-modal-header">
-                    <h2>Thanh toán gói {plan.tenGoi}</h2>
+                    <h2>Xác nhận mua gói {plan.tenGoi}</h2>
 
-                    <button type="button" className="reader-secondary-button" onClick={onClose}>
+                    <button type="button" className="reader-secondary-button" onClick={onClose} disabled={loading}>
                         Đóng
                     </button>
                 </div>
 
+                <p className="reader-muted">
+                    Gói {plan.tenGoi} có giá {formatCurrency(plan.giaTien)} và hiệu lực trong {plan.thoiHanGoiTheoNgay} ngày.
+                    Bạn có muốn tiếp tục giao dịch này?
+                </p>
+
                 <div className="checkout-summary">
                     <div>
-                        <span>Gói</span>
+                        <span>Gói độc giả</span>
                         <b>{plan.tenGoi}</b>
                     </div>
 
@@ -62,6 +72,7 @@ export default function SimpleCheckoutModal({ plan, onClose, onSuccess }) {
                     <select
                         value={maPhuongThuc}
                         onChange={(e) => setMaPhuongThuc(e.target.value)}
+                        disabled={loading}
                     >
                         <option value="PT_TIEN_MAT">Tiền mặt</option>
                         <option value="PT_CHUYEN_KHOAN">Chuyển khoản</option>
@@ -75,12 +86,16 @@ export default function SimpleCheckoutModal({ plan, onClose, onSuccess }) {
                         value={ghiChu}
                         maxLength={255}
                         onChange={(e) => setGhiChu(e.target.value)}
+                        disabled={loading}
                     />
                 </label>
 
                 <div className="reader-modal-actions">
+                    <button type="button" className="reader-secondary-button" onClick={onClose} disabled={loading}>
+                        Hủy
+                    </button>
                     <button type="submit" disabled={loading}>
-                        {loading ? "Đang xử lý..." : "Xác nhận thanh toán"}
+                        {loading ? "Đang xử lý giao dịch..." : "Xác nhận mua gói"}
                     </button>
                 </div>
             </form>

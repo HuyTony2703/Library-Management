@@ -78,16 +78,22 @@ export default function ReaderBookComments({ maDauSach, embedded = false }) {
 
     return (
         <Container className={embedded ? "feedback-block" : "reader-section"}>
-            <div className="section-title-row">
-                <div>
-                    <p className="reader-eyebrow">Comments</p>
-                    <h2>Bình luận</h2>
-                </div>
+            {!embedded ? (
+                <div className="section-title-row">
+                    <div>
+                        <p className="reader-eyebrow">Comments</p>
+                        <h2>Bình luận</h2>
+                    </div>
 
+                    <span className="reader-muted">
+                        {loading ? "Đang tải..." : `${comments.length} bình luận`}
+                    </span>
+                </div>
+            ) : (
                 <span className="reader-muted">
-                    {loading ? "Đang tải..." : `${comments.length} bình luận`}
+                    {loading ? "Đang tải bình luận..." : `${comments.length} bình luận`}
                 </span>
-            </div>
+            )}
 
             <CommentForm onSubmit={handleCreate} />
 

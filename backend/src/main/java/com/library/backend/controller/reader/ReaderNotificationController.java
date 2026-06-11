@@ -5,6 +5,7 @@ import com.library.backend.exception.BusinessException;
 import com.library.backend.security.AuthUser;
 import com.library.backend.service.reader.ReaderNotificationService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -55,6 +56,19 @@ public class ReaderNotificationController {
         return Map.of(
                 "message", "Đã đánh dấu tất cả thông báo là đã đọc",
                 "updated", updated
+        );
+    }
+
+    @DeleteMapping("/{maThongBao}")
+    public Map<String, Object> deleteNotification(
+            @AuthenticationPrincipal AuthUser user,
+            @PathVariable String maThongBao
+    ) {
+        readerNotificationService.deleteNotification(requireAccount(user), maThongBao);
+
+        return Map.of(
+                "message", "Đã xóa thông báo",
+                "maThongBao", maThongBao
         );
     }
 

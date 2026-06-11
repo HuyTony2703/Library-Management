@@ -68,6 +68,10 @@ export const readerApi = {
     apiFetch("/api/reader/notifications/read-all", {
       method: "PATCH"
     }),
+  deleteNotification: (maThongBao) =>
+    apiFetch(`/api/reader/notifications/${maThongBao}`, {
+      method: "DELETE"
+    }),
 
   // Membership
   currentMembership: () => apiFetch("/api/reader/membership/current"),

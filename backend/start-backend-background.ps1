@@ -13,10 +13,23 @@ $healthUrl = "http://localhost:8080/api/health"
 
 function Test-BackendHealth {
     try {
-        Invoke-RestMethod -Uri $healthUrl -TimeoutSec 1 | Out-Null
+        Invoke-RestMethod -Uri $healthUrl -TimeoutSec 5 | Out-Null
         return $true
     } catch {
-        return $false
+        try {
+            $client = New-Object System.Net.Sockets.TcpClient
+            $connect = $client.BeginConnect("127.0.0.1", 8080, $null, $null)
+            if (-not $connect.AsyncWaitHandle.WaitOne(1000, $false)) {
+                $client.Close()
+                return $false
+            }
+
+            $client.EndConnect($connect)
+            $client.Close()
+            return $true
+        } catch {
+            return $false
+        }
     }
 }
 

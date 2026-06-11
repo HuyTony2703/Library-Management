@@ -53,6 +53,7 @@ export default function RandomBookSection({ limit = 12 }) {
     const toast = useToast();
     const navigate = useNavigate();
     const trackRef = useRef(null);
+    const scrollSnapshotRef = useRef(null);
 
     const [activeType, setActiveType] = useState(recommendationTypes[0].type);
     const [booksByType, setBooksByType] = useState({});
@@ -85,7 +86,22 @@ export default function RandomBookSection({ limit = 12 }) {
         }
     }
 
+    function preservePageScroll() {
+        scrollSnapshotRef.current = window.scrollY;
+
+        window.requestAnimationFrame(() => {
+            if (scrollSnapshotRef.current !== null) {
+                window.scrollTo({ top: scrollSnapshotRef.current, left: window.scrollX, behavior: "auto" });
+            }
+        });
+    }
+
     function handleSelectType(type) {
+        if (type === activeType) {
+            return;
+        }
+
+        preservePageScroll();
         setActiveType(type);
         trackRef.current?.scrollTo({ left: 0, behavior: "smooth" });
     }
@@ -105,6 +121,17 @@ export default function RandomBookSection({ limit = 12 }) {
     useEffect(() => {
         loadBooks(activeType);
     }, [activeType, limit]);
+
+    useEffect(() => {
+        if (scrollSnapshotRef.current === null) {
+            return;
+        }
+
+        window.requestAnimationFrame(() => {
+            window.scrollTo({ top: scrollSnapshotRef.current, left: window.scrollX, behavior: "auto" });
+            scrollSnapshotRef.current = null;
+        });
+    }, [books, loading]);
 
     return (
         <section className="random-book-section">

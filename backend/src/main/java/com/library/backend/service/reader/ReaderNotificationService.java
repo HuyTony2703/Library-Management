@@ -125,6 +125,37 @@ public class ReaderNotificationService {
     }
 
     @Transactional
+    public void deleteNotification(String maTaiKhoan, String maThongBao) {
+        Integer exists = jdbcTemplate.queryForObject(
+                """
+                SELECT COUNT(*)
+                FROM THONGBAO
+                WHERE MaThongBao = ?
+                  AND MaTaiKhoanNhan = ?
+                  AND GuiTrongApp = 1
+                """,
+                Integer.class,
+                maThongBao,
+                maTaiKhoan
+        );
+
+        if (exists == null || exists == 0) {
+            throw new ResourceNotFoundException("Không tìm thấy thông báo");
+        }
+
+        jdbcTemplate.update(
+                """
+                UPDATE THONGBAO
+                SET GuiTrongApp = 0
+                WHERE MaThongBao = ?
+                  AND MaTaiKhoanNhan = ?
+                """,
+                maThongBao,
+                maTaiKhoan
+        );
+    }
+
+    @Transactional
     public String createInAppNotification(
             String maTaiKhoanNhan,
             String maLoaiThongBao,

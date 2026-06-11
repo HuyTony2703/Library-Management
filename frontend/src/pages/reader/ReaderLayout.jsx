@@ -1,8 +1,6 @@
 import {
-    Bell,
     BookOpen,
     BookmarkCheck,
-    Calculator,
     CircleHelp,
     CreditCard,
     Heart,
@@ -18,17 +16,35 @@ import NotificationBell from "../../components/reader/NotificationBell";
 import { useAuth } from "../../context/AuthContext";
 import "./reader.css";
 
-const menuItems = [
-    { to: "/reader", label: "Trang chủ", icon: Home },
-    { to: "/reader/books", label: "Tra cứu sách", icon: Search },
-    { to: "/reader/loans", label: "Sách đang mượn", icon: BookOpen },
-    { to: "/reader/reservations", label: "Đặt trước", icon: BookmarkCheck },
-    { to: "/reader/notifications", label: "Thông báo", icon: Bell },
-    { to: "/reader/membership", label: "Gói thành viên", icon: CreditCard },
-    { to: "/reader/favorites", label: "Sách yêu thích", icon: Heart },
-    { to: "/reader/guide", label: "Hướng dẫn", icon: CircleHelp },
-    { to: "/reader/rules", label: "Quy định", icon: ShieldCheck },
-    { to: "/reader/penalty-rules", label: "Cách tính phạt", icon: Calculator }
+const menuGroups = [
+    {
+        label: "Chính",
+        items: [
+            { to: "/reader", label: "Trang chủ", icon: Home },
+            { to: "/reader/books", label: "Tra cứu sách", icon: Search }
+        ]
+    },
+    {
+        label: "Hoạt động của tôi",
+        items: [
+            { to: "/reader/loans", label: "Sách đang mượn", icon: BookOpen },
+            { to: "/reader/reservations", label: "Đặt trước", icon: BookmarkCheck },
+            { to: "/reader/favorites", label: "Sách yêu thích", icon: Heart }
+        ]
+    },
+    {
+        label: "Tài khoản",
+        items: [
+            { to: "/reader/membership", label: "Gói độc giả", icon: CreditCard }
+        ]
+    },
+    {
+        label: "Hỗ trợ",
+        items: [
+            { to: "/reader/guide", label: "Hướng dẫn", icon: CircleHelp },
+            { to: "/reader/rules", label: "Quy định", icon: ShieldCheck }
+        ]
+    }
 ];
 
 export default function ReaderLayout() {
@@ -49,21 +65,26 @@ export default function ReaderLayout() {
                     </div>
                     <div>
                         <h2>LibraDesk</h2>
-                        <p>Reader Portal</p>
+                        <p>Cổng độc giả</p>
                     </div>
                 </div>
 
                 <nav className="reader-nav">
-                    {menuItems.map((item) => {
-                        const Icon = item.icon;
+                    {menuGroups.map((group) => (
+                        <div className="reader-nav-group" key={group.label}>
+                            <span>{group.label}</span>
+                            {group.items.map((item) => {
+                                const Icon = item.icon;
 
-                        return (
-                            <NavLink key={item.to} to={item.to} end={item.to === "/reader"}>
-                                <Icon size={18} />
-                                <span>{item.label}</span>
-                            </NavLink>
-                        );
-                    })}
+                                return (
+                                    <NavLink key={item.to} to={item.to} end={item.to === "/reader"}>
+                                        <Icon size={18} />
+                                        <span>{item.label}</span>
+                                    </NavLink>
+                                );
+                            })}
+                        </div>
+                    ))}
                 </nav>
 
                 <div className="reader-account">

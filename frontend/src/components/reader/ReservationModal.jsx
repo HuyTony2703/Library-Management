@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { readerApi } from "../../api/readerApi";
+import { notifyReaderNotificationsChanged } from "../../utils/notificationEvents";
 import { useToast } from "../ToastProvider";
 
 export default function ReservationModal({
@@ -33,6 +34,7 @@ export default function ReservationModal({
                 : await readerApi.reserveByTitle(payload);
 
             toast.success("Đặt trước thành công");
+            notifyReaderNotificationsChanged();
             onSuccess?.(data);
         } catch (err) {
             toast.error(err.message || "Đặt trước thất bại");

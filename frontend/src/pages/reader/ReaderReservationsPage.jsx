@@ -1,9 +1,8 @@
-import { RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { readerApi } from "../../api/readerApi";
-import ReservationHistoryTable from "../../components/reader/ReservationHistoryTable";
 import { useActionDialog } from "../../components/ActionDialogProvider";
 import { useToast } from "../../components/ToastProvider";
+import ReservationHistoryTable from "../../components/reader/ReservationHistoryTable";
 
 export default function ReaderReservationsPage() {
     const toast = useToast();
@@ -18,18 +17,20 @@ export default function ReaderReservationsPage() {
             const result = await readerApi.reservations();
             setData(Array.isArray(result) ? result : []);
         } catch (err) {
-            toast.error(err.message || "Không tải được danh sách đặt trước");
+            toast.error(err.message || "Không tải được danh sách đặt trước. Vui lòng thử lại.");
         } finally {
             setLoading(false);
         }
     }
 
-    async function handleCancel(maPhieuDatTruoc) {
+    async function handleCancel(item) {
         const ok = await actionDialog.confirm({
-            title: "Hủy đặt trước",
-            message: "Bạn có chắc muốn hủy phiếu đặt trước này không?",
-            confirmLabel: "Hủy phiếu",
-            danger: true
+            title: "Hủy đặt trước?",
+            message: `Bạn có chắc muốn hủy đặt trước cho "${item.tenDauSach}"? Nếu hủy, bạn có thể mất vị trí hiện tại trong hàng chờ.`,
+            confirmLabel: "Xác nhận hủy",
+            cancelLabel: "Giữ đặt trước",
+            danger: true,
+            cancelPrimary: true
         });
 
         if (!ok) {
@@ -37,11 +38,14 @@ export default function ReaderReservationsPage() {
         }
 
         try {
-            await readerApi.cancelReservation(maPhieuDatTruoc);
-            toast.success("Hủy đặt trước thành công");
+            await readerApi.cancelReservation(item.maPhieuDatTruoc);
+            toast.success(`Phiếu đặt trước ${item.maPhieuDatTruoc} đã được hủy.`);
             await loadReservations();
         } catch (err) {
-            toast.error(err.message || "Hủy đặt trước thất bại");
+            toast.error(
+                err.message ||
+                "Không thể hủy đặt trước. Phiếu có thể đã được xử lý, vui lòng tải lại dữ liệu."
+            );
         }
     }
 
@@ -52,16 +56,9 @@ export default function ReaderReservationsPage() {
     return (
         <div>
             <div className="reader-home-header">
-                <small>Reservation</small>
+                <small>ĐẶT TRƯỚC</small>
                 <h1>Đặt trước sách</h1>
-                <p>Theo dõi các phiếu đặt trước theo đầu sách hoặc theo cuốn cụ thể.</p>
-            </div>
-
-            <div className="reader-page-actions">
-                <button type="button" onClick={loadReservations}>
-                    <RefreshCcw size={17} />
-                    {loading ? "Đang tải..." : "Tải lại"}
-                </button>
+                <p>Theo dõi sách đang chờ, sách đã được giữ và thời hạn nhận sách.</p>
             </div>
 
             <ReservationHistoryTable data={data} onCancel={handleCancel} />

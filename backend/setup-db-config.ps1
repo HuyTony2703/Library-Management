@@ -6,6 +6,7 @@ $ErrorActionPreference = "Stop"
 
 $configFile = Join-Path $ConfigDir "db-config.properties"
 $passwordFile = Join-Path $ConfigDir "db-password.dpapi"
+$jsonConfigFile = Join-Path $ConfigDir "database-config.json"
 
 function ConvertTo-PlainText {
     param([System.Security.SecureString]$SecureValue)
@@ -133,7 +134,7 @@ while ($true) {
     try {
         Test-SqlConnection -ConnectionString $connectionString
     } catch {
-        Remove-Item -LiteralPath $configFile, $passwordFile -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $configFile, $passwordFile, $jsonConfigFile -Force -ErrorAction SilentlyContinue
 
         Write-Host ""
         Write-Host "[ERROR] Khong ket noi duoc SQL Server voi thong tin vua nhap."
@@ -161,6 +162,7 @@ while ($true) {
     ) | Set-Content -Path $configFile -Encoding ASCII
 
     $securePassword | ConvertFrom-SecureString | Set-Content -Path $passwordFile -Encoding ASCII
+    Remove-Item -LiteralPath $jsonConfigFile -Force -ErrorAction SilentlyContinue
 
     Write-Host ""
     Write-Host "[OK] Da luu cau hinh database tai:"

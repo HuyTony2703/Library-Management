@@ -23,14 +23,15 @@ export function ActionDialogProvider({ children }) {
     }
 
     const value = useMemo(() => ({
-        confirm: ({ title, message, confirmLabel = "Xác nhận", cancelLabel = "Hủy", danger = false }) =>
+        confirm: ({ title, message, confirmLabel = "Xác nhận", cancelLabel = "Hủy", danger = false, cancelPrimary = false }) =>
             open({
                 type: "confirm",
                 title,
                 message,
                 confirmLabel,
                 cancelLabel,
-                danger
+                danger,
+                cancelPrimary
             }),
         prompt: ({ title, message, defaultValue = "", confirmLabel = "Xác nhận", cancelLabel = "Hủy" }) =>
             open({
@@ -135,7 +136,11 @@ function ActionDialog({ dialog, onClose }) {
                         >
                             {dialog.confirmLabel}
                         </button>
-                        <button type="button" className="ghost-button" onClick={() => onClose(false)}>
+                        <button
+                            type="button"
+                            className={dialog.cancelPrimary ? "primary-button" : "ghost-button"}
+                            onClick={() => onClose(false)}
+                        >
                             {dialog.cancelLabel}
                         </button>
                     </div>

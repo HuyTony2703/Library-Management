@@ -3,12 +3,36 @@ function formatDateTime(value) {
         return "Chưa có";
     }
 
-    return new Date(value).toLocaleString("vi-VN");
+    return new Intl.DateTimeFormat("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    }).format(new Date(value));
+}
+
+function normalizeReservationStatus(status) {
+    const value = status || "Chưa cập nhật";
+
+    if (value === "Đã giữ chỗ") {
+        return "Sách đã được giữ";
+    }
+
+    if (value === "Chưa giữ chỗ") {
+        return "Chưa có sách sẵn";
+    }
+
+    return value;
 }
 
 function getReservationStatusClass(status) {
-    if (status === "Đang chờ" || status === "Đã giữ chỗ") {
+    if (status === "Đã giữ chỗ") {
         return "copy-status-good";
+    }
+
+    if (status === "Đang chờ") {
+        return "copy-status-warn";
     }
 
     if (status === "Đã hủy" || status === "Đã hết hạn") {
@@ -34,7 +58,7 @@ export default function ReservationHistoryTable({ data = [], onCancel }) {
                     <tr>
                         <th>Mã phiếu</th>
                         <th>Đầu sách</th>
-                        <th>Cuốn giữ chỗ</th>
+                        <th>Sách được giữ</th>
                         <th>Ngày đặt</th>
                         <th>Hết hạn giữ</th>
                         <th>Trạng thái</th>
@@ -54,27 +78,30 @@ export default function ReservationHistoryTable({ data = [], onCancel }) {
                                 <td>
                                     <b>{item.tenDauSach}</b>
                                     <div className="reader-muted">{item.maDauSach}</div>
+                                    {item.viTriHangDoi && (
+                                        <div className="reader-muted">Vị trí chờ: #{item.viTriHangDoi}</div>
+                                    )}
                                 </td>
-                                <td>{item.maCuonSachDuocGiu || "Theo đầu sách"}</td>
+                                <td>{item.maCuonSachDuocGiu || "Đặt trước theo đầu sách"}</td>
                                 <td>{formatDateTime(item.ngayDat)}</td>
                                 <td>
                                     {item.ngayHetHanGiuCho
                                         ? formatDateTime(item.ngayHetHanGiuCho)
-                                        : "Chưa giữ chỗ"}
+                                        : "Chưa có sách sẵn"}
                                 </td>
                                 <td>
                                     <span className={`copy-status ${getReservationStatusClass(item.trangThai)}`}>
-                                        {item.trangThai}
+                                        {normalizeReservationStatus(item.trangThai)}
                                     </span>
                                 </td>
                                 <td>
                                     {canCancel && (
                                         <button
                                             type="button"
-                                            className="reader-secondary-button"
-                                            onClick={() => onCancel(item.maPhieuDatTruoc)}
+                                            className="reader-danger-button"
+                                            onClick={() => onCancel(item)}
                                         >
-                                            Hủy
+                                            Hủy đặt trước
                                         </button>
                                     )}
                                 </td>
@@ -86,4 +113,3 @@ export default function ReservationHistoryTable({ data = [], onCancel }) {
         </div>
     );
 }
-

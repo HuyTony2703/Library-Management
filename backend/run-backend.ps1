@@ -248,7 +248,7 @@ try {
     Write-Host "- SQL Server chua bat TCP/IP hoac chua chay"
     Write-Host ""
     Write-Host "Cau hinh database da luu se duoc reset."
-    Remove-Item -LiteralPath $configFile, $passwordFile -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath $configFile, $passwordFile, $jsonConfigFile -Force -ErrorAction SilentlyContinue
     Write-Host ""
     Write-Host "Chi tiet loi:"
     Write-Host $_.Exception.Message

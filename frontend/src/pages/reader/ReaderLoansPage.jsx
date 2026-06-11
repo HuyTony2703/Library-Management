@@ -1,9 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
 import { useToast } from "../../components/ToastProvider";
 import ReaderLoanCard from "../../components/reader/ReaderLoanCard";
 import RenewalConfirmModal from "../../components/reader/RenewalConfirmModal";
+import { notifyReaderNotificationsChanged } from "../../utils/notificationEvents";
+
+function getDueStatus(hanTra) {
+    if (!hanTra) {
+        return "unknown";
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(hanTra);
+    due.setHours(0, 0, 0, 0);
+    const diffDays = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return "overdue";
+    if (diffDays <= 3) return "soon";
+    return "normal";
+}
 
 export default function ReaderLoansPage() {
     const toast = useToast();
@@ -21,8 +38,11 @@ export default function ReaderLoansPage() {
         try {
             const data = await readerApi.currentLoans();
             setLoans(Array.isArray(data) ? data : []);
+            if (!loading) {
+                toast.info("Dữ liệu sách đang mượn đã được cập nhật.");
+            }
         } catch (err) {
-            setError(err.message || "Không tải được sách đang mượn");
+            setError(err.message || "Không tải được sách đang mượn. Vui lòng thử lại.");
         } finally {
             setLoading(false);
         }
@@ -41,33 +61,62 @@ export default function ReaderLoansPage() {
 
         try {
             await readerApi.renewLoan(selectedLoan.maChiTietMuon);
-            toast.success("Gia hạn sách thành công");
+            toast.success("Gia hạn sách thành công. Vui lòng kiểm tra hạn trả mới.");
+            notifyReaderNotificationsChanged();
             setSelectedLoan(null);
             await loadCurrentLoans();
         } catch (err) {
-            toast.error(err.message || "Gia hạn thất bại");
+            toast.error(
+                err.message ||
+                "Không thể gia hạn sách. Vui lòng kiểm tra số lượt gia hạn còn lại hoặc liên hệ thủ thư."
+            );
         } finally {
             setRenewing(false);
         }
     }
 
+    const summary = useMemo(() => {
+        const dueSoon = loans.filter((loan) => getDueStatus(loan.hanTra) === "soon").length;
+        const overdue = loans.filter((loan) => getDueStatus(loan.hanTra) === "overdue").length;
+        const penalty = loans.reduce((sum, loan) => sum + Number(loan.tienPhatHienTai || loan.tienPhat || 0), 0);
+
+        return { dueSoon, overdue, penalty };
+    }, [loans]);
+
     return (
         <div>
             <div className="reader-home-header">
-                <small>Current Loans</small>
+                <small>SÁCH ĐANG MƯỢN</small>
                 <h1>Sách đang mượn</h1>
-                <p>Xem danh sách sách đang mượn và gia hạn khi còn lượt gia hạn.</p>
+                <p>Xem hạn trả, số ngày còn lại và gia hạn sách khi còn lượt.</p>
             </div>
 
             <div className="reader-page-actions">
-                <button type="button" onClick={loadCurrentLoans}>
-                    Tải lại
-                </button>
-
                 <Link to="/reader/loans/renewal-history">
                     Xem lịch sử gia hạn
                 </Link>
             </div>
+
+            {!loading && loans.length > 0 && (
+                <section className="reader-loan-summary">
+                    <div>
+                        <span>Đang mượn</span>
+                        <b>{loans.length}</b>
+                    </div>
+                    <div>
+                        <span>Sắp đến hạn</span>
+                        <b>{summary.dueSoon}</b>
+                    </div>
+                    <div>
+                        <span>Quá hạn</span>
+                        <b>{summary.overdue}</b>
+                    </div>
+                    <div>
+                        <span>Phạt hiện tại</span>
+                        <b>{summary.penalty.toLocaleString("vi-VN")}đ</b>
+                    </div>
+                </section>
+            )}
 
             {error && <div className="reader-error">{error}</div>}
 
@@ -85,6 +134,7 @@ export default function ReaderLoansPage() {
                         <ReaderLoanCard
                             key={loan.maChiTietMuon}
                             loan={loan}
+                            renewing={renewing && selectedLoan?.maChiTietMuon === loan.maChiTietMuon}
                             onRenew={setSelectedLoan}
                         />
                     ))}
@@ -100,4 +150,3 @@ export default function ReaderLoansPage() {
         </div>
     );
 }
-

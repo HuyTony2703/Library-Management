@@ -10,7 +10,6 @@ import ReaderReservationsPage from "../pages/reader/ReaderReservationsPage";
 import ReaderNotificationsPage from "../pages/reader/ReaderNotificationsPage";
 import ReaderMembershipPage from "../pages/reader/ReaderMembershipPage";
 import ReaderFavoritesPage from "../pages/reader/ReaderFavoritesPage";
-import PenaltyRulesPage from "../pages/reader/PenaltyRulesPage";
 import ReaderGuidePage from "../pages/reader/ReaderGuidePage";
 import ReaderRulesPage from "../pages/reader/ReaderRulesPage";
 
@@ -35,6 +34,6 @@ export const readerRoutes = (
         <Route path="recommendations" element={<Navigate to="/reader" replace />} />
         <Route path="guide" element={<ReaderGuidePage />} />
         <Route path="rules" element={<ReaderRulesPage />} />
-        <Route path="penalty-rules" element={<PenaltyRulesPage />} />
+        <Route path="penalty-rules" element={<Navigate to="/reader/rules#penalty-rules" replace />} />
     </Route>
 );

@@ -6,6 +6,7 @@ setlocal
 
 set "DB_CONFIG_FILE=%APPDATA%\LibraDesk\db-config.properties"
 set "DB_PASSWORD_FILE=%APPDATA%\LibraDesk\db-password.dpapi"
+set "DB_JSON_CONFIG_FILE=%APPDATA%\LibraDesk\database-config.json"
 
 echo ==========================================
 echo      RESET LIBRADESK DATABASE CONFIG
@@ -45,6 +46,17 @@ if exist "%DB_PASSWORD_FILE%" (
 ) else (
     echo Khong tim thay:
     echo %DB_PASSWORD_FILE%
+)
+
+echo.
+
+if exist "%DB_JSON_CONFIG_FILE%" (
+    del /f /q "%DB_JSON_CONFIG_FILE%"
+    echo Da xoa:
+    echo %DB_JSON_CONFIG_FILE%
+) else (
+    echo Khong tim thay:
+    echo %DB_JSON_CONFIG_FILE%
 )
 
 echo.

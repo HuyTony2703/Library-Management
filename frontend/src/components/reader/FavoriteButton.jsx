@@ -41,16 +41,16 @@ export default function FavoriteButton({
             if (favorite) {
                 await readerApi.removeFavorite(maDauSach);
                 setFavorite(false);
-                toast.success("Đã xóa khỏi sách yêu thích");
+                toast.success("Đã bỏ khỏi sách yêu thích.");
                 onChanged?.(false);
             } else {
                 await readerApi.addFavorite(maDauSach);
                 setFavorite(true);
-                toast.success("Đã thêm vào sách yêu thích");
+                toast.success("Đã thêm vào sách yêu thích.");
                 onChanged?.(true);
             }
         } catch (err) {
-            toast.error(err.message || "Không thể cập nhật sách yêu thích");
+            toast.error(err.message || "Không thể cập nhật sách yêu thích. Vui lòng thử lại.");
         } finally {
             setLoading(false);
         }
@@ -65,13 +65,20 @@ export default function FavoriteButton({
         loadFavoriteStatus();
     }, [maDauSach, initialFavorite]);
 
+    const title = loading
+        ? "Đang cập nhật yêu thích"
+        : favorite
+          ? "Đã thêm vào yêu thích"
+          : "Thêm vào yêu thích";
+
     return (
         <button
             type="button"
             className={`favorite-button ${favorite ? "is-active" : ""} ${compact ? "is-compact" : ""}`}
             onClick={toggleFavorite}
             disabled={loading}
-            title={favorite ? "Xóa khỏi yêu thích" : "Thêm vào yêu thích"}
+            title={title}
+            aria-label={title}
         >
             <Heart size={18} fill={favorite ? "currentColor" : "none"} />
             {!compact && (
@@ -80,7 +87,7 @@ export default function FavoriteButton({
                         ? "Đang xử lý..."
                         : favorite
                           ? "Đã yêu thích"
-                          : "Yêu thích"}
+                          : "Thêm yêu thích"}
                 </span>
             )}
         </button>

@@ -3,10 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import { useToast } from "../../components/ToastProvider";
 
+const MAX_OVERDUE_DAYS = 365;
+
 export default function PenaltyRulesPage() {
     const toast = useToast();
     const [rules, setRules] = useState(null);
-    const [soNgayTre, setSoNgayTre] = useState(3);
+    const [soNgayTre, setSoNgayTre] = useState("3");
     const [loading, setLoading] = useState(false);
 
     async function loadRules() {
@@ -16,7 +18,7 @@ export default function PenaltyRulesPage() {
             const result = await readerApi.getCurrentRules();
             setRules(result);
         } catch (err) {
-            toast.error(err.message || "Không tải được quy định phạt");
+            toast.error(err.message || "Không tải được quy định phạt. Vui lòng thử lại.");
         } finally {
             setLoading(false);
         }
@@ -26,22 +28,36 @@ export default function PenaltyRulesPage() {
         loadRules();
     }, []);
 
-    const tienPhat = useMemo(() => {
-        const mucPhat = Number(rules?.mucPhatTreMoiNgay || 1000);
-        const ngayTre = Number(soNgayTre || 0);
-        return Math.max(0, ngayTre) * mucPhat;
-    }, [rules, soNgayTre]);
+    const validationError = useMemo(() => {
+        if (soNgayTre === "") {
+            return "Vui lòng nhập số ngày trả trễ.";
+        }
+
+        if (!/^\d+$/.test(soNgayTre)) {
+            return "Số ngày trả trễ phải là số nguyên lớn hơn hoặc bằng 0.";
+        }
+
+        if (Number(soNgayTre) > MAX_OVERDUE_DAYS) {
+            return `Số ngày trả trễ không được vượt quá ${MAX_OVERDUE_DAYS} ngày.`;
+        }
+
+        return "";
+    }, [soNgayTre]);
+
+    const mucPhat = Number(rules?.mucPhatTreMoiNgay || 1000);
+    const ngayTre = validationError ? 0 : Number(soNgayTre);
+    const tienPhat = ngayTre * mucPhat;
 
     return (
         <div>
             <div className="reader-home-header">
-                <small>Penalty</small>
+                <small>QUY ĐỊNH PHẠT</small>
                 <h1>Quy định phạt và cách tính</h1>
                 <p>Giải thích cách tính tiền phạt khi trả sách trễ, sách hỏng hoặc mất.</p>
             </div>
 
             <div className="reader-page-actions">
-                <button type="button" onClick={loadRules}>
+                <button type="button" onClick={loadRules} disabled={loading}>
                     <RefreshCcw size={17} />
                     {loading ? "Đang tải..." : "Tải lại quy định"}
                 </button>
@@ -61,7 +77,7 @@ export default function PenaltyRulesPage() {
 
                     <div className="rule-highlight">
                         Mức phạt hiện tại:
-                        <b>{formatCurrency(rules?.mucPhatTreMoiNgay || 1000)} / ngày</b>
+                        <b>{formatCurrency(mucPhat)} / ngày</b>
                     </div>
                 </div>
 
@@ -74,36 +90,45 @@ export default function PenaltyRulesPage() {
                     <label className="reader-form-row">
                         <span>Số ngày trả trễ</span>
                         <input
-                            type="number"
-                            min="0"
+                            inputMode="numeric"
                             value={soNgayTre}
-                            onChange={(e) => setSoNgayTre(e.target.value)}
+                            onChange={(e) => setSoNgayTre(e.target.value.trim())}
+                            aria-invalid={Boolean(validationError)}
                         />
                     </label>
 
-                    <div className="penalty-result">
-                        <span>Số tiền phạt dự kiến</span>
-                        <strong>{formatCurrency(tienPhat)}</strong>
-                    </div>
+                    {validationError && <p className="reader-field-error">{validationError}</p>}
+
+                    {!validationError && ngayTre === 0 && (
+                        <p className="reader-muted">Không phát sinh tiền phạt.</p>
+                    )}
+
+                    {!validationError && (
+                        <div className="penalty-result">
+                            <span>
+                                Tiền phạt = {ngayTre} x {formatCurrency(mucPhat)} = {formatCurrency(tienPhat)}
+                            </span>
+                            <strong>{formatCurrency(tienPhat)}</strong>
+                        </div>
+                    )}
                 </div>
             </section>
 
             <section className="reader-section">
                 <div className="section-title-row">
                     <div>
-                        <p className="reader-eyebrow">Damaged or lost books</p>
-                        <h2>Quy định sách hỏng hoặc mất</h2>
+                        <p className="reader-eyebrow">SÁCH HỎNG HOẶC MẤT</p>
+                        <h2>Quy định xử lý</h2>
                     </div>
                 </div>
 
                 <div className="rules-text-list">
                     <p>
-                        Nếu sách bị hỏng hoặc mất, thủ thư sẽ kiểm tra tình trạng thực tế và
-                        ghi nhận khoản phạt tương ứng.
+                        Nếu sách bị hỏng hoặc mất, thủ thư sẽ kiểm tra tình trạng thực tế và ghi nhận
+                        khoản phạt tương ứng.
                     </p>
                     <p>
-                        Tiền phạt có thể dựa trên trị giá sách, mức độ hư hại và quy định xử lý
-                        của thư viện.
+                        Tiền phạt có thể dựa trên trị giá sách, mức độ hư hại và quy định xử lý của thư viện.
                     </p>
                 </div>
             </section>
@@ -111,8 +136,8 @@ export default function PenaltyRulesPage() {
             <section className="reader-section">
                 <div className="section-title-row">
                     <div>
-                        <p className="reader-eyebrow">Notifications</p>
-                        <h2>Quy định thông báo</h2>
+                        <p className="reader-eyebrow">THÔNG BÁO</p>
+                        <h2>Nhắc trước hạn trả</h2>
                     </div>
                 </div>
 
@@ -122,8 +147,7 @@ export default function PenaltyRulesPage() {
                         <b>{rules?.soNgayNhacTruocHan || 3} ngày</b>.
                     </p>
                     <p>
-                        Độc giả cũng có thể nhận thông báo khi gia hạn thành công, đặt trước
-                        thành công, phát sinh khoản phạt hoặc gói thành viên sắp hết hạn.
+                        Hãy gia hạn hoặc trả sách đúng hạn để tránh phát sinh tiền phạt.
                     </p>
                 </div>
             </section>

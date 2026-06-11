@@ -55,7 +55,7 @@ export default function ReaderGuidePage() {
                     icon={Crown}
                     title="Mua gói độc giả"
                     steps={[
-                        "Vào mục Gói thành viên.",
+                        "Vào mục Gói độc giả.",
                         "Xem gói hiện tại và các gói có thể mua.",
                         "Chọn gói phù hợp.",
                         "Xác nhận phương thức thanh toán để kích hoạt gói."
@@ -78,7 +78,7 @@ export default function ReaderGuidePage() {
                     title="Quy định thư viện"
                     steps={[
                         "Vào mục Quy định để xem dữ liệu đang áp dụng.",
-                        "Vào Cách tính phạt để xem công thức phạt trả trễ.",
+                        "Mở phần Quy định phạt trong trang Quy định để xem công thức phạt trả trễ.",
                         "Nếu có thắc mắc, liên hệ thủ thư tại quầy hỗ trợ.",
                         "Luôn kiểm tra hạn trả trong mục Sách đang mượn."
                     ]}
@@ -87,7 +87,7 @@ export default function ReaderGuidePage() {
 
             <div className="guide-link-row">
                 <Link to="/reader/rules">Xem quy định hiện hành</Link>
-                <Link to="/reader/penalty-rules">Xem cách tính phạt</Link>
+                <Link to="/reader/rules#penalty-rules">Xem cách tính phạt</Link>
             </div>
         </div>
     );

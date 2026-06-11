@@ -1,41 +1,60 @@
+import { Link } from "react-router-dom";
+
 function formatDateTime(value) {
     if (!value) {
         return "Chưa có";
     }
 
-    return new Date(value).toLocaleString("vi-VN");
+    return new Intl.DateTimeFormat("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    }).format(new Date(value));
 }
 
-function getDueStatus(hanTra) {
+function getDueInfo(hanTra) {
     if (!hanTra) {
-        return "unknown";
+        return { status: "unknown", label: "Chưa có hạn trả", detail: "" };
     }
 
-    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const due = new Date(hanTra);
-    const diffMs = due.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    due.setHours(0, 0, 0, 0);
+
+    const diffDays = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
-        return "overdue";
+        return {
+            status: "overdue",
+            label: "Quá hạn",
+            detail: `Quá hạn ${Math.abs(diffDays)} ngày`
+        };
     }
 
-    if (diffDays <= 2) {
-        return "soon";
+    if (diffDays === 0) {
+        return { status: "soon", label: "Sắp đến hạn", detail: "Đến hạn hôm nay" };
     }
 
-    return "normal";
+    if (diffDays <= 3) {
+        return { status: "soon", label: "Sắp đến hạn", detail: `Còn ${diffDays} ngày` };
+    }
+
+    return { status: "normal", label: "Còn hạn", detail: `Còn ${diffDays} ngày` };
 }
 
-export default function ReaderLoanCard({ loan, onRenew }) {
-    const dueStatus = getDueStatus(loan.hanTra);
+function formatCurrency(value) {
+    return `${Number(value || 0).toLocaleString("vi-VN")}đ`;
+}
 
-    const dueText =
-        dueStatus === "overdue"
-            ? "Đã quá hạn"
-            : dueStatus === "soon"
-                ? "Sắp đến hạn"
-                : "Còn hạn";
+export default function ReaderLoanCard({ loan, onRenew, renewing = false }) {
+    const dueInfo = getDueInfo(loan.hanTra);
+    const penalty = dueInfo.status === "overdue"
+        ? Number(loan.tienPhatTamTinh || loan.tienPhatHienTai || loan.tienPhat || 0)
+        : Number(loan.tienPhatHienTai || loan.tienPhat || 0);
 
     return (
         <article className="reader-loan-card">
@@ -56,34 +75,38 @@ export default function ReaderLoanCard({ loan, onRenew }) {
 
                 <div className="reader-loan-info">
                     <span>Ngày mượn: {formatDateTime(loan.ngayMuon)}</span>
-                    <span>Hạn trả: {formatDateTime(loan.hanTra)}</span>
+                    <span>Hạn trả: {formatDateTime(loan.hanTra)} · {dueInfo.detail}</span>
+                    <span>Gia hạn: {loan.soLanDaGiaHan}/{loan.soLanGiaHanToiDa} lần</span>
                     <span>Chi nhánh: {loan.tenChiNhanh || loan.maChiNhanh}</span>
-                    <span>
-                        Gia hạn: {loan.soLanDaGiaHan}/{loan.soLanGiaHanToiDa} lần
-                    </span>
+                    <span>{dueInfo.status === "overdue" ? "Phạt dự kiến" : "Phạt hiện tại"}: {formatCurrency(penalty)}</span>
                 </div>
 
                 <div className="reader-loan-footer">
-                    <span className={`reader-due-badge due-${dueStatus}`}>
-                        {dueText}
+                    <span className={`reader-due-badge due-${dueInfo.status}`}>
+                        {dueInfo.label}
                     </span>
 
-                    <button
-                        type="button"
-                        disabled={!loan.coTheGiaHan}
-                        onClick={() => onRenew(loan)}
-                    >
-                        Gia hạn
-                    </button>
+                    {dueInfo.status === "overdue" ? (
+                        <Link className="reader-secondary-button" to="/reader/rules#penalty-rules">
+                            Xem quy định phạt
+                        </Link>
+                    ) : (
+                        <button
+                            type="button"
+                            disabled={!loan.coTheGiaHan || renewing}
+                            onClick={() => onRenew(loan)}
+                        >
+                            {renewing ? "Đang gia hạn..." : "Gia hạn sách"}
+                        </button>
+                    )}
                 </div>
 
-                {!loan.coTheGiaHan && loan.lyDoKhongTheGiaHan && (
+                {!loan.coTheGiaHan && loan.lyDoKhongTheGiaHan && dueInfo.status !== "overdue" && (
                     <div className="reader-loan-warning">
-                        {loan.lyDoKhongTheGiaHan}
+                        Không thể gia hạn sách. {loan.lyDoKhongTheGiaHan}
                     </div>
                 )}
             </div>
         </article>
     );
 }
-
