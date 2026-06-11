@@ -251,7 +251,6 @@ export default function AdminLibrariansPage() {
                             <Trash2 size={15} />
                             Xóa
                         </button>
-                        <span>{selectedIds.length} mục đã chọn</span>
                     </div>
                 </div>
 
@@ -260,7 +259,8 @@ export default function AdminLibrariansPage() {
                     columns={[
                         {
                             key: "select",
-                            title: "",
+                            title: `${selectedIds.length} mục`,
+                            className: "selection-count-cell",
                             render: (row) => (
                                 <input
                                     className="table-checkbox"

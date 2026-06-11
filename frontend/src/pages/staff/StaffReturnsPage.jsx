@@ -120,17 +120,11 @@ export default function StaffReturnsPage() {
                 title="Trả sách"
                 description="Lập phiếu trả, tự tính trả trễ và tạo khoản phạt khi sách hỏng hoặc mất."
                 right={
-                    <div className="table-actions">
-                        {result && (
-                            <button className="soft-button" type="button" onClick={() => setShowResult(true)}>
-                                Xem lại kết quả
-                            </button>
-                        )}
-                        <button className="soft-button" type="button" onClick={loadCurrentLoans}>
-                            <Search size={17} />
-                            Xem sách đang mượn
+                    result ? (
+                        <button className="soft-button" type="button" onClick={() => setShowResult(true)}>
+                            Xem lại kết quả
                         </button>
-                    </div>
+                    ) : null
                 }
             />
 
@@ -213,7 +207,13 @@ export default function StaffReturnsPage() {
             <div className="panel">
                 <div className="panel-title">
                     <h2>Sách đang mượn của {form.maDocGia}</h2>
-                    <span>{currentLoans.length} cuốn</span>
+                    <div className="panel-title-actions">
+                        <span>{currentLoans.length} cuốn</span>
+                        <button className="soft-button" type="button" onClick={loadCurrentLoans}>
+                            <Search size={17} />
+                            Xem sách đang mượn
+                        </button>
+                    </div>
                 </div>
 
                 <DataTable

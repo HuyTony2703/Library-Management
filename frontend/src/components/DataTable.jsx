@@ -44,13 +44,48 @@ export default function DataTable({
         return `${id}-${absoluteIndex}`;
     }
 
+    function isSelectColumn(column) {
+        return column.key === "select" || column.key === "chon";
+    }
+
+    function isActionColumn(column) {
+        return column.key === "actions" || column.key === "action";
+    }
+
+    function getColumnClassName(column) {
+        return [
+            column.className,
+            column.align ? `align-${column.align}` : "",
+            isSelectColumn(column) ? "select-cell" : "",
+            isActionColumn(column) ? "action-cell" : ""
+        ].filter(Boolean).join(" ");
+    }
+
     return (
         <div className="table-card">
             <table className="data-table">
+                <colgroup>
+                    {columns.map((column) => (
+                        <col
+                            key={column.key}
+                            className={[
+                                isSelectColumn(column) ? "select-col" : "",
+                                isActionColumn(column) ? "action-col" : ""
+                            ].filter(Boolean).join(" ") || undefined}
+                            style={column.width ? { width: column.width } : undefined}
+                        />
+                    ))}
+                </colgroup>
                 <thead>
                 <tr>
                     {columns.map((column) => (
-                        <th key={column.key}>{column.title}</th>
+                        <th
+                            key={column.key}
+                            className={getColumnClassName(column)}
+                            data-column={column.key}
+                        >
+                            {column.title}
+                        </th>
                     ))}
                 </tr>
                 </thead>
@@ -60,7 +95,11 @@ export default function DataTable({
                     visibleRows.map((row, index) => (
                         <tr key={getKey(row, index)}>
                             {columns.map((column) => (
-                                <td key={column.key}>
+                                <td
+                                    key={column.key}
+                                    className={getColumnClassName(column)}
+                                    data-column={column.key}
+                                >
                                     {column.render ? column.render(row) : row[column.key]}
                                 </td>
                             ))}

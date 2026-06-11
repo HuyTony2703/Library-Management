@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { EyeOff, RefreshCcw, RotateCcw, Search, Trash2 } from "lucide-react";
+import { createPortal } from "react-dom";
+import { EyeOff, MoreHorizontal, RefreshCcw, RotateCcw, Search, Trash2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { adminApi } from "../../api/adminApi";
 import PageHeader from "../../components/PageHeader";
@@ -22,6 +23,7 @@ export default function CommentModerationPage() {
 
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [openActionMenu, setOpenActionMenu] = useState(null);
     const [filter, setFilter] = useState(() => ({
         status: searchParams.get("status") || "Tất cả",
         maDauSach: searchParams.get("maDauSach") || "",
@@ -59,6 +61,36 @@ export default function CommentModerationPage() {
         loadComments(nextFilter);
     }, [searchParams]);
 
+    useEffect(() => {
+        if (!openActionMenu) {
+            return undefined;
+        }
+
+        function closeMenuOnOutsideClick(event) {
+            const target = event.target;
+
+            if (target?.closest?.(".inline-action-menu, .compact-icon-button")) {
+                return;
+            }
+
+            setOpenActionMenu(null);
+        }
+
+        function closeMenu() {
+            setOpenActionMenu(null);
+        }
+
+        window.addEventListener("click", closeMenuOnOutsideClick);
+        window.addEventListener("resize", closeMenu);
+        window.addEventListener("scroll", closeMenu, true);
+
+        return () => {
+            window.removeEventListener("click", closeMenuOnOutsideClick);
+            window.removeEventListener("resize", closeMenu);
+            window.removeEventListener("scroll", closeMenu, true);
+        };
+    }, [openActionMenu]);
+
     function submitFilter(event) {
         event.preventDefault();
 
@@ -79,7 +111,31 @@ export default function CommentModerationPage() {
         setSearchParams(params);
     }
 
+    function toggleActionMenu(row, event) {
+        event.stopPropagation();
+
+        const rect = event.currentTarget.getBoundingClientRect();
+        const menuWidth = 190;
+        const menuHeight = 170;
+        const left = Math.min(
+            Math.max(12, rect.right - menuWidth),
+            window.innerWidth - menuWidth - 12
+        );
+        const topBelow = rect.bottom + 8;
+        const top = topBelow + menuHeight > window.innerHeight - 12
+            ? Math.max(12, rect.top - menuHeight - 8)
+            : topBelow;
+
+        setOpenActionMenu((current) =>
+            current?.id === row.maBinhLuan
+                ? null
+                : { id: row.maBinhLuan, top, left }
+        );
+    }
+
     async function moderate(row, action) {
+        setOpenActionMenu(null);
+
         const employeeId = user?.maNhanVien || "NV_ADMIN";
         const actionLabel = action === "hide"
             ? "ẩn"
@@ -149,12 +205,6 @@ export default function CommentModerationPage() {
                 eyebrow="Staff"
                 title="Kiểm duyệt bình luận"
                 description="Lọc, ẩn, xóa mềm hoặc khôi phục bình luận của độc giả trên đầu sách."
-                right={
-                    <button className="soft-button" onClick={() => loadComments()} disabled={loading}>
-                        <RefreshCcw size={17} />
-                        Tải lại
-                    </button>
-                }
             />
 
             <form className="panel comment-filter-form" onSubmit={submitFilter}>
@@ -186,6 +236,11 @@ export default function CommentModerationPage() {
                 <button className="primary-button" disabled={loading}>
                     <Search size={17} />
                     Tìm kiếm
+                </button>
+
+                <button className="soft-button" type="button" onClick={() => loadComments()} disabled={loading}>
+                    <RefreshCcw size={17} />
+                    Tải lại
                 </button>
             </form>
 
@@ -221,42 +276,71 @@ export default function CommentModerationPage() {
                             key: "actions",
                             title: "Thao tác",
                             render: (row) => (
-                                <div className="table-actions">
-                                    <button
-                                        className="soft-button"
-                                        onClick={() => moderate(row, "hide")}
-                                        disabled={loading || row.trangThai === "Đã ẩn"}
-                                        type="button"
-                                    >
-                                        <EyeOff size={15} />
-                                        Ẩn
-                                    </button>
-
-                                    <button
-                                        className="soft-button danger-button"
-                                        onClick={() => moderate(row, "delete")}
-                                        disabled={loading || row.trangThai === "Đã xóa"}
-                                        type="button"
-                                    >
-                                        <Trash2 size={15} />
-                                        Xóa
-                                    </button>
-
-                                    <button
-                                        className="soft-button"
-                                        onClick={() => moderate(row, "restore")}
-                                        disabled={loading || row.trangThai === "Hiển thị"}
-                                        type="button"
-                                    >
-                                        <RotateCcw size={15} />
-                                        Khôi phục
-                                    </button>
-                                </div>
+                                <CommentActionMenu
+                                    row={row}
+                                    loading={loading}
+                                    open={openActionMenu?.id === row.maBinhLuan}
+                                    menuStyle={openActionMenu?.id === row.maBinhLuan
+                                        ? { top: openActionMenu.top, left: openActionMenu.left }
+                                        : undefined}
+                                    onToggle={(event) => toggleActionMenu(row, event)}
+                                    onAction={moderate}
+                                />
                             )
                         }
                     ]}
                 />
             </div>
+        </div>
+    );
+}
+
+function CommentActionMenu({ row, loading, open, menuStyle, onToggle, onAction }) {
+    return (
+        <div className="action-menu-cell">
+            <button
+                className="icon-button compact-icon-button"
+                type="button"
+                onClick={onToggle}
+                aria-label={`Mở thao tác cho bình luận ${row.maBinhLuan}`}
+            >
+                <MoreHorizontal size={19} />
+            </button>
+
+            {open && createPortal(
+                <div className="inline-action-menu" style={menuStyle}>
+                    <button
+                        className="soft-button"
+                        onClick={() => onAction(row, "hide")}
+                        disabled={loading || row.trangThai === "Đã ẩn"}
+                        type="button"
+                    >
+                        <EyeOff size={15} />
+                        Ẩn
+                    </button>
+
+                    <button
+                        className="soft-button danger-button"
+                        onClick={() => onAction(row, "delete")}
+                        disabled={loading || row.trangThai === "Đã xóa"}
+                        type="button"
+                    >
+                        <Trash2 size={15} />
+                        Xóa
+                    </button>
+
+                    <button
+                        className="soft-button"
+                        onClick={() => onAction(row, "restore")}
+                        disabled={loading || row.trangThai === "Hiển thị"}
+                        type="button"
+                    >
+                        <RotateCcw size={15} />
+                        Khôi phục
+                    </button>
+                </div>,
+                document.body
+            )}
         </div>
     );
 }

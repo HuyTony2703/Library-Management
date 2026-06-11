@@ -3,6 +3,7 @@ import { RefreshCcw, Rocket, Plus } from "lucide-react";
 import { adminApi } from "../../api/adminApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
+import LibraryRulesReference from "../../components/LibraryRulesReference";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
 import { useActionDialog } from "../../components/ActionDialogProvider";
@@ -180,6 +181,8 @@ export default function AdminRulesPage() {
           <p>Chưa có quy định đang áp dụng.</p>
         )}
       </div>
+
+      <LibraryRulesReference />
 
       <div className="form-layout">
         <form className="panel form-panel" onSubmit={createRule}>

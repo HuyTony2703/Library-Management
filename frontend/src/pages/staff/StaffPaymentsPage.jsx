@@ -37,7 +37,7 @@ export default function StaffPaymentsPage() {
     }
 
     function getDebtRemaining(row) {
-        return Number(row.soTienConLai ?? 0);
+        return Number(row.soTienConLai ?? row.SoTienConLai ?? row.conLai ?? 0);
     }
 
     async function loadDebts() {
@@ -88,26 +88,32 @@ export default function StaffPaymentsPage() {
         return Object.values(selected).reduce((sum, value) => sum + Number(value || 0), 0);
     }, [selected]);
 
+    const selectedDebtCount = Object.keys(selected).length;
+
     function syncSelectedTotalToForm() {
         updateField("soTienThu", selectedTotal);
     }
 
     function selectAllDebts() {
         const nextSelected = {};
+        let total = 0;
 
         debts.forEach((row) => {
             const remaining = getDebtRemaining(row);
 
             if (remaining > 0) {
                 nextSelected[row.maKhoanNo] = remaining;
+                total += remaining;
             }
         });
 
         setSelected(nextSelected);
+        updateField("soTienThu", total);
     }
 
     function clearSelectedDebts() {
         setSelected({});
+        updateField("soTienThu", 0);
     }
 
     function buildSelectedDetails() {
@@ -205,27 +211,13 @@ export default function StaffPaymentsPage() {
                 title="Thu tiền phạt"
                 description="Xem khoản nợ của độc giả, chọn khoản nợ cụ thể để thu hoặc để hệ thống tự động phân bổ."
                 right={
-                    <div className="table-actions">
-                        {result && (
-                            <button className="soft-button" type="button" onClick={() => setShowResult(true)}>
-                                Xem lại kết quả
-                            </button>
-                        )}
-                        <button className="soft-button" type="button" onClick={loadDebts}>
-                            <Search size={17} />
-                            Xem nợ
+                    result ? (
+                        <button className="soft-button" type="button" onClick={() => setShowResult(true)}>
+                            Xem lại kết quả
                         </button>
-                    </div>
+                    ) : null
                 }
             />
-
-            <div className="panel compact-form">
-                <label>Mã độc giả</label>
-                <input value={maDocGia} onChange={(e) => setMaDocGia(e.target.value)} />
-                <button className="soft-button" onClick={loadDebts}>
-                    Tải nợ
-                </button>
-            </div>
 
             <div className="panel">
                 <div className="panel-title">
@@ -233,11 +225,20 @@ export default function StaffPaymentsPage() {
                     <span>{debts.length} khoản</span>
                 </div>
 
+                <div className="payment-debt-search">
+                    <label>Mã độc giả</label>
+                    <input value={maDocGia} onChange={(e) => setMaDocGia(e.target.value)} />
+                    <button className="soft-button" type="button" onClick={loadDebts}>
+                        <Search size={17} />
+                        Xem nợ
+                    </button>
+                </div>
+
                 <div className="selection-toolbar">
                     <button type="button" className="soft-button" onClick={selectAllDebts}>
                         Chọn tất cả
                     </button>
-                    <button type="button" className="soft-button" onClick={clearSelectedDebts}>
+                    <button type="button" className="primary-button compact-primary-button" onClick={clearSelectedDebts}>
                         Bỏ chọn tất cả
                     </button>
                 </div>
@@ -247,9 +248,11 @@ export default function StaffPaymentsPage() {
                     columns={[
                         {
                             key: "chon",
-                            title: "Chọn",
+                            title: `${selectedDebtCount} mục`,
+                            className: "selection-count-cell",
                             render: (row) => (
                                 <input
+                                    className="table-checkbox"
                                     type="checkbox"
                                     checked={selected[row.maKhoanNo] !== undefined}
                                     onChange={() => toggleDebt(row)}

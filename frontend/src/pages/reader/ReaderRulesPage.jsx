@@ -2,6 +2,7 @@ import { Calculator, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
+import LibraryRulesReference from "../../components/LibraryRulesReference";
 import { useToast } from "../../components/ToastProvider";
 
 const MAX_OVERDUE_DAYS = 365;
@@ -72,7 +73,7 @@ export default function ReaderRulesPage() {
 
             {!loading && !rules ? (
                 <div className="reader-empty-box">
-                    Chưa có dữ liệu quy định. Hãy kiểm tra API /api/reader/rules/current.
+                    Chưa có dữ liệu quy định hiện hành. Phần danh sách quy định nghiệp vụ vẫn được hiển thị bên dưới.
                 </div>
             ) : null}
 
@@ -242,6 +243,8 @@ export default function ReaderRulesPage() {
                     </section>
                 </>
             )}
+
+            <LibraryRulesReference className="reader-rules-reference" />
         </div>
     );
 }

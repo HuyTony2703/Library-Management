@@ -1,7 +1,9 @@
 package com.library.backend.service;
 
 import com.library.backend.dto.AuthResponse;
+import com.library.backend.dto.ChangePasswordRequest;
 import com.library.backend.dto.LoginRequest;
+import com.library.backend.dto.ProfileUpdateRequest;
 import com.library.backend.entity.DocGia;
 import com.library.backend.entity.NhanVien;
 import com.library.backend.entity.TaiKhoan;
@@ -14,6 +16,7 @@ import com.library.backend.security.AuthUser;
 import com.library.backend.security.TokenService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -83,6 +86,90 @@ public class AuthService {
         return toResponse(null, enrichDisplayName(user));
     }
 
+    @Transactional
+    public void changePassword(AuthUser user, ChangePasswordRequest request) {
+        TaiKhoan taiKhoan = taiKhoanRepository.findById(user.getMaTaiKhoan())
+                .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), taiKhoan.getMatKhauHash())) {
+            throw new RuntimeException("Mật khẩu hiện tại không đúng");
+        }
+
+        if (passwordEncoder.matches(request.getNewPassword(), taiKhoan.getMatKhauHash())) {
+            throw new RuntimeException("Mật khẩu mới phải khác mật khẩu hiện tại");
+        }
+
+        taiKhoan.setMatKhauHash(passwordEncoder.encode(request.getNewPassword()));
+        taiKhoanRepository.save(taiKhoan);
+
+        activityLogService.logAsAccountSafe(
+                taiKhoan.getMaTaiKhoan(),
+                "Đổi mật khẩu",
+                "TAIKHOAN",
+                taiKhoan.getMaTaiKhoan(),
+                "Tài khoản " + taiKhoan.getTenDangNhap() + " đổi mật khẩu"
+        );
+    }
+
+    @Transactional
+    public AuthResponse updateProfile(AuthUser user, ProfileUpdateRequest request) {
+        String hoTen = cleanRequired(request.getHoTen(), "Họ tên không được để trống");
+        String email = cleanRequired(request.getEmail(), "Email không được để trống");
+        String soDienThoai = trimToNull(request.getSoDienThoai());
+        String diaChi = trimToNull(request.getDiaChi());
+
+        TaiKhoan taiKhoan = taiKhoanRepository.findById(user.getMaTaiKhoan())
+                .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại"));
+
+        taiKhoanRepository.findByEmailDangNhap(email)
+                .filter(existing -> !existing.getMaTaiKhoan().equals(taiKhoan.getMaTaiKhoan()))
+                .ifPresent(existing -> {
+                    throw new RuntimeException("Email đăng nhập đã được sử dụng bởi tài khoản khác");
+                });
+
+        taiKhoan.setEmailDangNhap(email);
+        taiKhoanRepository.save(taiKhoan);
+
+        if (hasText(user.getMaNhanVien())) {
+            NhanVien nhanVien = nhanVienRepository.findById(user.getMaNhanVien())
+                    .orElseThrow(() -> new RuntimeException("Nhân viên không tồn tại"));
+
+            nhanVien.setHoTen(hoTen);
+            nhanVien.setEmail(email);
+            nhanVien.setSoDienThoai(soDienThoai);
+            nhanVien.setDiaChi(diaChi);
+            nhanVienRepository.save(nhanVien);
+        } else if (hasText(user.getMaDocGia())) {
+            DocGia docGia = docGiaRepository.findById(user.getMaDocGia())
+                    .orElseThrow(() -> new RuntimeException("Độc giả không tồn tại"));
+
+            if (docGiaRepository.existsByEmailAndMaDocGiaNot(email, docGia.getMaDocGia())) {
+                throw new RuntimeException("Email đã được sử dụng bởi độc giả khác");
+            }
+
+            docGia.setHoTen(hoTen);
+            docGia.setEmail(email);
+            docGia.setSoDienThoai(soDienThoai);
+            docGia.setDiaChi(diaChi);
+            docGiaRepository.save(docGia);
+        } else {
+            throw new RuntimeException("Tài khoản không gắn với hồ sơ nhân viên hoặc độc giả");
+        }
+
+        activityLogService.logAsAccountSafe(
+                taiKhoan.getMaTaiKhoan(),
+                "Cập nhật hồ sơ",
+                "TAIKHOAN",
+                taiKhoan.getMaTaiKhoan(),
+                "Tài khoản " + taiKhoan.getTenDangNhap() + " cập nhật thông tin cá nhân"
+        );
+
+        AuthUser refreshed = buildAuthUser(taiKhoan, vaiTroRepository.findById(taiKhoan.getMaVaiTro())
+                .orElseThrow(() -> new RuntimeException("Vai trò tài khoản không tồn tại")));
+
+        return toResponse(null, refreshed);
+    }
+
     private AuthUser buildAuthUser(TaiKhoan taiKhoan, VaiTro vaiTro) {
         DocGia docGia = docGiaRepository.findByMaTaiKhoan(taiKhoan.getMaTaiKhoan())
                 .orElse(null);
@@ -108,6 +195,8 @@ public class AuthService {
     }
 
     private AuthResponse toResponse(String token, AuthUser user) {
+        ProfileSnapshot profile = getProfileSnapshot(user);
+
         return new AuthResponse(
                 token,
                 "Bearer",
@@ -117,8 +206,37 @@ public class AuthService {
                 user.getTenVaiTro(),
                 user.getMaDocGia(),
                 user.getMaNhanVien(),
-                user.getHoTen()
+                profile.hoTen() != null ? profile.hoTen() : user.getHoTen(),
+                profile.email(),
+                profile.soDienThoai(),
+                profile.diaChi()
         );
+    }
+
+    private ProfileSnapshot getProfileSnapshot(AuthUser user) {
+        if (hasText(user.getMaNhanVien())) {
+            return nhanVienRepository.findById(user.getMaNhanVien())
+                    .map(nhanVien -> new ProfileSnapshot(
+                            nhanVien.getHoTen(),
+                            nhanVien.getEmail(),
+                            nhanVien.getSoDienThoai(),
+                            nhanVien.getDiaChi()
+                    ))
+                    .orElse(new ProfileSnapshot(user.getHoTen(), null, null, null));
+        }
+
+        if (hasText(user.getMaDocGia())) {
+            return docGiaRepository.findById(user.getMaDocGia())
+                    .map(docGia -> new ProfileSnapshot(
+                            docGia.getHoTen(),
+                            docGia.getEmail(),
+                            docGia.getSoDienThoai(),
+                            docGia.getDiaChi()
+                    ))
+                    .orElse(new ProfileSnapshot(user.getHoTen(), null, null, null));
+        }
+
+        return new ProfileSnapshot(user.getHoTen(), null, null, null);
     }
 
     private AuthUser enrichDisplayName(AuthUser user) {
@@ -154,4 +272,25 @@ public class AuthService {
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
     }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String cleanRequired(String value, String message) {
+        String trimmed = trimToNull(value);
+
+        if (trimmed == null) {
+            throw new RuntimeException(message);
+        }
+
+        return trimmed;
+    }
+
+    private record ProfileSnapshot(String hoTen, String email, String soDienThoai, String diaChi) {}
 }

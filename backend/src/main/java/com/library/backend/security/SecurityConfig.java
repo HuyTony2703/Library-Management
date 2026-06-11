@@ -54,7 +54,7 @@ public class SecurityConfig {
                         // Khi cần tạo hash, chỉ bật tạm ở profile dev.
                         .requestMatchers("/api/dev/**").hasRole(RoleConstants.ADMIN)
 
-                        .requestMatchers("/api/auth/me").authenticated()
+                        .requestMatchers("/api/auth/me", "/api/auth/change-password", "/api/auth/profile").authenticated()
                         .requestMatchers("/api/reader/**").hasRole("DOC_GIA")
 
                         .requestMatchers("/api/admin/comments", "/api/admin/comments/**")

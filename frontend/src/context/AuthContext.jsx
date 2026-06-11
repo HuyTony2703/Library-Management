@@ -8,18 +8,23 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loadingUser, setLoadingUser] = useState(true);
 
+    async function refreshUser() {
+        if (!getToken()) {
+            setUser(null);
+            localStorage.removeItem("user");
+            return null;
+        }
+
+        const data = await meApi();
+        setUser(data);
+        localStorage.setItem("user", JSON.stringify(data));
+        return data;
+    }
+
     useEffect(() => {
         async function loadUser() {
             try {
-                if (!getToken()) {
-                    setUser(null);
-                    localStorage.removeItem("user");
-                    return;
-                }
-
-                const data = await meApi();
-                setUser(data);
-                localStorage.setItem("user", JSON.stringify(data));
+                await refreshUser();
             } catch {
                 setUser(null);
                 localStorage.removeItem("user");
@@ -52,6 +57,7 @@ export function AuthProvider({ children }) {
                 loadingUser,
                 login,
                 logout,
+                refreshUser,
                 isAuthenticated: Boolean(user || getToken())
             }}
         >

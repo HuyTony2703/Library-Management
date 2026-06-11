@@ -15,6 +15,7 @@ import LoansPage from "./pages/LoansPage";
 import ReturnsPage from "./pages/ReturnsPage";
 import PaymentsPage from "./pages/PaymentsPage";
 import ReportsPage from "./pages/ReportsPage";
+import SettingsPage from "./pages/SettingsPage";
 
 function ProtectedRoute({ children }) {
     const { user, loadingUser } = useAuth();
@@ -56,6 +57,7 @@ export default function App() {
                 <Route path="/returns" element={<ReturnsPage />} />
                 <Route path="/payments" element={<PaymentsPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
                 {staffRoutes.map((route) => (
                     <Route key={route.path} path={route.path} element={route.element} />
                 ))}
