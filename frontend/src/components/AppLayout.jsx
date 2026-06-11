@@ -5,16 +5,16 @@ import {
     CreditCard,
     Home,
     Library,
-    LogOut,
     MessageSquare,
     RefreshCcw,
     RotateCcw,
     Settings,
     ShieldCheck,
+    SlidersHorizontal,
     UserRound,
     UsersRound
 } from "lucide-react";
-import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Navigate, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { isReaderUser } from "../utils/authRole";
 import { isAdmin } from "../utils/roleUtils";
@@ -28,7 +28,8 @@ const staffMenu = [
     { to: "/staff/returns", label: "Trả sách", icon: RotateCcw },
     { to: "/staff/payments", label: "Thu tiền", icon: CreditCard },
     { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
-    { to: "/reports", label: "Báo cáo", icon: BarChart3 }
+    { to: "/reports", label: "Báo cáo", icon: BarChart3 },
+    { to: "/settings", label: "Cài đặt", icon: SlidersHorizontal }
 ];
 
 const adminExtraMenu = [
@@ -39,8 +40,7 @@ const adminExtraMenu = [
 ];
 
 export default function AppLayout() {
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
+    const { user } = useAuth();
     const displayName = getUserDisplayName(user);
     const menu = isAdmin(user)
         ? [
@@ -51,11 +51,6 @@ export default function AppLayout() {
 
     if (isReaderUser(user)) {
         return <Navigate to="/reader" replace />;
-    }
-
-    function handleLogout() {
-        logout();
-        navigate("/login");
     }
 
     return (
@@ -101,10 +96,6 @@ export default function AppLayout() {
                         <div className="user-chip">
                             {displayName}
                         </div>
-                        <button className="ghost-button" onClick={handleLogout}>
-                            <LogOut size={18} />
-                            Đăng xuất
-                        </button>
                     </div>
                 </header>
 

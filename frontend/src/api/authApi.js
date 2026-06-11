@@ -17,6 +17,13 @@ export function meApi() {
     return apiFetch("/api/auth/me");
 }
 
+export function changePasswordApi(payload) {
+    return apiFetch("/api/auth/change-password", {
+        method: "POST",
+        body: JSON.stringify(payload)
+    });
+}
+
 export function logoutApi() {
     clearToken();
 }
