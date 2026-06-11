@@ -1,6 +1,7 @@
 package com.library.backend.service;
 
 import com.library.backend.dto.AuthResponse;
+import com.library.backend.dto.ChangePasswordRequest;
 import com.library.backend.dto.LoginRequest;
 import com.library.backend.entity.DocGia;
 import com.library.backend.entity.NhanVien;
@@ -14,6 +15,7 @@ import com.library.backend.security.AuthUser;
 import com.library.backend.security.TokenService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -81,6 +83,31 @@ public class AuthService {
 
     public AuthResponse me(AuthUser user) {
         return toResponse(null, enrichDisplayName(user));
+    }
+
+    @Transactional
+    public void changePassword(AuthUser user, ChangePasswordRequest request) {
+        TaiKhoan taiKhoan = taiKhoanRepository.findById(user.getMaTaiKhoan())
+                .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), taiKhoan.getMatKhauHash())) {
+            throw new RuntimeException("Mật khẩu hiện tại không đúng");
+        }
+
+        if (passwordEncoder.matches(request.getNewPassword(), taiKhoan.getMatKhauHash())) {
+            throw new RuntimeException("Mật khẩu mới phải khác mật khẩu hiện tại");
+        }
+
+        taiKhoan.setMatKhauHash(passwordEncoder.encode(request.getNewPassword()));
+        taiKhoanRepository.save(taiKhoan);
+
+        activityLogService.logAsAccountSafe(
+                taiKhoan.getMaTaiKhoan(),
+                "Đổi mật khẩu",
+                "TAIKHOAN",
+                taiKhoan.getMaTaiKhoan(),
+                "Tài khoản " + taiKhoan.getTenDangNhap() + " đổi mật khẩu"
+        );
     }
 
     private AuthUser buildAuthUser(TaiKhoan taiKhoan, VaiTro vaiTro) {
