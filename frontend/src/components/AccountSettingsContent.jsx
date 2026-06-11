@@ -271,8 +271,9 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                 </article>
             </section>
 
-            <section className="settings-grid-2">
-                <form className="panel settings-section" onSubmit={submitProfile}>
+            <section className="settings-dashboard-grid">
+                <div className="settings-column settings-column-left">
+                <form className="panel settings-section settings-profile-section" onSubmit={submitProfile}>
                     <div className="settings-section-title">
                         <UserRoundCog size={22} />
                         <div>
@@ -336,7 +337,15 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                     </div>
                 </form>
 
-                <form className="panel settings-section" onSubmit={submitPassword}>
+                <SettingsShortcuts
+                    actions={shortcutActions}
+                    onNavigate={navigate}
+                    onLogout={confirmLogout}
+                />
+                </div>
+
+                <div className="settings-column settings-column-right">
+                <form className="panel settings-section settings-password-section" onSubmit={submitPassword}>
                     <div className="settings-section-title">
                         <KeyRound size={22} />
                         <div>
@@ -379,10 +388,8 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                         </button>
                     </div>
                 </form>
-            </section>
 
-            <section className="settings-grid-2">
-                <article className="panel settings-section">
+                <article className="panel settings-section settings-appearance-section">
                     <div className="settings-section-title">
                         <Brush size={22} />
                         <div>
@@ -429,7 +436,7 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                     </div>
                 </article>
 
-                <article className="panel settings-section">
+                <article className="panel settings-section settings-notification-section">
                     <div className="settings-section-title">
                         <Bell size={22} />
                         <div>
@@ -467,10 +474,9 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                         </button>
                     </div>
                 </article>
-            </section>
 
-            <section className="panel settings-section">
-                <div className="settings-section-title">
+                <section className="panel settings-section settings-shortcuts-section">
+                    <div className="settings-section-title">
                     <ShieldCheck size={22} />
                     <div>
                         <h2>Chức năng theo quyền</h2>
@@ -478,7 +484,7 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                     </div>
                 </div>
 
-                <div className="settings-shortcut-grid">
+                    <div className="settings-shortcut-grid">
                     {shortcutActions.map((action) => {
                         const Icon = action.icon;
 
@@ -499,9 +505,48 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                         <LogOut size={20} />
                         <span>Đăng xuất</span>
                     </button>
+                    </div>
+                </section>
                 </div>
             </section>
         </div>
+    );
+}
+
+function SettingsShortcuts({ actions, onNavigate, onLogout }) {
+    return (
+        <section className="panel settings-section settings-shortcuts-section">
+            <div className="settings-section-title">
+                <ShieldCheck size={22} />
+                <div>
+                    <h2>Chức năng theo quyền</h2>
+                    <p>Các lối tắt bên dưới thay đổi theo vai trò tài khoản.</p>
+                </div>
+            </div>
+
+            <div className="settings-shortcut-grid">
+                {actions.map((action) => {
+                    const Icon = action.icon;
+
+                    return (
+                        <button
+                            key={action.to}
+                            type="button"
+                            className="settings-shortcut"
+                            onClick={() => onNavigate(action.to)}
+                        >
+                            <Icon size={20} />
+                            <span>{action.label}</span>
+                        </button>
+                    );
+                })}
+
+                <button type="button" className="settings-shortcut danger-shortcut" onClick={onLogout}>
+                    <LogOut size={20} />
+                    <span>Đăng xuất</span>
+                </button>
+            </div>
+        </section>
     );
 }
 
