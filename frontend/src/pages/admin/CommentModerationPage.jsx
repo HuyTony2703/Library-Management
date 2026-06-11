@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { EyeOff, RefreshCcw, RotateCcw, Search, Trash2 } from "lucide-react";
+import { EyeOff, MoreHorizontal, RefreshCcw, RotateCcw, Search, Trash2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { adminApi } from "../../api/adminApi";
 import PageHeader from "../../components/PageHeader";
@@ -22,6 +22,7 @@ export default function CommentModerationPage() {
 
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [openActionMenu, setOpenActionMenu] = useState(null);
     const [filter, setFilter] = useState(() => ({
         status: searchParams.get("status") || "Tất cả",
         maDauSach: searchParams.get("maDauSach") || "",
@@ -80,6 +81,8 @@ export default function CommentModerationPage() {
     }
 
     async function moderate(row, action) {
+        setOpenActionMenu(null);
+
         const employeeId = user?.maNhanVien || "NV_ADMIN";
         const actionLabel = action === "hide"
             ? "ẩn"
@@ -149,12 +152,6 @@ export default function CommentModerationPage() {
                 eyebrow="Staff"
                 title="Kiểm duyệt bình luận"
                 description="Lọc, ẩn, xóa mềm hoặc khôi phục bình luận của độc giả trên đầu sách."
-                right={
-                    <button className="soft-button" onClick={() => loadComments()} disabled={loading}>
-                        <RefreshCcw size={17} />
-                        Tải lại
-                    </button>
-                }
             />
 
             <form className="panel comment-filter-form" onSubmit={submitFilter}>
@@ -186,6 +183,11 @@ export default function CommentModerationPage() {
                 <button className="primary-button" disabled={loading}>
                     <Search size={17} />
                     Tìm kiếm
+                </button>
+
+                <button className="soft-button" type="button" onClick={() => loadComments()} disabled={loading}>
+                    <RefreshCcw size={17} />
+                    Tải lại
                 </button>
             </form>
 
@@ -221,42 +223,69 @@ export default function CommentModerationPage() {
                             key: "actions",
                             title: "Thao tác",
                             render: (row) => (
-                                <div className="table-actions">
-                                    <button
-                                        className="soft-button"
-                                        onClick={() => moderate(row, "hide")}
-                                        disabled={loading || row.trangThai === "Đã ẩn"}
-                                        type="button"
-                                    >
-                                        <EyeOff size={15} />
-                                        Ẩn
-                                    </button>
-
-                                    <button
-                                        className="soft-button danger-button"
-                                        onClick={() => moderate(row, "delete")}
-                                        disabled={loading || row.trangThai === "Đã xóa"}
-                                        type="button"
-                                    >
-                                        <Trash2 size={15} />
-                                        Xóa
-                                    </button>
-
-                                    <button
-                                        className="soft-button"
-                                        onClick={() => moderate(row, "restore")}
-                                        disabled={loading || row.trangThai === "Hiển thị"}
-                                        type="button"
-                                    >
-                                        <RotateCcw size={15} />
-                                        Khôi phục
-                                    </button>
-                                </div>
+                                <CommentActionMenu
+                                    row={row}
+                                    loading={loading}
+                                    open={openActionMenu === row.maBinhLuan}
+                                    onToggle={() => setOpenActionMenu((current) =>
+                                        current === row.maBinhLuan ? null : row.maBinhLuan
+                                    )}
+                                    onAction={moderate}
+                                />
                             )
                         }
                     ]}
                 />
             </div>
+        </div>
+    );
+}
+
+function CommentActionMenu({ row, loading, open, onToggle, onAction }) {
+    return (
+        <div className="action-menu-cell">
+            <button
+                className="icon-button compact-icon-button"
+                type="button"
+                onClick={onToggle}
+                aria-label={`Mở thao tác cho bình luận ${row.maBinhLuan}`}
+            >
+                <MoreHorizontal size={19} />
+            </button>
+
+            {open && (
+                <div className="inline-action-menu">
+                    <button
+                        className="soft-button"
+                        onClick={() => onAction(row, "hide")}
+                        disabled={loading || row.trangThai === "Đã ẩn"}
+                        type="button"
+                    >
+                        <EyeOff size={15} />
+                        Ẩn
+                    </button>
+
+                    <button
+                        className="soft-button danger-button"
+                        onClick={() => onAction(row, "delete")}
+                        disabled={loading || row.trangThai === "Đã xóa"}
+                        type="button"
+                    >
+                        <Trash2 size={15} />
+                        Xóa
+                    </button>
+
+                    <button
+                        className="soft-button"
+                        onClick={() => onAction(row, "restore")}
+                        disabled={loading || row.trangThai === "Hiển thị"}
+                        type="button"
+                    >
+                        <RotateCcw size={15} />
+                        Khôi phục
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

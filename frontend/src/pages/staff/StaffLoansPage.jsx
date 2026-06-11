@@ -106,17 +106,11 @@ export default function StaffLoansPage() {
                 title="Mượn sách"
                 description="Lập phiếu mượn cho độc giả, tự kiểm tra thẻ, nợ, quy định mượn và trạng thái cuốn sách."
                 right={
-                    <div className="table-actions">
-                        {result && (
-                            <button className="soft-button" type="button" onClick={() => setShowResult(true)}>
-                                Xem lại kết quả
-                            </button>
-                        )}
-                        <button className="soft-button" type="button" onClick={loadCurrentLoans}>
-                            <Search size={17} />
-                            Xem sách đang mượn
+                    result ? (
+                        <button className="soft-button" type="button" onClick={() => setShowResult(true)}>
+                            Xem lại kết quả
                         </button>
-                    </div>
+                    ) : null
                 }
             />
 
@@ -183,7 +177,13 @@ export default function StaffLoansPage() {
             <div className="panel">
                 <div className="panel-title">
                     <h2>Sách đang mượn của {form.maDocGia}</h2>
-                    <span>{currentLoans.length} cuốn</span>
+                    <div className="panel-title-actions">
+                        <span>{currentLoans.length} cuốn</span>
+                        <button className="soft-button" type="button" onClick={loadCurrentLoans}>
+                            <Search size={17} />
+                            Xem sách đang mượn
+                        </button>
+                    </div>
                 </div>
 
                 <DataTable

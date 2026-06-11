@@ -8,12 +8,12 @@ import {
     Heart,
     Home,
     Library,
-    LogOut,
     Search,
     ShieldCheck,
+    Settings,
     UserRound
 } from "lucide-react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import NotificationBell from "../../components/reader/NotificationBell";
 import { useAuth } from "../../context/AuthContext";
 import "./reader.css";
@@ -28,17 +28,12 @@ const menuItems = [
     { to: "/reader/favorites", label: "Sách yêu thích", icon: Heart },
     { to: "/reader/guide", label: "Hướng dẫn", icon: CircleHelp },
     { to: "/reader/rules", label: "Quy định", icon: ShieldCheck },
-    { to: "/reader/penalty-rules", label: "Cách tính phạt", icon: Calculator }
+    { to: "/reader/penalty-rules", label: "Cách tính phạt", icon: Calculator },
+    { to: "/reader/settings", label: "Cài đặt", icon: Settings }
 ];
 
 export default function ReaderLayout() {
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
-
-    function handleLogout() {
-        logout();
-        navigate("/login");
-    }
+    const { user } = useAuth();
 
     return (
         <div className="reader-shell">
@@ -81,10 +76,6 @@ export default function ReaderLayout() {
                 <header className="reader-topbar">
                     <div className="reader-topbar-actions">
                         <NotificationBell />
-                        <button type="button" className="reader-logout-button" onClick={handleLogout}>
-                            <LogOut size={18} />
-                            Đăng xuất
-                        </button>
                     </div>
                 </header>
 

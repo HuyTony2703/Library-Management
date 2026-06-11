@@ -279,7 +279,6 @@ export default function ReadersPage() {
                         <Trash2 size={15} />
                         Xóa
                     </button>
-                    <span>{selectedIds.length} mục đã chọn</span>
                 </div>
             </div>
 
@@ -288,7 +287,8 @@ export default function ReadersPage() {
                 columns={[
                     {
                         key: "select",
-                        title: "",
+                        title: `${selectedIds.length} mục`,
+                        className: "selection-count-cell",
                         render: (row) => (
                             <input
                                 className="table-checkbox"
@@ -324,16 +324,16 @@ function buildDefaultForm() {
     const suffix = Date.now().toString().slice(-6);
 
     return {
-        maDocGia: `DG_TEST_${suffix}`,
-        maTaiKhoan: `TK_DG_TEST_${suffix}`,
-        tenDangNhap: `docgia_test_${suffix}`,
+        maDocGia: `DG_MOI_${suffix}`,
+        maTaiKhoan: `TK_DG_MOI_${suffix}`,
+        tenDangNhap: `docgia_moi_${suffix}`,
         matKhau: "123456",
         maNhomDocGia: "NHOM_SINHVIEN",
         maGoiThanhVien: "GOI_THUONG",
-        hoTen: "Độc Giả Test",
+        hoTen: "Độc giả mới 1",
         ngaySinh: "2000-01-01",
         diaChi: "TP.HCM",
-        email: `docgia_test_${suffix}@library.vn`,
+        email: `docgia_moi_${suffix}@library.vn`,
         soDienThoai: "0922222999",
         ngayLapThe: new Date().toISOString().slice(0, 10)
     };

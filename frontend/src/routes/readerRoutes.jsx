@@ -13,6 +13,7 @@ import ReaderFavoritesPage from "../pages/reader/ReaderFavoritesPage";
 import PenaltyRulesPage from "../pages/reader/PenaltyRulesPage";
 import ReaderGuidePage from "../pages/reader/ReaderGuidePage";
 import ReaderRulesPage from "../pages/reader/ReaderRulesPage";
+import ReaderSettingsPage from "../pages/reader/ReaderSettingsPage";
 
 export const readerRoutes = (
     <Route
@@ -36,5 +37,6 @@ export const readerRoutes = (
         <Route path="guide" element={<ReaderGuidePage />} />
         <Route path="rules" element={<ReaderRulesPage />} />
         <Route path="penalty-rules" element={<PenaltyRulesPage />} />
+        <Route path="settings" element={<ReaderSettingsPage />} />
     </Route>
 );

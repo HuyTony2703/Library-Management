@@ -241,6 +241,16 @@
     color: #dc2626;
 }
 
+.reader-status-badge {
+    display: inline-flex;
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    font-weight: 900;
+}
+
 .reader-quick-actions {
     display: grid;
     gap: 12px;
@@ -692,6 +702,12 @@
     display: flex;
     gap: 8px;
     color: #2563eb;
+}
+
+.reader-section-title .settings-title-copy {
+    display: grid;
+    gap: 4px;
+    color: inherit;
 }
 
 .reader-bottom-link {
