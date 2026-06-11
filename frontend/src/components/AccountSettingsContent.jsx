@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { changePasswordApi } from "../api/authApi";
+import { changePasswordApi, updateProfileApi } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
 import { normalizeRole } from "../utils/roleUtils";
 import { useActionDialog } from "./ActionDialogProvider";
@@ -39,6 +39,7 @@ export default function AccountSettingsContent({ portal = "staff" }) {
     const actionDialog = useActionDialog();
     const role = normalizeRole(user);
     const displayName = getDisplayName(user);
+    const [profileForm, setProfileForm] = useState(() => buildProfileForm(user));
     const [passwordForm, setPasswordForm] = useState({
         currentPassword: "",
         newPassword: "",
@@ -47,7 +48,12 @@ export default function AccountSettingsContent({ portal = "staff" }) {
     const [preferences, setPreferences] = useState(() => loadJson("library_ui_preferences", defaultPreferences));
     const [notifications, setNotifications] = useState(() => loadJson("library_notification_preferences", defaultNotificationSettings));
     const [savingPassword, setSavingPassword] = useState(false);
+    const [savingProfile, setSavingProfile] = useState(false);
     const [refreshingProfile, setRefreshingProfile] = useState(false);
+
+    useEffect(() => {
+        setProfileForm(buildProfileForm(user));
+    }, [user]);
 
     useEffect(() => {
         applyPreferences(preferences);
@@ -59,8 +65,17 @@ export default function AccountSettingsContent({ portal = "staff" }) {
         setPasswordForm((prev) => ({ ...prev, [field]: value }));
     }
 
+    function updateProfileField(field, value) {
+        setProfileForm((prev) => ({ ...prev, [field]: value }));
+    }
+
     function updatePreference(field, value) {
-        setPreferences((prev) => ({ ...prev, [field]: value }));
+        setPreferences((prev) => {
+            const next = { ...prev, [field]: value };
+            localStorage.setItem("library_ui_preferences", JSON.stringify(next));
+            applyPreferences(next);
+            return next;
+        });
     }
 
     function updateNotification(field, value) {
@@ -103,6 +118,38 @@ export default function AccountSettingsContent({ portal = "staff" }) {
             toast.error(err.message || "Đổi mật khẩu thất bại");
         } finally {
             setSavingPassword(false);
+        }
+    }
+
+    async function submitProfile(event) {
+        event.preventDefault();
+
+        if (!profileForm.hoTen.trim()) {
+            toast.error("Vui lòng nhập họ tên");
+            return;
+        }
+
+        if (!profileForm.email.trim()) {
+            toast.error("Vui lòng nhập email");
+            return;
+        }
+
+        setSavingProfile(true);
+
+        try {
+            await updateProfileApi({
+                hoTen: profileForm.hoTen.trim(),
+                email: profileForm.email.trim(),
+                soDienThoai: profileForm.soDienThoai.trim(),
+                diaChi: profileForm.diaChi.trim()
+            });
+
+            await refreshUser?.();
+            toast.success("Đã cập nhật thông tin cá nhân");
+        } catch (err) {
+            toast.error(err.message || "Cập nhật thông tin cá nhân thất bại");
+        } finally {
+            setSavingProfile(false);
         }
     }
 
@@ -213,7 +260,7 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                         <h2>{displayName}</h2>
                         <p className="settings-muted">{user?.tenDangNhap || user?.maTaiKhoan}</p>
                     </div>
-                    <span className="status-badge status-neutral">
+                    <span className="status-badge status-neutral settings-role-badge">
                         {role === "ADMIN" ? "Admin" : role === "STAFF" ? "Thủ thư" : "Độc giả"}
                     </span>
                 </article>
@@ -225,17 +272,51 @@ export default function AccountSettingsContent({ portal = "staff" }) {
             </section>
 
             <section className="settings-grid-2">
-                <article className="panel settings-section">
+                <form className="panel settings-section" onSubmit={submitProfile}>
                     <div className="settings-section-title">
                         <UserRoundCog size={22} />
                         <div>
                             <h2>Thông tin cá nhân</h2>
-                            <p>Xem thông tin đăng nhập và mã nghiệp vụ của tài khoản.</p>
+                            <p>Cập nhật thông tin liên hệ của tài khoản đang đăng nhập.</p>
                         </div>
                     </div>
 
+                    <div className="form-grid-2">
+                        <label className="form-row">
+                            <span>Họ tên</span>
+                            <input
+                                value={profileForm.hoTen}
+                                onChange={(event) => updateProfileField("hoTen", event.target.value)}
+                            />
+                        </label>
+                        <label className="form-row">
+                            <span>Email</span>
+                            <input
+                                type="email"
+                                value={profileForm.email}
+                                onChange={(event) => updateProfileField("email", event.target.value)}
+                            />
+                        </label>
+                    </div>
+
+                    <div className="form-grid-2">
+                        <label className="form-row">
+                            <span>Số điện thoại</span>
+                            <input
+                                value={profileForm.soDienThoai}
+                                onChange={(event) => updateProfileField("soDienThoai", event.target.value)}
+                            />
+                        </label>
+                        <label className="form-row">
+                            <span>Địa chỉ</span>
+                            <input
+                                value={profileForm.diaChi}
+                                onChange={(event) => updateProfileField("diaChi", event.target.value)}
+                            />
+                        </label>
+                    </div>
+
                     <div className="settings-info-list">
-                        <InfoRow label="Họ tên" value={displayName} />
                         <InfoRow label="Tên đăng nhập" value={user?.tenDangNhap} />
                         <InfoRow label="Mã tài khoản" value={user?.maTaiKhoan} />
                         <InfoRow label="Mã nhân viên" value={user?.maNhanVien} />
@@ -244,12 +325,16 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                     </div>
 
                     <div className="settings-section-actions">
+                        <button type="submit" className="primary-button" disabled={savingProfile}>
+                            <Save size={17} />
+                            {savingProfile ? "Đang lưu..." : "Lưu thông tin"}
+                        </button>
                         <button type="button" className="soft-button" onClick={reloadProfile} disabled={refreshingProfile}>
                             <RefreshCcw size={17} />
                             {refreshingProfile ? "Đang làm mới..." : "Làm mới thông tin"}
                         </button>
                     </div>
-                </article>
+                </form>
 
                 <form className="panel settings-section" onSubmit={submitPassword}>
                     <div className="settings-section-title">
@@ -287,10 +372,12 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                         </div>
                     </div>
 
-                    <button className="primary-button" disabled={savingPassword}>
-                        <Save size={17} />
-                        Lưu mật khẩu
-                    </button>
+                    <div className="settings-section-actions settings-password-actions">
+                        <button type="submit" className="primary-button" disabled={savingPassword}>
+                            <Save size={17} />
+                            Lưu mật khẩu
+                        </button>
+                    </div>
                 </form>
             </section>
 
@@ -442,6 +529,15 @@ function ToggleRow({ label, checked, onChange }) {
             />
         </label>
     );
+}
+
+function buildProfileForm(user) {
+    return {
+        hoTen: getDisplayName(user) === "Tài khoản" ? "" : getDisplayName(user),
+        email: user?.email || "",
+        soDienThoai: user?.soDienThoai || "",
+        diaChi: user?.diaChi || ""
+    };
 }
 
 function getDisplayName(user) {

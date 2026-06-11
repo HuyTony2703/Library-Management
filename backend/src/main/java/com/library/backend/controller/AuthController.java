@@ -3,6 +3,7 @@ package com.library.backend.controller;
 import com.library.backend.dto.AuthResponse;
 import com.library.backend.dto.ChangePasswordRequest;
 import com.library.backend.dto.LoginRequest;
+import com.library.backend.dto.ProfileUpdateRequest;
 import com.library.backend.security.AuthUser;
 import com.library.backend.service.AuthService;
 import jakarta.validation.Valid;
@@ -40,5 +41,14 @@ public class AuthController {
         AuthUser user = (AuthUser) authentication.getPrincipal();
         authService.changePassword(user, request);
         return Map.of("message", "Đổi mật khẩu thành công");
+    }
+
+    @PutMapping("/profile")
+    public AuthResponse updateProfile(
+            Authentication authentication,
+            @Valid @RequestBody ProfileUpdateRequest request
+    ) {
+        AuthUser user = (AuthUser) authentication.getPrincipal();
+        return authService.updateProfile(user, request);
     }
 }

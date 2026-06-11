@@ -24,6 +24,13 @@
   --shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
 }
 
+:root[data-theme="dark"] body {
+  background:
+          radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 34%),
+          radial-gradient(circle at top right, rgba(124, 58, 237, 0.14), transparent 30%),
+          var(--bg);
+}
+
 :root[data-accent="green"] {
   --primary: #16a34a;
   --primary-2: #0d9488;
@@ -451,10 +458,14 @@ button {
   width: 80px;
 }
 
+.action-col {
+  width: 138px;
+}
+
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 .data-table th {
@@ -472,6 +483,8 @@ button {
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   overflow-wrap: normal;
   word-break: keep-all;
 }
@@ -492,6 +505,8 @@ button {
 
 .data-table th.select-cell,
 .data-table td.select-cell,
+.data-table th.action-cell,
+.data-table td.action-cell,
 .data-table th[data-column="select"],
 .data-table td[data-column="select"],
 .data-table th[data-column="chon"],
@@ -628,17 +643,20 @@ button {
 .login-card label {
   font-weight: 900;
   color: var(--text);
+  font-size: 14px;
+  line-height: 1.35;
 }
 
 input,
 select,
 textarea {
   width: 100%;
-  border: 1px solid var(--line);
+  min-height: 44px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
   border-radius: 14px;
   padding: 12px 14px;
   outline: none;
-  background: white;
+  background: rgba(255, 255, 255, 0.96);
   color: var(--text);
 }
 
@@ -852,7 +870,7 @@ textarea:focus {
 
 .comment-filter-form {
   display: grid;
-  grid-template-columns: auto minmax(150px, 220px) auto minmax(150px, 220px) auto minmax(240px, 1fr) auto;
+  grid-template-columns: auto minmax(150px, 220px) auto minmax(150px, 220px) auto minmax(240px, 1fr) auto auto;
   gap: 12px;
   align-items: center;
 }
@@ -866,7 +884,8 @@ textarea:focus {
   grid-template-columns: auto minmax(180px, 320px) auto;
   align-items: center;
   gap: 12px;
-  margin-bottom: 14px;
+  margin: 30px 0 18px;
+  padding-top: 6px;
 }
 
 .payment-debt-search label {
@@ -972,6 +991,107 @@ textarea:focus {
   height: 46px;
   color: var(--primary);
   background: rgba(37, 99, 235, 0.1);
+}
+
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] .input-icon,
+:root[data-theme="dark"] .ghost-button,
+:root[data-theme="dark"] .user-chip,
+:root[data-theme="dark"] .settings-matrix-card,
+:root[data-theme="dark"] .inline-action-menu {
+  background: #111827;
+  color: var(--text);
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .settings-section input:not([type="checkbox"]),
+:root[data-theme="dark"] .settings-section select,
+:root[data-theme="dark"] .settings-section textarea {
+  background: #0b1220;
+  color: var(--text);
+  border-color: rgba(226, 232, 240, 0.22);
+}
+
+:root[data-theme="dark"] .settings-section input:not([type="checkbox"]):focus,
+:root[data-theme="dark"] .settings-section select:focus,
+:root[data-theme="dark"] .settings-section textarea:focus {
+  border-color: rgba(96, 165, 250, 0.72);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.16);
+}
+
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder {
+  color: #94a3b8;
+}
+
+:root[data-theme="dark"] .data-table th,
+:root[data-theme="dark"] .settings-matrix th,
+:root[data-theme="dark"] .reader-table th {
+  background: rgba(226, 232, 240, 0.06);
+}
+
+:root[data-theme="dark"] .data-table tr:hover td,
+:root[data-theme="dark"] .settings-matrix tr:hover td {
+  background: rgba(37, 99, 235, 0.16);
+}
+
+:root[data-theme="dark"] .data-table tr:has(input[type="checkbox"]:checked) td {
+  background: rgba(37, 99, 235, 0.24);
+}
+
+:root[data-theme="dark"] .result-item,
+:root[data-theme="dark"] .rules-reference-card,
+:root[data-theme="dark"] .feedback-block,
+:root[data-theme="dark"] .checkout-summary,
+:root[data-theme="dark"] .reader-detail-grid div,
+:root[data-theme="dark"] .reader-author-box,
+:root[data-theme="dark"] .formula-box {
+  background: rgba(226, 232, 240, 0.06);
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .reader-shell {
+  background:
+          radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 32%),
+          var(--bg);
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .reader-card,
+:root[data-theme="dark"] .reader-section,
+:root[data-theme="dark"] .reader-book-card,
+:root[data-theme="dark"] .reader-book-detail-info,
+:root[data-theme="dark"] .reader-table-card,
+:root[data-theme="dark"] .current-membership-box,
+:root[data-theme="dark"] .membership-card,
+:root[data-theme="dark"] .favorite-card,
+:root[data-theme="dark"] .random-book-section,
+:root[data-theme="dark"] .guide-card,
+:root[data-theme="dark"] .penalty-info-card,
+:root[data-theme="dark"] .penalty-calculator-card,
+:root[data-theme="dark"] .notification-item,
+:root[data-theme="dark"] .reader-modal {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .reader-table-card,
+:root[data-theme="dark"] .settings-matrix-card {
+  background: var(--surface-solid);
+}
+
+:root[data-theme="dark"] .reader-book-description,
+:root[data-theme="dark"] .reader-muted,
+:root[data-theme="dark"] .reader-home-header p,
+:root[data-theme="dark"] .reader-info-row span:first-child,
+:root[data-theme="dark"] .reader-copy-item p,
+:root[data-theme="dark"] .membership-card p,
+:root[data-theme="dark"] .notification-content p,
+:root[data-theme="dark"] .comment-body p {
+  color: var(--muted);
 }
 
 /* Toast */
@@ -1202,19 +1322,23 @@ textarea:focus {
 }
 
 .inline-action-menu {
-  min-width: 150px;
+  position: fixed;
+  z-index: 10050;
+  width: 190px;
+  min-width: 190px;
   display: grid;
   gap: 8px;
   padding: 10px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface-solid);
-  box-shadow: var(--shadow);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
 }
 
 .inline-action-menu .soft-button {
   justify-content: flex-start;
   width: 100%;
+  min-height: 40px;
 }
 
 .report-card-grid {
@@ -1271,11 +1395,62 @@ textarea:focus {
   gap: 18px;
 }
 
+.settings-section .form-grid-2,
+.settings-section .form-grid-3 {
+  align-items: end;
+}
+
+.settings-section .form-row {
+  gap: 7px;
+  align-content: start;
+}
+
+.settings-section .form-row > span,
+.settings-section .form-row > label {
+  min-height: 18px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.settings-section input:not([type="checkbox"]),
+.settings-section select,
+.settings-section textarea {
+  min-height: 42px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border-color: rgba(15, 23, 42, 0.16);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.settings-section input:not([type="checkbox"]):focus,
+.settings-section select:focus,
+.settings-section textarea:focus {
+  border-color: rgba(37, 99, 235, 0.62);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
 .settings-section-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
+}
+
+.settings-section-actions .primary-button,
+.settings-section-actions .soft-button {
+  width: auto;
+  min-height: 40px;
+  padding: 10px 14px;
+}
+
+.settings-password-actions {
+  justify-content: flex-start;
+}
+
+.settings-password-actions .primary-button {
+  min-width: 170px;
 }
 
 .settings-section-title {
@@ -1379,6 +1554,13 @@ body[data-density="compact"] .settings-card {
   justify-content: space-between;
   gap: 18px;
   align-items: center;
+}
+
+.settings-role-badge {
+  min-width: 78px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.25;
 }
 
 .settings-profile-card h2,

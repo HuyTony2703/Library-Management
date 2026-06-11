@@ -48,11 +48,16 @@ export default function DataTable({
         return column.key === "select" || column.key === "chon";
     }
 
+    function isActionColumn(column) {
+        return column.key === "actions" || column.key === "action";
+    }
+
     function getColumnClassName(column) {
         return [
             column.className,
             column.align ? `align-${column.align}` : "",
-            isSelectColumn(column) ? "select-cell" : ""
+            isSelectColumn(column) ? "select-cell" : "",
+            isActionColumn(column) ? "action-cell" : ""
         ].filter(Boolean).join(" ");
     }
 
@@ -63,7 +68,10 @@ export default function DataTable({
                     {columns.map((column) => (
                         <col
                             key={column.key}
-                            className={isSelectColumn(column) ? "select-col" : undefined}
+                            className={[
+                                isSelectColumn(column) ? "select-col" : "",
+                                isActionColumn(column) ? "action-col" : ""
+                            ].filter(Boolean).join(" ") || undefined}
                             style={column.width ? { width: column.width } : undefined}
                         />
                     ))}

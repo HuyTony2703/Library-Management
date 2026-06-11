@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { EyeOff, MoreHorizontal, RefreshCcw, RotateCcw, Search, Trash2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { adminApi } from "../../api/adminApi";
@@ -60,6 +61,36 @@ export default function CommentModerationPage() {
         loadComments(nextFilter);
     }, [searchParams]);
 
+    useEffect(() => {
+        if (!openActionMenu) {
+            return undefined;
+        }
+
+        function closeMenuOnOutsideClick(event) {
+            const target = event.target;
+
+            if (target?.closest?.(".inline-action-menu, .compact-icon-button")) {
+                return;
+            }
+
+            setOpenActionMenu(null);
+        }
+
+        function closeMenu() {
+            setOpenActionMenu(null);
+        }
+
+        window.addEventListener("click", closeMenuOnOutsideClick);
+        window.addEventListener("resize", closeMenu);
+        window.addEventListener("scroll", closeMenu, true);
+
+        return () => {
+            window.removeEventListener("click", closeMenuOnOutsideClick);
+            window.removeEventListener("resize", closeMenu);
+            window.removeEventListener("scroll", closeMenu, true);
+        };
+    }, [openActionMenu]);
+
     function submitFilter(event) {
         event.preventDefault();
 
@@ -78,6 +109,28 @@ export default function CommentModerationPage() {
         }
 
         setSearchParams(params);
+    }
+
+    function toggleActionMenu(row, event) {
+        event.stopPropagation();
+
+        const rect = event.currentTarget.getBoundingClientRect();
+        const menuWidth = 190;
+        const menuHeight = 170;
+        const left = Math.min(
+            Math.max(12, rect.right - menuWidth),
+            window.innerWidth - menuWidth - 12
+        );
+        const topBelow = rect.bottom + 8;
+        const top = topBelow + menuHeight > window.innerHeight - 12
+            ? Math.max(12, rect.top - menuHeight - 8)
+            : topBelow;
+
+        setOpenActionMenu((current) =>
+            current?.id === row.maBinhLuan
+                ? null
+                : { id: row.maBinhLuan, top, left }
+        );
     }
 
     async function moderate(row, action) {
@@ -226,10 +279,11 @@ export default function CommentModerationPage() {
                                 <CommentActionMenu
                                     row={row}
                                     loading={loading}
-                                    open={openActionMenu === row.maBinhLuan}
-                                    onToggle={() => setOpenActionMenu((current) =>
-                                        current === row.maBinhLuan ? null : row.maBinhLuan
-                                    )}
+                                    open={openActionMenu?.id === row.maBinhLuan}
+                                    menuStyle={openActionMenu?.id === row.maBinhLuan
+                                        ? { top: openActionMenu.top, left: openActionMenu.left }
+                                        : undefined}
+                                    onToggle={(event) => toggleActionMenu(row, event)}
                                     onAction={moderate}
                                 />
                             )
@@ -241,7 +295,7 @@ export default function CommentModerationPage() {
     );
 }
 
-function CommentActionMenu({ row, loading, open, onToggle, onAction }) {
+function CommentActionMenu({ row, loading, open, menuStyle, onToggle, onAction }) {
     return (
         <div className="action-menu-cell">
             <button
@@ -253,8 +307,8 @@ function CommentActionMenu({ row, loading, open, onToggle, onAction }) {
                 <MoreHorizontal size={19} />
             </button>
 
-            {open && (
-                <div className="inline-action-menu">
+            {open && createPortal(
+                <div className="inline-action-menu" style={menuStyle}>
                     <button
                         className="soft-button"
                         onClick={() => onAction(row, "hide")}
@@ -284,7 +338,8 @@ function CommentActionMenu({ row, loading, open, onToggle, onAction }) {
                         <RotateCcw size={15} />
                         Khôi phục
                     </button>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

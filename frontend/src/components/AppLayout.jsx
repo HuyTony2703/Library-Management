@@ -10,7 +10,6 @@ import {
     RotateCcw,
     Settings,
     ShieldCheck,
-    SlidersHorizontal,
     UserRound,
     UsersRound
 } from "lucide-react";
@@ -29,7 +28,7 @@ const staffMenu = [
     { to: "/staff/payments", label: "Thu tiền", icon: CreditCard },
     { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
     { to: "/reports", label: "Báo cáo", icon: BarChart3 },
-    { to: "/settings", label: "Cài đặt", icon: SlidersHorizontal }
+    { to: "/settings", label: "Cài đặt", icon: Settings }
 ];
 
 const adminExtraMenu = [

@@ -24,6 +24,13 @@ export function changePasswordApi(payload) {
     });
 }
 
+export function updateProfileApi(payload) {
+    return apiFetch("/api/auth/profile", {
+        method: "PUT",
+        body: JSON.stringify(payload)
+    });
+}
+
 export function logoutApi() {
     clearToken();
 }
