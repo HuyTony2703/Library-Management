@@ -14,6 +14,8 @@ import com.library.backend.repository.TaiKhoanRepository;
 import com.library.backend.repository.VaiTroRepository;
 import com.library.backend.security.AuthUser;
 import com.library.backend.security.TokenService;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final ActivityLogService activityLogService;
+    private final JdbcTemplate jdbcTemplate;
 
     public AuthService(
             TaiKhoanRepository taiKhoanRepository,
@@ -38,7 +41,8 @@ public class AuthService {
             NhanVienRepository nhanVienRepository,
             PasswordEncoder passwordEncoder,
             TokenService tokenService,
-            ActivityLogService activityLogService
+            ActivityLogService activityLogService,
+            JdbcTemplate jdbcTemplate
     ) {
         this.taiKhoanRepository = taiKhoanRepository;
         this.vaiTroRepository = vaiTroRepository;
@@ -47,6 +51,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
         this.activityLogService = activityLogService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -86,7 +91,6 @@ public class AuthService {
         return toResponse(null, enrichDisplayName(user));
     }
 
-    @Transactional
     public void changePassword(AuthUser user, ChangePasswordRequest request) {
         TaiKhoan taiKhoan = taiKhoanRepository.findById(user.getMaTaiKhoan())
                 .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại"));
@@ -99,16 +103,22 @@ public class AuthService {
             throw new RuntimeException("Mật khẩu mới phải khác mật khẩu hiện tại");
         }
 
-        taiKhoan.setMatKhauHash(passwordEncoder.encode(request.getNewPassword()));
-        taiKhoanRepository.save(taiKhoan);
+        String newPasswordHash = passwordEncoder.encode(request.getNewPassword());
 
-        activityLogService.logAsAccountSafe(
-                taiKhoan.getMaTaiKhoan(),
-                "Đổi mật khẩu",
-                "TAIKHOAN",
-                taiKhoan.getMaTaiKhoan(),
-                "Tài khoản " + taiKhoan.getTenDangNhap() + " đổi mật khẩu"
-        );
+        try {
+            int updated = jdbcTemplate.update(
+                    "UPDATE TAIKHOAN SET MatKhauHash = ? WHERE MaTaiKhoan = ?",
+                    newPasswordHash,
+                    taiKhoan.getMaTaiKhoan()
+            );
+
+            if (updated == 0) {
+                throw new RuntimeException("Tài khoản không tồn tại");
+            }
+        } catch (DataAccessException ex) {
+            throw new RuntimeException("Không lưu được mật khẩu mới. Vui lòng kiểm tra cấu hình database", ex);
+        }
+
     }
 
     @Transactional

@@ -129,7 +129,32 @@ public class CommentModerationService {
 
     @Transactional
     public CommentModerationResponse delete(String maBinhLuan, ModerateCommentRequest request) {
-        return moderate(maBinhLuan, request, TT_DA_XOA, "Xóa bình luận", true);
+        if (request == null) {
+            throw new BusinessException("Thiếu dữ liệu xử lý bình luận");
+        }
+
+        CommentModerationResponse current = getById(maBinhLuan);
+        validateEmployee(request.getMaNhanVienXuLy());
+
+        if (isBlank(request.getLyDoAnXoa())) {
+            throw new BusinessException("Vui lòng nhập lý do xử lý bình luận");
+        }
+
+        jdbcTemplate.update(
+                "DELETE FROM BINHLUAN WHERE MaBinhLuan = ?",
+                maBinhLuan
+        );
+
+        activityLogService.logSafe(
+                "Xóa bình luận",
+                "BINHLUAN",
+                maBinhLuan,
+                "Xóa vĩnh viễn bình luận " + maBinhLuan
+                        + " bởi nhân viên " + request.getMaNhanVienXuLy().trim()
+                        + ". Lý do: " + request.getLyDoAnXoa().trim()
+        );
+
+        return current;
     }
 
     @Transactional

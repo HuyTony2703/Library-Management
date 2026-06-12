@@ -41,7 +41,10 @@ export async function apiFetch(path, options = {}) {
         : await response.text().catch(() => null);
 
     if (!response.ok) {
-        const message = data?.message || data?.error || `Lỗi API ${response.status}`;
+        const firstFieldError = data?.fieldErrors
+            ? Object.values(data.fieldErrors).find(Boolean)
+            : null;
+        const message = firstFieldError || data?.message || data?.error || `Lỗi API ${response.status}`;
 
         if (response.status === 401) {
             clearToken();

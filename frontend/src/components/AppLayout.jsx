@@ -13,7 +13,7 @@ import {
     UserRound,
     UsersRound
 } from "lucide-react";
-import { Navigate, NavLink, Outlet } from "react-router-dom";
+import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { isReaderUser } from "../utils/authRole";
 import { isAdmin } from "../utils/roleUtils";
@@ -40,6 +40,7 @@ const adminExtraMenu = [
 
 export default function AppLayout() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const displayName = getUserDisplayName(user);
     const menu = isAdmin(user)
         ? [
@@ -78,23 +79,23 @@ export default function AppLayout() {
                     })}
                 </nav>
 
-                <div className="sidebar-user">
+                <button type="button" className="sidebar-user sidebar-user-button" onClick={() => navigate("/settings#profile")}>
                     <div className="avatar">
                         <UserRound size={20} />
                     </div>
                     <div className="user-meta">
                         <b>{displayName}</b>
-                        <span>{user?.tenVaiTro || "ROLE"}</span>
+                        <span>{user?.tenVaiTro || user?.maVaiTro || "Vai trò"}</span>
                     </div>
-                </div>
+                </button>
             </aside>
 
             <main className="workspace">
                 <header className="topbar">
                     <div className="topbar-actions">
-                        <div className="user-chip">
+                        <button type="button" className="user-chip user-chip-button" onClick={() => navigate("/settings#profile")}>
                             {displayName}
-                        </div>
+                        </button>
                     </div>
                 </header>
 
@@ -114,5 +115,5 @@ function getUserDisplayName(user) {
         user?.maNhanVien ||
         user?.maDocGia ||
         user?.maTaiKhoan ||
-        "user";
+        "Tài khoản";
 }

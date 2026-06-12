@@ -1,23 +1,26 @@
 import {
     Bell,
     BookOpen,
-    Brush,
+    CreditCard,
     KeyRound,
     LogOut,
     MessageSquare,
     RefreshCcw,
     RotateCcw,
     Save,
+    Settings,
     ShieldCheck,
+    SlidersHorizontal,
     UserRoundCog,
     UsersRound
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { changePasswordApi, updateProfileApi } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
 import { normalizeRole } from "../utils/roleUtils";
 import { useActionDialog } from "./ActionDialogProvider";
+import PasswordInput from "./PasswordInput";
 import { useToast } from "./ToastProvider";
 
 const defaultPreferences = {
@@ -35,10 +38,12 @@ const defaultNotificationSettings = {
 export default function AccountSettingsContent({ portal = "staff" }) {
     const { user, logout, refreshUser } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const toast = useToast();
     const actionDialog = useActionDialog();
     const role = normalizeRole(user);
     const displayName = getDisplayName(user);
+
     const [profileForm, setProfileForm] = useState(() => buildProfileForm(user));
     const [passwordForm, setPasswordForm] = useState({
         currentPassword: "",
@@ -50,14 +55,29 @@ export default function AccountSettingsContent({ portal = "staff" }) {
     const [savingPassword, setSavingPassword] = useState(false);
     const [savingProfile, setSavingProfile] = useState(false);
     const [refreshingProfile, setRefreshingProfile] = useState(false);
+    const [editingProfile, setEditingProfile] = useState(false);
 
     useEffect(() => {
         setProfileForm(buildProfileForm(user));
+        setEditingProfile(false);
     }, [user]);
 
     useEffect(() => {
         applyPreferences(preferences);
     }, [preferences]);
+
+    useEffect(() => {
+        if (location.hash !== "#profile") {
+            return;
+        }
+
+        window.requestAnimationFrame(() => {
+            document.getElementById("settings-profile")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        });
+    }, [location.hash]);
 
     const shortcutActions = useMemo(() => getShortcutActions(role, portal), [role, portal]);
 
@@ -124,6 +144,11 @@ export default function AccountSettingsContent({ portal = "staff" }) {
     async function submitProfile(event) {
         event.preventDefault();
 
+        if (!editingProfile) {
+            setEditingProfile(true);
+            return;
+        }
+
         if (!profileForm.hoTen.trim()) {
             toast.error("Vui lòng nhập họ tên");
             return;
@@ -137,14 +162,20 @@ export default function AccountSettingsContent({ portal = "staff" }) {
         setSavingProfile(true);
 
         try {
-            await updateProfileApi({
+            const updatedUser = await updateProfileApi({
                 hoTen: profileForm.hoTen.trim(),
                 email: profileForm.email.trim(),
                 soDienThoai: profileForm.soDienThoai.trim(),
                 diaChi: profileForm.diaChi.trim()
             });
 
+            if (updatedUser) {
+                const currentUser = loadJson("user", {});
+                localStorage.setItem("user", JSON.stringify({ ...currentUser, ...updatedUser }));
+            }
+
             await refreshUser?.();
+            setEditingProfile(false);
             toast.success("Đã cập nhật thông tin cá nhân");
         } catch (err) {
             toast.error(err.message || "Cập nhật thông tin cá nhân thất bại");
@@ -163,12 +194,18 @@ export default function AccountSettingsContent({ portal = "staff" }) {
 
         try {
             await refreshUser();
+            setEditingProfile(false);
             toast.success("Đã làm mới thông tin tài khoản");
         } catch (err) {
             toast.error(err.message || "Không làm mới được thông tin tài khoản");
         } finally {
             setRefreshingProfile(false);
         }
+    }
+
+    function cancelEditProfile() {
+        setProfileForm(buildProfileForm(user));
+        setEditingProfile(false);
     }
 
     function savePreferences() {
@@ -233,7 +270,6 @@ export default function AccountSettingsContent({ portal = "staff" }) {
         }
     }
 
-
     async function confirmLogout() {
         const confirmed = await actionDialog.confirm({
             title: "Đăng xuất",
@@ -261,7 +297,7 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                         <p className="settings-muted">{user?.tenDangNhap || user?.maTaiKhoan}</p>
                     </div>
                     <span className="status-badge status-neutral settings-role-badge">
-                        {role === "ADMIN" ? "Admin" : role === "STAFF" ? "Thủ thư" : "Độc giả"}
+                        {displayRole(user, role)}
                     </span>
                 </article>
 
@@ -273,240 +309,228 @@ export default function AccountSettingsContent({ portal = "staff" }) {
 
             <section className="settings-dashboard-grid">
                 <div className="settings-column settings-column-left">
-                <form className="panel settings-section settings-profile-section" onSubmit={submitProfile}>
-                    <div className="settings-section-title">
-                        <UserRoundCog size={22} />
-                        <div>
-                            <h2>Thông tin cá nhân</h2>
-                            <p>Cập nhật thông tin liên hệ của tài khoản đang đăng nhập.</p>
+                    <form id="settings-profile" className="panel settings-section settings-profile-section" onSubmit={submitProfile}>
+                        <div className="settings-section-title">
+                            <UserRoundCog size={22} />
+                            <div>
+                                <h2>Thông tin cá nhân</h2>
+                                <p>
+                                    {editingProfile
+                                        ? "Đang chỉnh sửa thông tin liên hệ của tài khoản."
+                                        : "Thông tin hiện tại của tài khoản đang đăng nhập."}
+                                </p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="form-grid-2">
-                        <label className="form-row">
-                            <span>Họ tên</span>
-                            <input
-                                value={profileForm.hoTen}
-                                onChange={(event) => updateProfileField("hoTen", event.target.value)}
-                            />
-                        </label>
-                        <label className="form-row">
-                            <span>Email</span>
-                            <input
-                                type="email"
-                                value={profileForm.email}
-                                onChange={(event) => updateProfileField("email", event.target.value)}
-                            />
-                        </label>
-                    </div>
+                        <div className="form-grid-2">
+                            <label className="form-row">
+                                <span>Họ tên</span>
+                                <input
+                                    className={!editingProfile ? "read-only-field" : ""}
+                                    readOnly={!editingProfile}
+                                    value={profileForm.hoTen}
+                                    onChange={(event) => updateProfileField("hoTen", event.target.value)}
+                                />
+                            </label>
+                            <label className="form-row">
+                                <span>Email</span>
+                                <input
+                                    className={!editingProfile ? "read-only-field" : ""}
+                                    readOnly={!editingProfile}
+                                    type="email"
+                                    value={profileForm.email}
+                                    onChange={(event) => updateProfileField("email", event.target.value)}
+                                />
+                            </label>
+                        </div>
 
-                    <div className="form-grid-2">
-                        <label className="form-row">
-                            <span>Số điện thoại</span>
-                            <input
-                                value={profileForm.soDienThoai}
-                                onChange={(event) => updateProfileField("soDienThoai", event.target.value)}
-                            />
-                        </label>
-                        <label className="form-row">
-                            <span>Địa chỉ</span>
-                            <input
-                                value={profileForm.diaChi}
-                                onChange={(event) => updateProfileField("diaChi", event.target.value)}
-                            />
-                        </label>
-                    </div>
+                        <div className="form-grid-2">
+                            <label className="form-row">
+                                <span>Số điện thoại</span>
+                                <input
+                                    className={!editingProfile ? "read-only-field" : ""}
+                                    readOnly={!editingProfile}
+                                    value={profileForm.soDienThoai}
+                                    onChange={(event) => updateProfileField("soDienThoai", event.target.value)}
+                                />
+                            </label>
+                            <label className="form-row">
+                                <span>Địa chỉ</span>
+                                <input
+                                    className={!editingProfile ? "read-only-field" : ""}
+                                    readOnly={!editingProfile}
+                                    value={profileForm.diaChi}
+                                    onChange={(event) => updateProfileField("diaChi", event.target.value)}
+                                />
+                            </label>
+                        </div>
 
-                    <div className="settings-info-list">
-                        <InfoRow label="Tên đăng nhập" value={user?.tenDangNhap} />
-                        <InfoRow label="Mã tài khoản" value={user?.maTaiKhoan} />
-                        <InfoRow label="Mã nhân viên" value={user?.maNhanVien} />
-                        <InfoRow label="Mã độc giả" value={user?.maDocGia} />
-                        <InfoRow label="Vai trò" value={user?.tenVaiTro || user?.maVaiTro} />
-                    </div>
+                        <div className="settings-info-list">
+                            <InfoRow label="Tên đăng nhập" value={user?.tenDangNhap} />
+                            <InfoRow label="Mã tài khoản" value={user?.maTaiKhoan} />
+                            <InfoRow label="Mã nhân viên" value={user?.maNhanVien} />
+                            <InfoRow label="Mã độc giả" value={user?.maDocGia} />
+                            <InfoRow label="Vai trò" value={displayRole(user, role)} />
+                        </div>
 
-                    <div className="settings-section-actions">
-                        <button type="submit" className="primary-button" disabled={savingProfile}>
-                            <Save size={17} />
-                            {savingProfile ? "Đang lưu..." : "Lưu thông tin"}
-                        </button>
-                        <button type="button" className="soft-button" onClick={reloadProfile} disabled={refreshingProfile}>
-                            <RefreshCcw size={17} />
-                            {refreshingProfile ? "Đang làm mới..." : "Làm mới thông tin"}
-                        </button>
-                    </div>
-                </form>
+                        <div className="settings-section-actions">
+                            {!editingProfile ? (
+                                <button type="submit" className="primary-button">
+                                    <SlidersHorizontal size={17} />
+                                    Cài đặt thông tin
+                                </button>
+                            ) : (
+                                <>
+                                    <button type="submit" className="primary-button" disabled={savingProfile}>
+                                        <Save size={17} />
+                                        {savingProfile ? "Đang lưu..." : "Lưu thông tin"}
+                                    </button>
+                                    <button type="button" className="soft-button" onClick={cancelEditProfile}>
+                                        Hủy
+                                    </button>
+                                </>
+                            )}
+                            <button type="button" className="soft-button" onClick={reloadProfile} disabled={refreshingProfile}>
+                                <RefreshCcw size={17} />
+                                {refreshingProfile ? "Đang tải..." : "Làm mới"}
+                            </button>
+                        </div>
+                    </form>
 
-                <SettingsShortcuts
-                    actions={shortcutActions}
-                    onNavigate={navigate}
-                    onLogout={confirmLogout}
-                />
+                    <SettingsShortcuts
+                        actions={shortcutActions}
+                        onNavigate={navigate}
+                        onLogout={confirmLogout}
+                    />
                 </div>
 
                 <div className="settings-column settings-column-right">
-                <form className="panel settings-section settings-password-section" onSubmit={submitPassword}>
-                    <div className="settings-section-title">
-                        <KeyRound size={22} />
-                        <div>
-                            <h2>Đổi mật khẩu</h2>
-                            <p>Xác thực mật khẩu hiện tại trước khi đặt mật khẩu mới.</p>
+                    <form className="panel settings-section settings-password-section" onSubmit={submitPassword}>
+                        <div className="settings-section-title">
+                            <KeyRound size={22} />
+                            <div>
+                                <h2>Đổi mật khẩu</h2>
+                                <p>Xác thực mật khẩu hiện tại trước khi đặt mật khẩu mới.</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="form-grid-3">
-                        <div className="form-row">
-                            <label>Mật khẩu hiện tại</label>
-                            <input
-                                type="password"
-                                value={passwordForm.currentPassword}
-                                onChange={(event) => updatePasswordField("currentPassword", event.target.value)}
-                            />
+                        <div className="form-grid-3">
+                            <label className="form-row">
+                                <span>Mật khẩu hiện tại</span>
+                                <PasswordInput
+                                    value={passwordForm.currentPassword}
+                                    onChange={(event) => updatePasswordField("currentPassword", event.target.value)}
+                                />
+                            </label>
+                            <label className="form-row">
+                                <span>Mật khẩu mới</span>
+                                <PasswordInput
+                                    value={passwordForm.newPassword}
+                                    onChange={(event) => updatePasswordField("newPassword", event.target.value)}
+                                />
+                            </label>
+                            <label className="form-row">
+                                <span>Xác nhận mật khẩu</span>
+                                <PasswordInput
+                                    value={passwordForm.confirmPassword}
+                                    onChange={(event) => updatePasswordField("confirmPassword", event.target.value)}
+                                />
+                            </label>
                         </div>
-                        <div className="form-row">
-                            <label>Mật khẩu mới</label>
-                            <input
-                                type="password"
-                                value={passwordForm.newPassword}
-                                onChange={(event) => updatePasswordField("newPassword", event.target.value)}
-                            />
-                        </div>
-                        <div className="form-row">
-                            <label>Xác nhận mật khẩu</label>
-                            <input
-                                type="password"
-                                value={passwordForm.confirmPassword}
-                                onChange={(event) => updatePasswordField("confirmPassword", event.target.value)}
-                            />
-                        </div>
-                    </div>
 
-                    <div className="settings-section-actions settings-password-actions">
-                        <button type="submit" className="primary-button" disabled={savingPassword}>
-                            <Save size={17} />
-                            Lưu mật khẩu
-                        </button>
-                    </div>
-                </form>
-
-                <article className="panel settings-section settings-appearance-section">
-                    <div className="settings-section-title">
-                        <Brush size={22} />
-                        <div>
-                            <h2>Giao diện</h2>
-                            <p>Cài đặt được lưu trên trình duyệt đang sử dụng.</p>
-                        </div>
-                    </div>
-
-                    <div className="form-grid-3">
-                        <label className="form-row">
-                            <span>Chế độ màu</span>
-                            <select value={preferences.theme} onChange={(event) => updatePreference("theme", event.target.value)}>
-                                <option value="light">Sáng</option>
-                                <option value="dark">Tối</option>
-                                <option value="system">Theo hệ thống</option>
-                            </select>
-                        </label>
-                        <label className="form-row">
-                            <span>Mật độ hiển thị</span>
-                            <select value={preferences.density} onChange={(event) => updatePreference("density", event.target.value)}>
-                                <option value="comfortable">Thoải mái</option>
-                                <option value="compact">Gọn</option>
-                            </select>
-                        </label>
-                        <label className="form-row">
-                            <span>Màu nhấn</span>
-                            <select value={preferences.accent} onChange={(event) => updatePreference("accent", event.target.value)}>
-                                <option value="blue">Xanh dương</option>
-                                <option value="green">Xanh lá</option>
-                                <option value="violet">Tím</option>
-                            </select>
-                        </label>
-                    </div>
-
-                    <div className="settings-section-actions">
-                        <button type="button" className="primary-button" onClick={savePreferences}>
-                            <Save size={17} />
-                            Lưu giao diện
-                        </button>
-                        <button type="button" className="soft-button" onClick={resetPreferences}>
-                            <RotateCcw size={17} />
-                            Mặc định
-                        </button>
-                    </div>
-                </article>
-
-                <article className="panel settings-section settings-notification-section">
-                    <div className="settings-section-title">
-                        <Bell size={22} />
-                        <div>
-                            <h2>Thông báo cá nhân</h2>
-                            <p>Chọn cách nhận thông báo phù hợp với tài khoản.</p>
-                        </div>
-                    </div>
-
-                    <div className="settings-toggle-list">
-                        <ToggleRow
-                            label="Thông báo trong ứng dụng"
-                            checked={notifications.inApp}
-                            onChange={(checked) => updateNotification("inApp", checked)}
-                        />
-                        <ToggleRow
-                            label="Thông báo trình duyệt"
-                            checked={notifications.browser}
-                            onChange={(checked) => updateNotification("browser", checked)}
-                        />
-                        <ToggleRow
-                            label="Nhận email khi có thay đổi quan trọng"
-                            checked={notifications.email}
-                            onChange={(checked) => updateNotification("email", checked)}
-                        />
-                    </div>
-
-                    <div className="settings-section-actions">
-                        <button type="button" className="primary-button" onClick={saveNotifications}>
-                            <Save size={17} />
-                            Lưu thông báo
-                        </button>
-                        <button type="button" className="soft-button" onClick={testNotifications}>
-                            <Bell size={17} />
-                            Kiểm tra
-                        </button>
-                    </div>
-                </article>
-
-                <section className="panel settings-section settings-shortcuts-section">
-                    <div className="settings-section-title">
-                    <ShieldCheck size={22} />
-                    <div>
-                        <h2>Chức năng theo quyền</h2>
-                        <p>Các lối tắt bên dưới thay đổi theo vai trò tài khoản.</p>
-                    </div>
-                </div>
-
-                    <div className="settings-shortcut-grid">
-                    {shortcutActions.map((action) => {
-                        const Icon = action.icon;
-
-                        return (
-                            <button
-                                key={action.to}
-                                type="button"
-                                className="settings-shortcut"
-                                onClick={() => navigate(action.to)}
-                            >
-                                <Icon size={20} />
-                                <span>{action.label}</span>
+                        <div className="settings-section-actions settings-password-actions">
+                            <button type="submit" className="primary-button" disabled={savingPassword}>
+                                <Save size={17} />
+                                {savingPassword ? "Đang lưu..." : "Lưu mật khẩu"}
                             </button>
-                        );
-                    })}
+                        </div>
+                    </form>
 
-                    <button type="button" className="settings-shortcut danger-shortcut" onClick={confirmLogout}>
-                        <LogOut size={20} />
-                        <span>Đăng xuất</span>
-                    </button>
-                    </div>
-                </section>
+                    <article className="panel settings-section settings-appearance-section">
+                        <div className="settings-section-title">
+                            <Settings size={22} />
+                            <div>
+                                <h2>Giao diện</h2>
+                                <p>Cài đặt được lưu trên trình duyệt đang sử dụng.</p>
+                            </div>
+                        </div>
+
+                        <div className="form-grid-3">
+                            <label className="form-row">
+                                <span>Chế độ màu</span>
+                                <select value={preferences.theme} onChange={(event) => updatePreference("theme", event.target.value)}>
+                                    <option value="light">Sáng</option>
+                                    <option value="dark">Tối</option>
+                                    <option value="system">Theo hệ thống</option>
+                                </select>
+                            </label>
+                            <label className="form-row">
+                                <span>Mật độ hiển thị</span>
+                                <select value={preferences.density} onChange={(event) => updatePreference("density", event.target.value)}>
+                                    <option value="comfortable">Thoải mái</option>
+                                    <option value="compact">Gọn</option>
+                                </select>
+                            </label>
+                            <label className="form-row">
+                                <span>Màu nhấn</span>
+                                <select value={preferences.accent} onChange={(event) => updatePreference("accent", event.target.value)}>
+                                    <option value="blue">Xanh dương</option>
+                                    <option value="green">Xanh lá</option>
+                                    <option value="violet">Tím</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div className="settings-section-actions">
+                            <button type="button" className="primary-button" onClick={savePreferences}>
+                                <Save size={17} />
+                                Lưu giao diện
+                            </button>
+                            <button type="button" className="soft-button" onClick={resetPreferences}>
+                                <RotateCcw size={17} />
+                                Mặc định
+                            </button>
+                        </div>
+                    </article>
+
+                    <article className="panel settings-section settings-notification-section">
+                        <div className="settings-section-title">
+                            <Bell size={22} />
+                            <div>
+                                <h2>Thông báo cá nhân</h2>
+                                <p>Chọn cách nhận thông báo phù hợp với tài khoản.</p>
+                            </div>
+                        </div>
+
+                        <div className="settings-toggle-list">
+                            <ToggleRow
+                                label="Thông báo trong ứng dụng"
+                                checked={notifications.inApp}
+                                onChange={(checked) => updateNotification("inApp", checked)}
+                            />
+                            <ToggleRow
+                                label="Thông báo trình duyệt"
+                                checked={notifications.browser}
+                                onChange={(checked) => updateNotification("browser", checked)}
+                            />
+                            <ToggleRow
+                                label="Nhận email khi có thay đổi quan trọng"
+                                checked={notifications.email}
+                                onChange={(checked) => updateNotification("email", checked)}
+                            />
+                        </div>
+
+                        <div className="settings-section-actions">
+                            <button type="button" className="primary-button" onClick={saveNotifications}>
+                                <Save size={17} />
+                                Lưu thông báo
+                            </button>
+                            <button type="button" className="soft-button" onClick={testNotifications}>
+                                <Bell size={17} />
+                                Kiểm tra
+                            </button>
+                        </div>
+                    </article>
                 </div>
             </section>
         </div>
@@ -577,8 +601,10 @@ function ToggleRow({ label, checked, onChange }) {
 }
 
 function buildProfileForm(user) {
+    const displayName = getDisplayName(user);
+
     return {
-        hoTen: getDisplayName(user) === "Tài khoản" ? "" : getDisplayName(user),
+        hoTen: displayName === "Tài khoản" ? "" : displayName,
         email: user?.email || "",
         soDienThoai: user?.soDienThoai || "",
         diaChi: user?.diaChi || ""
@@ -596,6 +622,17 @@ function getDisplayName(user) {
         "Tài khoản";
 }
 
+function displayRole(user, role) {
+    if (user?.tenVaiTro) {
+        return user.tenVaiTro;
+    }
+
+    if (role === "ADMIN") return "Quản trị viên";
+    if (role === "STAFF") return "Thủ thư";
+    if (role === "READER") return "Độc giả";
+    return user?.maVaiTro || "Không xác định";
+}
+
 function getRoleDescription(role) {
     if (role === "ADMIN") {
         return "Admin có toàn bộ quyền của thủ thư và thêm quyền quản trị hệ thống, quy định, báo cáo và tài khoản thủ thư.";
@@ -611,9 +648,11 @@ function getRoleDescription(role) {
 function getShortcutActions(role, portal) {
     if (role === "ADMIN") {
         return [
-            { to: "/admin/rules", label: "Quy định thư viện", icon: ShieldCheck },
+            { to: "/books", label: "Quản lý đầu sách", icon: BookOpen },
+            { to: "/readers", label: "Quản lý độc giả", icon: UsersRound },
             { to: "/admin/librarians", label: "Quản lý thủ thư", icon: UsersRound },
             { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
+            { to: "/admin/rules", label: "Quy định hệ thống", icon: ShieldCheck },
             { to: "/admin/reports", label: "Báo cáo hệ thống", icon: BookOpen }
         ];
     }
@@ -623,7 +662,7 @@ function getShortcutActions(role, portal) {
             { to: "/books", label: "Quản lý đầu sách", icon: BookOpen },
             { to: "/readers", label: "Quản lý độc giả", icon: UsersRound },
             { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
-            { to: "/staff/payments", label: "Thu tiền", icon: ShieldCheck }
+            { to: "/staff/payments", label: "Thu tiền", icon: CreditCard }
         ];
     }
 
@@ -649,7 +688,7 @@ function applyPreferences(preferences) {
         ? (window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light")
         : preferences.theme;
 
-    document.documentElement.dataset.theme = theme;
-    document.body.dataset.density = preferences.density;
-    document.documentElement.dataset.accent = preferences.accent;
+    document.documentElement.dataset.theme = theme || "light";
+    document.body.dataset.density = preferences.density || "comfortable";
+    document.documentElement.dataset.accent = preferences.accent || "blue";
 }

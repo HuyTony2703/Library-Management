@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { EyeOff, MoreHorizontal, RefreshCcw, RotateCcw, Search, Trash2 } from "lucide-react";
+import { EyeOff, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { adminApi } from "../../api/adminApi";
 import PageHeader from "../../components/PageHeader";
@@ -51,15 +51,27 @@ export default function CommentModerationPage() {
     }
 
     useEffect(() => {
-        const nextFilter = {
-            status: searchParams.get("status") || "Tất cả",
-            maDauSach: searchParams.get("maDauSach") || "",
-            keyword: searchParams.get("keyword") || ""
-        };
+        const timer = window.setTimeout(() => {
+            const params = {};
 
-        setFilter(nextFilter);
-        loadComments(nextFilter);
-    }, [searchParams]);
+            if (filter.status && filter.status !== "Tất cả") {
+                params.status = filter.status;
+            }
+
+            if (filter.maDauSach.trim()) {
+                params.maDauSach = filter.maDauSach.trim();
+            }
+
+            if (filter.keyword.trim()) {
+                params.keyword = filter.keyword.trim();
+            }
+
+            setSearchParams(params, { replace: true });
+            loadComments(filter);
+        }, 300);
+
+        return () => window.clearTimeout(timer);
+    }, [filter.status, filter.maDauSach, filter.keyword]);
 
     useEffect(() => {
         if (!openActionMenu) {
@@ -91,32 +103,12 @@ export default function CommentModerationPage() {
         };
     }, [openActionMenu]);
 
-    function submitFilter(event) {
-        event.preventDefault();
-
-        const params = {};
-
-        if (filter.status && filter.status !== "Tất cả") {
-            params.status = filter.status;
-        }
-
-        if (filter.maDauSach.trim()) {
-            params.maDauSach = filter.maDauSach.trim();
-        }
-
-        if (filter.keyword.trim()) {
-            params.keyword = filter.keyword.trim();
-        }
-
-        setSearchParams(params);
-    }
-
     function toggleActionMenu(row, event) {
         event.stopPropagation();
 
         const rect = event.currentTarget.getBoundingClientRect();
-        const menuWidth = 190;
-        const menuHeight = 170;
+        const menuWidth = 210;
+        const menuHeight = 174;
         const left = Math.min(
             Math.max(12, rect.right - menuWidth),
             window.innerWidth - menuWidth - 12
@@ -140,7 +132,7 @@ export default function CommentModerationPage() {
         const actionLabel = action === "hide"
             ? "ẩn"
             : action === "delete"
-                ? "xóa"
+                ? "xóa vĩnh viễn"
                 : "khôi phục";
 
         let reason = "";
@@ -166,7 +158,7 @@ export default function CommentModerationPage() {
         const confirmed = await actionDialog.confirm({
             title: `Xác nhận ${actionLabel} bình luận`,
             message: `Bạn chắc chắn muốn ${actionLabel} bình luận ${row.maBinhLuan}?`,
-            confirmLabel: action === "delete" ? "Xóa bình luận" : "Xác nhận",
+            confirmLabel: action === "delete" ? "Xóa vĩnh viễn" : "Xác nhận",
             danger: action === "delete"
         });
 
@@ -190,8 +182,8 @@ export default function CommentModerationPage() {
                 await adminApi.restoreComment(row.maBinhLuan, payload);
             }
 
-            toast.success("Xử lý bình luận thành công");
-            await loadComments();
+            toast.success(action === "delete" ? "Đã xóa bình luận khỏi hệ thống" : "Xử lý bình luận thành công");
+            await loadComments(filter);
         } catch (err) {
             toast.error(err.message || "Xử lý bình luận thất bại");
         } finally {
@@ -204,10 +196,10 @@ export default function CommentModerationPage() {
             <PageHeader
                 eyebrow="Staff"
                 title="Kiểm duyệt bình luận"
-                description="Lọc, ẩn, xóa mềm hoặc khôi phục bình luận của độc giả trên đầu sách."
+                description="Lọc, ẩn, xóa vĩnh viễn hoặc khôi phục bình luận của độc giả trên đầu sách."
             />
 
-            <form className="panel comment-filter-form" onSubmit={submitFilter}>
+            <div className="panel comment-filter-form">
                 <label>Trạng thái</label>
                 <select
                     value={filter.status}
@@ -233,16 +225,7 @@ export default function CommentModerationPage() {
                     placeholder="Tìm nội dung, độc giả, tên sách"
                 />
 
-                <button className="primary-button" disabled={loading}>
-                    <Search size={17} />
-                    Tìm kiếm
-                </button>
-
-                <button className="soft-button" type="button" onClick={() => loadComments()} disabled={loading}>
-                    <RefreshCcw size={17} />
-                    Tải lại
-                </button>
-            </form>
+            </div>
 
             <div className="panel">
                 <div className="panel-title">
@@ -275,6 +258,7 @@ export default function CommentModerationPage() {
                         {
                             key: "actions",
                             title: "Thao tác",
+                            width: "120px",
                             render: (row) => (
                                 <CommentActionMenu
                                     row={row}
@@ -322,7 +306,7 @@ function CommentActionMenu({ row, loading, open, menuStyle, onToggle, onAction }
                     <button
                         className="soft-button danger-button"
                         onClick={() => onAction(row, "delete")}
-                        disabled={loading || row.trangThai === "Đã xóa"}
+                        disabled={loading}
                         type="button"
                     >
                         <Trash2 size={15} />

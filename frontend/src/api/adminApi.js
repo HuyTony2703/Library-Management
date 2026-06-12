@@ -74,12 +74,12 @@ export const adminApi = {
             params.append("status", status);
         }
 
-        if (maDauSach) {
-            params.append("maDauSach", maDauSach);
+        if (maDauSach?.trim()) {
+            params.append("maDauSach", maDauSach.trim());
         }
 
-        if (keyword) {
-            params.append("keyword", keyword);
+        if (keyword?.trim()) {
+            params.append("keyword", keyword.trim());
         }
 
         const query = params.toString();
