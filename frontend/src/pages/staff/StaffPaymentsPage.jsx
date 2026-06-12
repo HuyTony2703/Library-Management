@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { RefreshCcw, Search, Trash2 } from "lucide-react";
+import { RefreshCcw, Trash2 } from "lucide-react";
 import { libraryApi } from "../../api/libraryApi";
 import { staffApi } from "../../api/staffApi";
 import PageHeader from "../../components/PageHeader";
@@ -8,6 +8,12 @@ import ResultModal from "../../components/ResultModal";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
 import { displayCode, formatDateTime, formatMoney } from "../../utils/displayUtils";
+
+const PAYMENT_METHODS = [
+    { value: "PT_TIEN_MAT", label: "Tiền mặt" },
+    { value: "PT_CHUYEN_KHOAN", label: "Chuyển khoản" },
+    { value: "PT_VI_DIEN_TU", label: "Ví điện tử" }
+];
 
 export default function StaffPaymentsPage() {
     const toast = useToast();
@@ -44,9 +50,13 @@ export default function StaffPaymentsPage() {
         return row.maKhoanNo ?? row.MaKhoanNo ?? row.maNo ?? row.id;
     }
 
-    async function loadDebts() {
+    async function loadDebts(silent = false) {
         if (!maDocGia.trim()) {
-            toast.error("Vui lòng nhập mã độc giả");
+            setDebts([]);
+            setSelected({});
+            if (!silent) {
+                toast.error("Vui lòng nhập mã độc giả");
+            }
             return;
         }
 
@@ -54,9 +64,15 @@ export default function StaffPaymentsPage() {
             const data = await staffApi.getReaderDebts(maDocGia.trim());
             setDebts(Array.isArray(data) ? data : []);
             setSelected({});
-            toast.success("Đã tải khoản nợ");
+            if (!silent) {
+                toast.success("Đã tải khoản nợ");
+            }
         } catch (err) {
-            toast.error(err.message || "Không tải được khoản nợ");
+            setDebts([]);
+            setSelected({});
+            if (!silent) {
+                toast.error(err.message || "Không tải được khoản nợ");
+            }
         }
     }
 
@@ -72,6 +88,14 @@ export default function StaffPaymentsPage() {
     useEffect(() => {
         loadDebtors();
     }, []);
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            loadDebts(true);
+        }, 350);
+
+        return () => window.clearTimeout(timer);
+    }, [maDocGia]);
 
     function toggleDebt(row) {
         const remaining = getDebtRemaining(row);
@@ -212,7 +236,7 @@ export default function StaffPaymentsPage() {
             setShowResult(true);
             toast.success("Thu tiền thành công");
             await loadDebtors();
-            await loadDebts();
+            await loadDebts(true);
         } catch (err) {
             toast.error(err.message || "Thu tiền thất bại");
         } finally {
@@ -243,7 +267,7 @@ export default function StaffPaymentsPage() {
             setShowResult(true);
             toast.success("Tự động phân bổ thu tiền thành công");
             await loadDebtors();
-            await loadDebts();
+            await loadDebts(true);
         } catch (err) {
             toast.error(err.message || "Tự động phân bổ thất bại");
         } finally {
@@ -274,10 +298,10 @@ export default function StaffPaymentsPage() {
 
                 <div className="payment-debt-toolbar">
                     <div className="selection-toolbar stacked-selection-toolbar payment-selection-toolbar">
-                        <button type="button" className="soft-button" onClick={selectAllDebts}>
+                        <button type="button" className="ghost-button" onClick={selectAllDebts}>
                             Chọn tất cả
                         </button>
-                        <button type="button" className="primary-button compact-primary-button" onClick={clearSelectedDebts}>
+                        <button type="button" className="soft-button compact-primary-button" onClick={clearSelectedDebts}>
                             Bỏ chọn tất cả
                         </button>
                         <button type="button" className="soft-button danger-button compact-primary-button" onClick={deleteSelectedDebtsFromSelection}>
@@ -289,10 +313,6 @@ export default function StaffPaymentsPage() {
                     <div className="payment-debt-search">
                         <label>Mã độc giả</label>
                         <input value={maDocGia} onChange={(e) => setMaDocGia(e.target.value)} />
-                        <button className="soft-button" type="button" onClick={loadDebts}>
-                            <Search size={17} />
-                            Xem nợ
-                        </button>
                     </div>
                 </div>
 
@@ -302,7 +322,7 @@ export default function StaffPaymentsPage() {
                     columns={[
                         {
                             key: "chon",
-                            title: `${selectedDebtCount} mục`,
+                            title: "",
                             className: "selection-count-cell",
                             width: "76px",
                             render: (row) => (
@@ -361,7 +381,13 @@ export default function StaffPaymentsPage() {
 
                         <div className="form-row">
                             <label>Phương thức</label>
-                            <input value={form.maPhuongThuc} onChange={(e) => updateField("maPhuongThuc", e.target.value)} />
+                            <select value={form.maPhuongThuc} onChange={(e) => updateField("maPhuongThuc", e.target.value)}>
+                                {PAYMENT_METHODS.map((method) => (
+                                    <option key={method.value} value={method.value}>
+                                        {method.label}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 

@@ -27,7 +27,6 @@ const staffMenu = [
     { to: "/staff/returns", label: "Trả sách", icon: RotateCcw },
     { to: "/staff/payments", label: "Thu tiền", icon: CreditCard },
     { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
-    { to: "/reports", label: "Báo cáo", icon: BarChart3 },
     { to: "/settings", label: "Cài đặt", icon: Settings }
 ];
 
@@ -51,6 +50,16 @@ export default function AppLayout() {
 
     if (isReaderUser(user)) {
         return <Navigate to="/reader" replace />;
+    }
+
+    function goToProfileSettings() {
+        navigate("/settings#profile");
+        window.setTimeout(() => {
+            document.getElementById("settings-profile")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }, 50);
     }
 
     return (
@@ -79,7 +88,7 @@ export default function AppLayout() {
                     })}
                 </nav>
 
-                <button type="button" className="sidebar-user sidebar-user-button" onClick={() => navigate("/settings#profile")}>
+                <button type="button" className="sidebar-user sidebar-user-button" onClick={goToProfileSettings}>
                     <div className="avatar">
                         <UserRound size={20} />
                     </div>
@@ -93,7 +102,7 @@ export default function AppLayout() {
             <main className="workspace">
                 <header className="topbar">
                     <div className="topbar-actions">
-                        <button type="button" className="user-chip user-chip-button" onClick={() => navigate("/settings#profile")}>
+                        <button type="button" className="user-chip user-chip-button" onClick={goToProfileSettings}>
                             {displayName}
                         </button>
                     </div>

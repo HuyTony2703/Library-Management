@@ -56,6 +56,16 @@ export default function ReaderLayout() {
     const { user } = useAuth();
     const navigate = useNavigate();
 
+    function goToProfileSettings() {
+        navigate("/reader/settings#profile");
+        window.setTimeout(() => {
+            document.getElementById("settings-profile")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }, 50);
+    }
+
     return (
         <div className="reader-shell">
             <aside className="reader-sidebar">
@@ -87,7 +97,7 @@ export default function ReaderLayout() {
                     ))}
                 </nav>
 
-                <button type="button" className="reader-account reader-account-button" onClick={() => navigate("/reader/settings#profile")}>
+                <button type="button" className="reader-account reader-account-button" onClick={goToProfileSettings}>
                     <div className="reader-avatar">
                         <UserRound size={20} />
                     </div>

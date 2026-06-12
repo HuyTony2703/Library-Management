@@ -126,7 +126,6 @@ export default function DashboardPage() {
                 <div className="panel">
                     <div className="panel-title">
                         <h2>Tổng quan thủ thư</h2>
-                        <span>Không gọi API admin</span>
                     </div>
 
                     <p>

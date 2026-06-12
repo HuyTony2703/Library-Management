@@ -274,10 +274,10 @@ export default function BooksPage() {
                 </button>
 
                 <div className="selection-toolbar">
-                    <button className="soft-button" type="button" onClick={selectAllVisible}>
+                    <button className="ghost-button" type="button" onClick={selectAllVisible}>
                         Chọn tất cả
                     </button>
-                    <button className="ghost-button" type="button" onClick={clearSelected}>
+                    <button className="soft-button" type="button" onClick={clearSelected}>
                         Bỏ chọn tất cả
                     </button>
                     <button className="soft-button danger-button" type="button" onClick={deleteSelectedBooks} disabled={selectedIds.length === 0 || loading}>
@@ -293,7 +293,7 @@ export default function BooksPage() {
                 columns={[
                     {
                         key: "select",
-                        title: `${selectedIds.length} mục`,
+                        title: "",
                         className: "selection-count-cell",
                         width: "76px",
                         render: (row) => (

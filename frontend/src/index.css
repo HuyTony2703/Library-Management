@@ -943,7 +943,7 @@ textarea:focus {
 
 .payment-debt-search {
   display: grid;
-  grid-template-columns: auto minmax(180px, 340px) minmax(220px, 1fr);
+  grid-template-columns: auto minmax(220px, 1fr);
   align-items: center;
   gap: 12px;
   margin: 0;

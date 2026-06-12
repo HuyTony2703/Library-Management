@@ -241,10 +241,10 @@ export default function AdminLibrariansPage() {
                     </button>
 
                     <div className="selection-toolbar">
-                        <button className="soft-button" type="button" onClick={selectAllLibrarians}>
+                        <button className="ghost-button" type="button" onClick={selectAllLibrarians}>
                             Chọn tất cả
                         </button>
-                        <button className="ghost-button" type="button" onClick={clearSelected}>
+                        <button className="soft-button" type="button" onClick={clearSelected}>
                             Bỏ chọn tất cả
                         </button>
                         <button className="soft-button danger-button" type="button" onClick={deleteSelectedLibrarians} disabled={selectedIds.length === 0 || loading}>
@@ -259,7 +259,7 @@ export default function AdminLibrariansPage() {
                     columns={[
                         {
                             key: "select",
-                            title: `${selectedIds.length} mục`,
+                            title: "",
                             className: "selection-count-cell",
                             render: (row) => (
                                 <input

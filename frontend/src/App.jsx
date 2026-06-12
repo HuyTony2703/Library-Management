@@ -14,7 +14,6 @@ import ReadersPage from "./pages/ReadersPage";
 import LoansPage from "./pages/LoansPage";
 import ReturnsPage from "./pages/ReturnsPage";
 import PaymentsPage from "./pages/PaymentsPage";
-import ReportsPage from "./pages/ReportsPage";
 import SettingsPage from "./pages/SettingsPage";
 
 function ProtectedRoute({ children }) {
@@ -56,7 +55,7 @@ export default function App() {
                 <Route path="/loans" element={<LoansPage />} />
                 <Route path="/returns" element={<ReturnsPage />} />
                 <Route path="/payments" element={<PaymentsPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/reports" element={<Navigate to="/" replace />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 {staffRoutes.map((route) => (
                     <Route key={route.path} path={route.path} element={route.element} />

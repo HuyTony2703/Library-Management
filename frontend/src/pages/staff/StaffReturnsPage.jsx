@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { RefreshCcw, Search } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 import { libraryApi } from "../../api/libraryApi";
 import { staffApi } from "../../api/staffApi";
 import PageHeader from "../../components/PageHeader";
@@ -37,13 +37,25 @@ export default function StaffReturnsPage() {
         updateField("maPhieuTra", `PTR_STAFF_${Date.now().toString().slice(-6)}`);
     }
 
-    async function loadCurrentLoans() {
+    async function loadCurrentLoans(silent = false) {
+        const readerId = form.maDocGia.trim();
+
+        if (!readerId) {
+            setCurrentLoans([]);
+            return;
+        }
+
         try {
-            const data = await staffApi.getReaderCurrentLoans(form.maDocGia);
+            const data = await staffApi.getReaderCurrentLoans(readerId);
             setCurrentLoans(Array.isArray(data) ? data : []);
-            toast.success("Đã tải sách đang mượn");
+            if (!silent) {
+                toast.success("Đã tải sách đang mượn");
+            }
         } catch (err) {
-            toast.error(err.message || "Không tải được sách đang mượn");
+            setCurrentLoans([]);
+            if (!silent) {
+                toast.error(err.message || "Không tải được sách đang mượn");
+            }
         }
     }
 
@@ -63,6 +75,14 @@ export default function StaffReturnsPage() {
     useEffect(() => {
         loadLoanOverview();
     }, []);
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            loadCurrentLoans(true);
+        }, 350);
+
+        return () => window.clearTimeout(timer);
+    }, [form.maDocGia]);
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -87,7 +107,7 @@ export default function StaffReturnsPage() {
         try {
             const data = await staffApi.createReturn({
                 maPhieuTra: form.maPhieuTra,
-                maDocGia: form.maDocGia,
+                maDocGia: form.maDocGia.trim(),
                 maNhanVienNhan: form.maNhanVienNhan,
                 maChiNhanh: form.maChiNhanh,
                 ghiChu: form.ghiChu,
@@ -105,7 +125,7 @@ export default function StaffReturnsPage() {
             setShowResult(true);
             toast.success("Tạo phiếu trả thành công");
             await loadLoanOverview();
-            await loadCurrentLoans();
+            await loadCurrentLoans(true);
         } catch (err) {
             toast.error(err.message || "Tạo phiếu trả thất bại");
         } finally {
@@ -207,13 +227,7 @@ export default function StaffReturnsPage() {
             <div className="panel">
                 <div className="panel-title">
                     <h2>Sách đang mượn của {form.maDocGia}</h2>
-                    <div className="panel-title-actions">
-                        <span>{currentLoans.length} cuốn</span>
-                        <button className="soft-button" type="button" onClick={loadCurrentLoans}>
-                            <Search size={17} />
-                            Xem sách đang mượn
-                        </button>
-                    </div>
+                    <span>{currentLoans.length} cuốn</span>
                 </div>
 
                 <DataTable

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { libraryApi } from "../api/libraryApi";
 import DataTable from "../components/DataTable";
 import PageHeader from "../components/PageHeader";
@@ -13,6 +13,7 @@ export default function PaymentsPage() {
     const [form, setForm] = useState({
         maPhieuThu: `PT_FE_${Date.now().toString().slice(-8)}`,
         maKhoanNo: "NO_DG003_TRE_01",
+        maPhuongThuc: "PT_TIEN_MAT",
         soTienThu: 3000
     });
 
@@ -20,15 +21,33 @@ export default function PaymentsPage() {
         setForm((prev) => ({ ...prev, [key]: value }));
     }
 
-    async function loadDebts() {
+    async function loadDebts(silent = false) {
+        if (!maDocGia.trim()) {
+            setDebts([]);
+            return;
+        }
+
         try {
-            const data = await libraryApi.debts(maDocGia);
+            const data = await libraryApi.debts(maDocGia.trim());
             setDebts(data);
-            toast.success("Đã tải danh sách khoản nợ");
+            if (!silent) {
+                toast.success("Đã tải danh sách khoản nợ");
+            }
         } catch (err) {
-            toast.error(err.message);
+            setDebts([]);
+            if (!silent) {
+                toast.error(err.message);
+            }
         }
     }
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            loadDebts(true);
+        }, 350);
+
+        return () => window.clearTimeout(timer);
+    }, [maDocGia]);
 
     async function submit(e) {
         e.preventDefault();
@@ -36,9 +55,9 @@ export default function PaymentsPage() {
         try {
             await libraryApi.createPayment({
                 maPhieuThu: form.maPhieuThu,
-                maDocGia,
+                maDocGia: maDocGia.trim(),
                 maNhanVienThu: "NV_TT001",
-                maPhuongThuc: "PT_TIEN_MAT",
+                maPhuongThuc: form.maPhuongThuc,
                 soTienThu: Number(form.soTienThu),
                 ghiChu: "Thu tiền từ desktop app",
                 chiTietNo: [
@@ -50,7 +69,7 @@ export default function PaymentsPage() {
             });
 
             toast.success("Thu tiền thành công");
-            await loadDebts();
+            await loadDebts(true);
         } catch (err) {
             toast.error(err.message);
         }
@@ -67,7 +86,6 @@ export default function PaymentsPage() {
             <div className="panel form-panel compact-form">
                 <label>Mã độc giả</label>
                 <input value={maDocGia} onChange={(e) => setMaDocGia(e.target.value)} />
-                <button className="soft-button" onClick={loadDebts}>Xem nợ</button>
             </div>
 
             <DataTable
@@ -96,6 +114,15 @@ export default function PaymentsPage() {
                     <div className="form-row">
                         <label>Số tiền thu</label>
                         <input type="number" value={form.soTienThu} onChange={(e) => update("soTienThu", e.target.value)} />
+                    </div>
+
+                    <div className="form-row">
+                        <label>Phương thức</label>
+                        <select value={form.maPhuongThuc} onChange={(e) => update("maPhuongThuc", e.target.value)}>
+                            <option value="PT_TIEN_MAT">Tiền mặt</option>
+                            <option value="PT_CHUYEN_KHOAN">Chuyển khoản</option>
+                            <option value="PT_VI_DIEN_TU">Ví điện tử</option>
+                        </select>
                     </div>
                 </div>
 
