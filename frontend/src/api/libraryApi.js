@@ -10,9 +10,18 @@ export const libraryApi = {
             method: "POST",
             body: JSON.stringify(payload)
         }),
+    updateBook: (id, payload) =>
+        apiFetch(`/api/books/${id}`, {
+            method: "PUT",
+            body: JSON.stringify(payload)
+        }),
     deleteBook: (id, mode = "soft") =>
         apiFetch(`/api/books/${id}?mode=${encodeURIComponent(mode)}`, {
             method: "DELETE"
+        }),
+    restoreBook: (id) =>
+        apiFetch(`/api/books/${id}/restore`, {
+            method: "PATCH"
         }),
 
     bookCopies: () => apiFetch("/api/book-copies"),
@@ -22,9 +31,18 @@ export const libraryApi = {
             method: "POST",
             body: JSON.stringify(payload)
         }),
+    updateBookCopy: (id, payload) =>
+        apiFetch(`/api/book-copies/${id}`, {
+            method: "PUT",
+            body: JSON.stringify(payload)
+        }),
     deleteBookCopy: (id, mode = "soft") =>
         apiFetch(`/api/book-copies/${id}?mode=${encodeURIComponent(mode)}`, {
             method: "DELETE"
+        }),
+    restoreBookCopy: (id) =>
+        apiFetch(`/api/book-copies/${id}/restore`, {
+            method: "PATCH"
         }),
 
     readers: () => apiFetch("/api/readers"),
@@ -34,9 +52,18 @@ export const libraryApi = {
             method: "POST",
             body: JSON.stringify(payload)
         }),
+    updateReader: (id, payload) =>
+        apiFetch(`/api/readers/${id}`, {
+            method: "PUT",
+            body: JSON.stringify(payload)
+        }),
     deleteReader: (id, mode = "soft") =>
         apiFetch(`/api/readers/${id}?mode=${encodeURIComponent(mode)}`, {
             method: "DELETE"
+        }),
+    restoreReader: (id) =>
+        apiFetch(`/api/readers/${id}/restore`, {
+            method: "PATCH"
         }),
     currentLoans: (readerId) => apiFetch(`/api/readers/${readerId}/current-loans`),
 

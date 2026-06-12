@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Plus, Lock, Unlock, KeyRound, Save, Trash2 } from "lucide-react";
+import { KeyRound, Lock, Pencil, Plus, Trash2, Unlock, UserX } from "lucide-react";
 import { adminApi } from "../../api/adminApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
+import InlineActionMenu from "../../components/InlineActionMenu";
 import ResultModal from "../../components/ResultModal";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
@@ -280,32 +281,18 @@ export default function AdminLibrariansPage() {
                             key: "actions",
                             title: "Thao tác",
                             render: (row) => (
-                                <div className="table-actions">
-                                    <button className="soft-button" onClick={() => setSelected(row)}>
-                                        Sửa
-                                    </button>
-
-                                    {row.trangThaiNhanVien === "Đang làm" ? (
-                                        <button className="soft-button" onClick={() => changeStatus(row.maNhanVien, "Tạm khóa")}>
-                                            <Lock size={15} />
-                                            Khóa
-                                        </button>
-                                    ) : (
-                                        <button className="soft-button" onClick={() => changeStatus(row.maNhanVien, "Đang làm")}>
-                                            <Unlock size={15} />
-                                            Mở
-                                        </button>
-                                    )}
-
-                                    <button className="soft-button" onClick={() => changeStatus(row.maNhanVien, "Nghỉ việc")}>
-                                        Nghỉ
-                                    </button>
-
-                                    <button className="soft-button danger-button" onClick={() => deleteLibrarian(row.maNhanVien)}>
-                                        <Trash2 size={15} />
-                                        Xóa
-                                    </button>
-                                </div>
+                                <InlineActionMenu
+                                    label={`Mở thao tác cho thủ thư ${row.maNhanVien}`}
+                                    disabled={loading}
+                                    actions={[
+                                        { key: "edit", label: "Sửa thông tin", icon: Pencil, onClick: () => setSelected(row) },
+                                        row.trangThaiNhanVien === "Đang làm"
+                                            ? { key: "lock", label: "Khóa", icon: Lock, onClick: () => changeStatus(row.maNhanVien, "Tạm khóa") }
+                                            : { key: "unlock", label: "Mở khóa", icon: Unlock, onClick: () => changeStatus(row.maNhanVien, "Đang làm") },
+                                        { key: "leave", label: "Nghỉ việc", icon: UserX, onClick: () => changeStatus(row.maNhanVien, "Nghỉ việc"), disabled: row.trangThaiNhanVien === "Nghỉ việc" },
+                                        { key: "delete", label: "Xóa", icon: Trash2, danger: true, onClick: () => deleteLibrarian(row.maNhanVien) }
+                                    ]}
+                                />
                             )
                         }
                     ]}
@@ -315,11 +302,6 @@ export default function AdminLibrariansPage() {
             {showCreateModal && (
                 <ResultModal title="Thêm thủ thư" onClose={() => setShowCreateModal(false)} className="form-modal-card">
                 <form className="form-panel modal-form" onSubmit={createLibrarian}>
-                    <div className="panel-title">
-                        <h2>Thêm thủ thư</h2>
-                        <Plus size={20} />
-                    </div>
-
                     <div className="form-grid-2">
                         <div className="form-row">
                             <label>Mã nhân viên</label>
@@ -393,11 +375,6 @@ export default function AdminLibrariansPage() {
             {selected && (
                 <ResultModal title="Sửa thủ thư" onClose={() => setSelected(null)} className="form-modal-card">
                 <form className="form-panel modal-form" onSubmit={saveSelected}>
-                    <div className="panel-title">
-                        <h2>Sửa thủ thư</h2>
-                        <Save size={20} />
-                    </div>
-
                     {selected ? (
                         <>
                             <div className="form-grid-2">

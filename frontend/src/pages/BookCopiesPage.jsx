@@ -1,23 +1,35 @@
-import { Plus, Trash2 } from "lucide-react";
+import { EyeOff, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { libraryApi } from "../api/libraryApi";
 import DataTable from "../components/DataTable";
+import InlineActionMenu from "../components/InlineActionMenu";
 import PageHeader from "../components/PageHeader";
 import ResultModal from "../components/ResultModal";
 import StatusBadge from "../components/StatusBadge";
-import { useToast } from "../components/ToastProvider";
 import { useActionDialog } from "../components/ActionDialogProvider";
+import { useToast } from "../components/ToastProvider";
 import { formatDate } from "../utils/displayUtils";
+
+const FALLBACK_STATUS_OPTIONS = [
+    { value: "TT_SANCO", label: "Sẵn có" },
+    { value: "TT_DANGMUON", label: "Đang mượn" },
+    { value: "TT_DANGDATTRUOC", label: "Đang đặt trước" },
+    { value: "TT_HONG", label: "Bị hỏng" },
+    { value: "TT_MAT", label: "Bị mất" },
+    { value: "TT_NGUNGLUUTHONG", label: "Ngừng lưu thông" }
+];
 
 export default function BookCopiesPage() {
     const toast = useToast();
     const actionDialog = useActionDialog();
     const [searchParams, setSearchParams] = useSearchParams();
     const [data, setData] = useState([]);
+    const [statusOptions, setStatusOptions] = useState(FALLBACK_STATUS_OPTIONS);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState(searchParams.get("search") || "");
-    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [editingCopy, setEditingCopy] = useState(null);
     const [selectedIds, setSelectedIds] = useState([]);
     const [form, setForm] = useState(() => buildDefaultCopyForm());
 
@@ -31,6 +43,9 @@ export default function BookCopiesPage() {
 
     useEffect(() => {
         load();
+        libraryApi.bookCopyStatuses()
+            .then((options) => setStatusOptions(options?.length ? options : FALLBACK_STATUS_OPTIONS))
+            .catch(() => setStatusOptions(FALLBACK_STATUS_OPTIONS));
     }, []);
 
     useEffect(() => {
@@ -39,7 +54,7 @@ export default function BookCopiesPage() {
         }, 250);
 
         return () => window.clearTimeout(timer);
-    }, [search]);
+    }, [search, setSearchParams]);
 
     const filteredData = useMemo(() => {
         const keyword = search.trim().toLowerCase();
@@ -68,6 +83,10 @@ export default function BookCopiesPage() {
         setSelectedIds((prev) => prev.filter((id) => data.some((row) => row.maCuonSach === id)));
     }, [data]);
 
+    function updateField(field, value) {
+        setForm((prev) => ({ ...prev, [field]: value }));
+    }
+
     function toggleSelected(id) {
         setSelectedIds((prev) => prev.includes(id)
             ? prev.filter((value) => value !== id)
@@ -82,49 +101,127 @@ export default function BookCopiesPage() {
         setSelectedIds([]);
     }
 
-    function updateField(field, value) {
-        setForm((prev) => ({ ...prev, [field]: value }));
+    function openCreateModal() {
+        setEditingCopy(null);
+        setForm(buildDefaultCopyForm());
+        setShowModal(true);
     }
 
-    async function createBookCopy(e) {
-        e.preventDefault();
+    function openEditModal(row) {
+        setEditingCopy(row);
+        setForm({
+            maCuonSach: row.maCuonSach || "",
+            maDauSach: row.maDauSach || "",
+            maChiNhanh: row.maChiNhanh || "CN_TD",
+            maViTri: row.maViTri || "VT_M01_N01",
+            maTrangThai: row.maTrangThai || "TT_SANCO",
+            maVach: row.maVach || "",
+            maQrCode: row.maQrCode || "",
+            ngayNhapSach: row.ngayNhapSach || new Date().toISOString().slice(0, 10),
+            ghiChu: row.ghiChu || ""
+        });
+        setShowModal(true);
+    }
+
+    function closeModal() {
+        setShowModal(false);
+        setEditingCopy(null);
+        setForm(buildDefaultCopyForm());
+    }
+
+    function buildPayload() {
+        return {
+            ...form,
+            maTrangThai: editingCopy ? form.maTrangThai : "TT_SANCO",
+            maVach: form.maVach || null,
+            maQrCode: form.maQrCode || null,
+            ghiChu: form.ghiChu || null
+        };
+    }
+
+    async function saveBookCopy(event) {
+        event.preventDefault();
         setLoading(true);
 
         try {
-            await libraryApi.createBookCopy({
-                ...form,
-                maVach: form.maVach || null,
-                maQrCode: form.maQrCode || null,
-                ghiChu: form.ghiChu || null
-            });
+            const payload = buildPayload();
 
-            toast.success("Thêm cuốn sách thành công");
-            setForm(buildDefaultCopyForm());
-            setShowCreateModal(false);
+            if (editingCopy) {
+                await libraryApi.updateBookCopy(editingCopy.maCuonSach, payload);
+            } else {
+                await libraryApi.createBookCopy(payload);
+            }
+
+            toast.success(editingCopy ? "Cập nhật cuốn sách thành công" : "Thêm cuốn sách thành công");
+            closeModal();
             await load();
         } catch (err) {
-            toast.error(err.message || "Thêm cuốn sách thất bại");
+            toast.error(err.message || "Lưu cuốn sách thất bại");
         } finally {
             setLoading(false);
         }
     }
 
-    async function deleteBookCopy(maCuonSach) {
-        const mode = await actionDialog.chooseDeleteMode(`cuốn sách ${maCuonSach}`);
+    async function hideBookCopy(maCuonSach) {
+        const confirmed = await actionDialog.confirm({
+            title: `Ẩn cuốn sách ${maCuonSach}`,
+            message: "Cuốn sách sẽ ngừng lưu thông nhưng dữ liệu vẫn được giữ lại.",
+            confirmLabel: "Ẩn"
+        });
 
-        if (!mode) {
-            return;
-        }
+        if (!confirmed) return;
 
         setLoading(true);
-
         try {
-            await libraryApi.deleteBookCopy(maCuonSach, mode);
-            toast.success(mode === "hard" ? "Đã xóa cuốn sách" : "Đã ngừng lưu thông cuốn sách");
+            await libraryApi.deleteBookCopy(maCuonSach, "soft");
+            toast.success("Đã ẩn cuốn sách");
+            await load();
+        } catch (err) {
+            toast.error(err.message || "Ẩn cuốn sách thất bại");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function hardDeleteBookCopy(maCuonSach) {
+        const confirmed = await actionDialog.confirm({
+            title: `Xóa cuốn sách ${maCuonSach}`,
+            message: "Thao tác này sẽ xóa vĩnh viễn nếu dữ liệu chưa có liên kết nghiệp vụ.",
+            confirmLabel: "Xóa",
+            danger: true
+        });
+
+        if (!confirmed) return;
+
+        setLoading(true);
+        try {
+            await libraryApi.deleteBookCopy(maCuonSach, "hard");
+            toast.success("Đã xóa cuốn sách");
             setSelectedIds((prev) => prev.filter((id) => id !== maCuonSach));
             await load();
         } catch (err) {
             toast.error(err.message || "Xóa cuốn sách thất bại");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function restoreBookCopy(maCuonSach) {
+        const confirmed = await actionDialog.confirm({
+            title: `Khôi phục cuốn sách ${maCuonSach}`,
+            message: "Cuốn sách sẽ được đưa về trạng thái Sẵn có.",
+            confirmLabel: "Khôi phục"
+        });
+
+        if (!confirmed) return;
+
+        setLoading(true);
+        try {
+            await libraryApi.restoreBookCopy(maCuonSach);
+            toast.success("Đã khôi phục cuốn sách");
+            await load();
+        } catch (err) {
+            toast.error(err.message || "Khôi phục cuốn sách thất bại");
         } finally {
             setLoading(false);
         }
@@ -138,12 +235,9 @@ export default function BookCopiesPage() {
 
         const mode = await actionDialog.chooseDeleteMode(`${selectedIds.length} cuốn sách đã chọn`);
 
-        if (!mode) {
-            return;
-        }
+        if (!mode) return;
 
         setLoading(true);
-
         try {
             for (const id of selectedIds) {
                 await libraryApi.deleteBookCopy(id, mode);
@@ -175,18 +269,13 @@ export default function BookCopiesPage() {
                 />
             </div>
 
-            {showCreateModal && (
-                <ResultModal title="Thêm cuốn sách" onClose={() => setShowCreateModal(false)} className="form-modal-card">
-                    <form className="form-panel modal-form" onSubmit={createBookCopy}>
-                        <div className="panel-title">
-                            <h2>Thêm cuốn sách</h2>
-                            <Plus size={20} />
-                        </div>
-
+            {showModal && (
+                <ResultModal title={editingCopy ? "Sửa thông tin cuốn sách" : "Thêm cuốn sách"} onClose={closeModal} className="form-modal-card">
+                    <form className="form-panel modal-form" onSubmit={saveBookCopy}>
                         <div className="form-grid-3">
                             <div className="form-row">
                                 <label>Mã cuốn sách</label>
-                                <input value={form.maCuonSach} onChange={(e) => updateField("maCuonSach", e.target.value)} />
+                                <input value={form.maCuonSach} onChange={(e) => updateField("maCuonSach", e.target.value)} disabled={Boolean(editingCopy)} />
                             </div>
                             <div className="form-row">
                                 <label>Mã đầu sách</label>
@@ -205,14 +294,17 @@ export default function BookCopiesPage() {
                             </div>
                             <div className="form-row">
                                 <label>Trạng thái</label>
-                                <select value={form.maTrangThai} onChange={(e) => updateField("maTrangThai", e.target.value)}>
-                                    <option value="TT_SANCO">Sẵn có</option>
-                                    <option value="TT_DANGMUON">Đang mượn</option>
-                                    <option value="TT_DANGDATTRUOC">Đang đặt trước</option>
-                                    <option value="TT_HONG">Bị hỏng</option>
-                                    <option value="TT_MAT">Bị mất</option>
-                                    <option value="TT_NGUNGLUUTHONG">Ngừng lưu thông</option>
-                                </select>
+                                {editingCopy ? (
+                                    <select value={form.maTrangThai} onChange={(e) => updateField("maTrangThai", e.target.value)}>
+                                        {statusOptions.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input value="Sẵn có" readOnly className="read-only-field" />
+                                )}
                             </div>
                             <div className="form-row">
                                 <label>Ngày nhập sách</label>
@@ -236,14 +328,14 @@ export default function BookCopiesPage() {
                         </div>
 
                         <button className="primary-button" disabled={loading}>
-                            Thêm cuốn sách
+                            {editingCopy ? "Lưu thông tin" : "Thêm cuốn sách"}
                         </button>
                     </form>
                 </ResultModal>
             )}
 
             <div className="list-toolbar">
-                <button className="primary-button" type="button" onClick={() => setShowCreateModal(true)}>
+                <button className="primary-button" type="button" onClick={openCreateModal}>
                     <Plus size={17} />
                     Thêm cuốn sách
                 </button>
@@ -290,12 +382,18 @@ export default function BookCopiesPage() {
                     {
                         key: "actions",
                         title: "Thao tác",
-                        width: "130px",
+                        width: "120px",
                         render: (row) => (
-                            <button className="soft-button danger-button" onClick={() => deleteBookCopy(row.maCuonSach)}>
-                                <Trash2 size={15} />
-                                Xóa
-                            </button>
+                            <InlineActionMenu
+                                label={`Mở thao tác cho cuốn sách ${row.maCuonSach}`}
+                                disabled={loading}
+                                actions={[
+                                    { key: "edit", label: "Sửa thông tin", icon: Pencil, onClick: () => openEditModal(row) },
+                                    { key: "hide", label: "Ẩn", icon: EyeOff, onClick: () => hideBookCopy(row.maCuonSach), disabled: row.maTrangThai === "TT_NGUNGLUUTHONG" },
+                                    { key: "restore", label: "Khôi phục", icon: RotateCcw, onClick: () => restoreBookCopy(row.maCuonSach), disabled: row.maTrangThai === "TT_SANCO" },
+                                    { key: "delete", label: "Xóa", icon: Trash2, danger: true, onClick: () => hardDeleteBookCopy(row.maCuonSach) }
+                                ]}
+                            />
                         )
                     }
                 ]}

@@ -1,13 +1,14 @@
-import { Plus, Trash2 } from "lucide-react";
+import { EyeOff, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { libraryApi } from "../api/libraryApi";
 import DataTable from "../components/DataTable";
+import InlineActionMenu from "../components/InlineActionMenu";
 import PageHeader from "../components/PageHeader";
 import ResultModal from "../components/ResultModal";
 import StatusBadge from "../components/StatusBadge";
-import { useToast } from "../components/ToastProvider";
 import { useActionDialog } from "../components/ActionDialogProvider";
+import { useToast } from "../components/ToastProvider";
 import { formatMoney } from "../utils/displayUtils";
 
 export default function BooksPage() {
@@ -17,7 +18,8 @@ export default function BooksPage() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState(searchParams.get("search") || "");
-    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [editingBook, setEditingBook] = useState(null);
     const [selectedIds, setSelectedIds] = useState([]);
     const [form, setForm] = useState(() => buildDefaultBookForm());
 
@@ -39,7 +41,7 @@ export default function BooksPage() {
         }, 250);
 
         return () => window.clearTimeout(timer);
-    }, [search]);
+    }, [search, setSearchParams]);
 
     const filteredData = useMemo(() => {
         const keyword = search.trim().toLowerCase();
@@ -68,6 +70,10 @@ export default function BooksPage() {
         setSelectedIds((prev) => prev.filter((id) => data.some((row) => row.maDauSach === id)));
     }, [data]);
 
+    function updateField(field, value) {
+        setForm((prev) => ({ ...prev, [field]: value }));
+    }
+
     function toggleSelected(id) {
         setSelectedIds((prev) => prev.includes(id)
             ? prev.filter((value) => value !== id)
@@ -82,70 +88,147 @@ export default function BooksPage() {
         setSelectedIds([]);
     }
 
-    function updateField(field, value) {
-        setForm((prev) => ({ ...prev, [field]: value }));
-    }
-
     function parseIds(value) {
         return value.split(",").map((item) => item.trim()).filter(Boolean);
     }
 
-    async function createBook(e) {
-        e.preventDefault();
+    function openCreateModal() {
+        setEditingBook(null);
+        setForm(buildDefaultBookForm());
+        setShowModal(true);
+    }
 
+    function openEditModal(row) {
+        setEditingBook(row);
+        setForm({
+            maDauSach: row.maDauSach || "",
+            maNhaXuatBan: row.maNhaXuatBan || "",
+            tenDauSach: row.tenDauSach || "",
+            isbn: row.isbn || "",
+            namXuatBan: row.namXuatBan || new Date().getFullYear(),
+            ngonNgu: row.ngonNgu || "Tiếng Việt",
+            soTrang: row.soTrang || 120,
+            triGia: row.triGia || 0,
+            maTacGiasText: (row.maTacGias || []).join(", "),
+            maTheLoaisText: (row.maTheLoais || []).join(", "),
+            moTa: row.moTa || ""
+        });
+        setShowModal(true);
+    }
+
+    function closeModal() {
+        setShowModal(false);
+        setEditingBook(null);
+        setForm(buildDefaultBookForm());
+    }
+
+    function buildPayload() {
         const maTacGias = parseIds(form.maTacGiasText);
         const maTheLoais = parseIds(form.maTheLoaisText);
 
         if (maTacGias.length === 0 || maTheLoais.length === 0) {
-            toast.error("Vui lòng nhập ít nhất một tác giả và một thể loại");
-            return;
+            throw new Error("Vui lòng nhập ít nhất một tác giả và một thể loại");
         }
 
+        return {
+            maDauSach: form.maDauSach,
+            maNhaXuatBan: form.maNhaXuatBan || null,
+            tenDauSach: form.tenDauSach,
+            isbn: form.isbn || null,
+            namXuatBan: Number(form.namXuatBan),
+            ngonNgu: form.ngonNgu,
+            soTrang: Number(form.soTrang),
+            moTa: form.moTa,
+            anhBia: null,
+            triGia: Number(form.triGia),
+            maTacGias,
+            maTheLoais
+        };
+    }
+
+    async function saveBook(event) {
+        event.preventDefault();
         setLoading(true);
 
         try {
-            await libraryApi.createBook({
-                maDauSach: form.maDauSach,
-                maNhaXuatBan: form.maNhaXuatBan || null,
-                tenDauSach: form.tenDauSach,
-                isbn: form.isbn || null,
-                namXuatBan: Number(form.namXuatBan),
-                ngonNgu: form.ngonNgu,
-                soTrang: Number(form.soTrang),
-                moTa: form.moTa,
-                anhBia: null,
-                triGia: Number(form.triGia),
-                maTacGias,
-                maTheLoais
-            });
+            const payload = buildPayload();
 
-            toast.success("Thêm sách thành công");
-            setForm(buildDefaultBookForm());
-            setShowCreateModal(false);
+            if (editingBook) {
+                await libraryApi.updateBook(editingBook.maDauSach, payload);
+            } else {
+                await libraryApi.createBook(payload);
+            }
+
+            toast.success(editingBook ? "Cập nhật sách thành công" : "Thêm sách thành công");
+            closeModal();
             await load();
         } catch (err) {
-            toast.error(err.message || "Thêm sách thất bại");
+            toast.error(err.message || "Lưu sách thất bại");
         } finally {
             setLoading(false);
         }
     }
 
-    async function deleteBook(maDauSach) {
-        const mode = await actionDialog.chooseDeleteMode(`đầu sách ${maDauSach}`);
+    async function hideBook(maDauSach) {
+        const confirmed = await actionDialog.confirm({
+            title: `Ẩn đầu sách ${maDauSach}`,
+            message: "Đầu sách sẽ ngừng hiển thị nhưng dữ liệu vẫn được giữ lại.",
+            confirmLabel: "Ẩn"
+        });
 
-        if (!mode) {
-            return;
-        }
+        if (!confirmed) return;
 
         setLoading(true);
-
         try {
-            await libraryApi.deleteBook(maDauSach, mode);
-            toast.success(mode === "hard" ? "Đã xóa đầu sách" : "Đã ngừng hiển thị đầu sách");
+            await libraryApi.deleteBook(maDauSach, "soft");
+            toast.success("Đã ẩn đầu sách");
+            await load();
+        } catch (err) {
+            toast.error(err.message || "Ẩn đầu sách thất bại");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function hardDeleteBook(maDauSach) {
+        const confirmed = await actionDialog.confirm({
+            title: `Xóa đầu sách ${maDauSach}`,
+            message: "Thao tác này sẽ xóa vĩnh viễn nếu dữ liệu chưa có liên kết nghiệp vụ.",
+            confirmLabel: "Xóa",
+            danger: true
+        });
+
+        if (!confirmed) return;
+
+        setLoading(true);
+        try {
+            await libraryApi.deleteBook(maDauSach, "hard");
+            toast.success("Đã xóa đầu sách");
             setSelectedIds((prev) => prev.filter((id) => id !== maDauSach));
             await load();
         } catch (err) {
-            toast.error(err.message || "Xóa sách thất bại");
+            toast.error(err.message || "Xóa đầu sách thất bại");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function restoreBook(maDauSach) {
+        const confirmed = await actionDialog.confirm({
+            title: `Khôi phục đầu sách ${maDauSach}`,
+            message: "Đầu sách sẽ được đưa về trạng thái hoạt động.",
+            confirmLabel: "Khôi phục"
+        });
+
+        if (!confirmed) return;
+
+        setLoading(true);
+        try {
+            await libraryApi.restoreBook(maDauSach);
+            toast.success("Đã khôi phục đầu sách");
+            await load();
+        } catch (err) {
+            toast.error(err.message || "Khôi phục đầu sách thất bại");
         } finally {
             setLoading(false);
         }
@@ -159,12 +242,9 @@ export default function BooksPage() {
 
         const mode = await actionDialog.chooseDeleteMode(`${selectedIds.length} đầu sách đã chọn`);
 
-        if (!mode) {
-            return;
-        }
+        if (!mode) return;
 
         setLoading(true);
-
         try {
             for (const id of selectedIds) {
                 await libraryApi.deleteBook(id, mode);
@@ -196,18 +276,13 @@ export default function BooksPage() {
                 />
             </div>
 
-            {showCreateModal && (
-                <ResultModal title="Thêm sách" onClose={() => setShowCreateModal(false)} className="form-modal-card">
-                    <form className="form-panel modal-form" onSubmit={createBook}>
-                        <div className="panel-title">
-                            <h2>Thêm sách</h2>
-                            <Plus size={20} />
-                        </div>
-
+            {showModal && (
+                <ResultModal title={editingBook ? "Sửa thông tin sách" : "Thêm sách"} onClose={closeModal} className="form-modal-card">
+                    <form className="form-panel modal-form" onSubmit={saveBook}>
                         <div className="form-grid-3">
                             <div className="form-row">
                                 <label>Mã đầu sách</label>
-                                <input value={form.maDauSach} onChange={(e) => updateField("maDauSach", e.target.value)} />
+                                <input value={form.maDauSach} onChange={(e) => updateField("maDauSach", e.target.value)} disabled={Boolean(editingBook)} />
                             </div>
                             <div className="form-row">
                                 <label>Tên đầu sách</label>
@@ -261,14 +336,14 @@ export default function BooksPage() {
                         </div>
 
                         <button className="primary-button" disabled={loading}>
-                            Thêm sách
+                            {editingBook ? "Lưu thông tin" : "Thêm sách"}
                         </button>
                     </form>
                 </ResultModal>
             )}
 
             <div className="list-toolbar">
-                <button className="primary-button" type="button" onClick={() => setShowCreateModal(true)}>
+                <button className="primary-button" type="button" onClick={openCreateModal}>
                     <Plus size={17} />
                     Thêm sách
                 </button>
@@ -314,12 +389,18 @@ export default function BooksPage() {
                     {
                         key: "actions",
                         title: "Thao tác",
-                        width: "130px",
+                        width: "120px",
                         render: (row) => (
-                            <button className="soft-button danger-button" onClick={() => deleteBook(row.maDauSach)}>
-                                <Trash2 size={15} />
-                                Xóa
-                            </button>
+                            <InlineActionMenu
+                                label={`Mở thao tác cho đầu sách ${row.maDauSach}`}
+                                disabled={loading}
+                                actions={[
+                                    { key: "edit", label: "Sửa thông tin", icon: Pencil, onClick: () => openEditModal(row) },
+                                    { key: "hide", label: "Ẩn", icon: EyeOff, onClick: () => hideBook(row.maDauSach), disabled: row.trangThai === "Ngừng hiển thị" },
+                                    { key: "restore", label: "Khôi phục", icon: RotateCcw, onClick: () => restoreBook(row.maDauSach), disabled: row.trangThai === "Hoạt động" },
+                                    { key: "delete", label: "Xóa", icon: Trash2, danger: true, onClick: () => hardDeleteBook(row.maDauSach) }
+                                ]}
+                            />
                         )
                     }
                 ]}

@@ -1,25 +1,42 @@
-import { Plus, Trash2 } from "lucide-react";
+import { EyeOff, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { libraryApi } from "../api/libraryApi";
 import DataTable from "../components/DataTable";
+import InlineActionMenu from "../components/InlineActionMenu";
 import PageHeader from "../components/PageHeader";
 import PasswordInput from "../components/PasswordInput";
 import ResultModal from "../components/ResultModal";
 import StatusBadge from "../components/StatusBadge";
-import { useToast } from "../components/ToastProvider";
 import { useActionDialog } from "../components/ActionDialogProvider";
+import { useToast } from "../components/ToastProvider";
 import { formatDate } from "../utils/displayUtils";
+
+const FALLBACK_READER_GROUPS = [
+    { value: "NHOM_HOCSINH", label: "Học sinh" },
+    { value: "NHOM_SINHVIEN", label: "Sinh viên" },
+    { value: "NHOM_GIAOVIEN", label: "Giáo viên" },
+    { value: "NHOM_KHAC", label: "Khác" }
+];
+
+const FALLBACK_MEMBERSHIP_PLANS = [
+    { value: "GOI_THUONG", label: "Gói thường" },
+    { value: "GOI_VIP", label: "Gói VIP" },
+    { value: "GOI_PREMIUM", label: "Gói Premium" }
+];
 
 export default function ReadersPage() {
     const toast = useToast();
     const actionDialog = useActionDialog();
     const [searchParams, setSearchParams] = useSearchParams();
     const [data, setData] = useState([]);
+    const [readerGroups, setReaderGroups] = useState(FALLBACK_READER_GROUPS);
+    const [membershipPlans, setMembershipPlans] = useState(FALLBACK_MEMBERSHIP_PLANS);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState(searchParams.get("search") || "");
     const [form, setForm] = useState(() => buildDefaultForm());
-    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [editingReader, setEditingReader] = useState(null);
     const [selectedIds, setSelectedIds] = useState([]);
 
     async function load() {
@@ -32,6 +49,12 @@ export default function ReadersPage() {
 
     useEffect(() => {
         load();
+        libraryApi.readerGroups()
+            .then((options) => setReaderGroups(options?.length ? options : FALLBACK_READER_GROUPS))
+            .catch(() => setReaderGroups(FALLBACK_READER_GROUPS));
+        libraryApi.membershipPlans()
+            .then((options) => setMembershipPlans(options?.length ? options : FALLBACK_MEMBERSHIP_PLANS))
+            .catch(() => setMembershipPlans(FALLBACK_MEMBERSHIP_PLANS));
     }, []);
 
     useEffect(() => {
@@ -40,7 +63,7 @@ export default function ReadersPage() {
         }, 250);
 
         return () => window.clearTimeout(timer);
-    }, [search]);
+    }, [search, setSearchParams]);
 
     const filteredData = useMemo(() => {
         const keyword = search.trim().toLowerCase();
@@ -71,6 +94,10 @@ export default function ReadersPage() {
         setSelectedIds((prev) => prev.filter((id) => data.some((row) => row.maDocGia === id)));
     }, [data]);
 
+    function updateField(field, value) {
+        setForm((prev) => ({ ...prev, [field]: value }));
+    }
+
     function toggleSelected(id) {
         setSelectedIds((prev) => prev.includes(id)
             ? prev.filter((value) => value !== id)
@@ -85,57 +112,137 @@ export default function ReadersPage() {
         setSelectedIds([]);
     }
 
-    function updateField(field, value) {
-        setForm((prev) => ({ ...prev, [field]: value }));
+    function openCreateModal() {
+        setEditingReader(null);
+        setForm(buildDefaultForm());
+        setShowModal(true);
     }
 
-    async function createReader(e) {
-        e.preventDefault();
+    function openEditModal(row) {
+        setEditingReader(row);
+        setForm({
+            maDocGia: row.maDocGia || "",
+            maTaiKhoan: row.maTaiKhoan || "",
+            tenDangNhap: row.tenDangNhap || "",
+            matKhau: "123456",
+            maNhomDocGia: row.maNhomDocGia || "NHOM_SINHVIEN",
+            maGoiThanhVien: row.maGoiThanhVien || "GOI_THUONG",
+            hoTen: row.hoTen || "",
+            ngaySinh: row.ngaySinh || "2000-01-01",
+            diaChi: row.diaChi || "",
+            email: row.email || "",
+            soDienThoai: row.soDienThoai || "",
+            ngayLapThe: row.ngayLapThe || new Date().toISOString().slice(0, 10)
+        });
+        setShowModal(true);
+    }
+
+    function closeModal() {
+        setShowModal(false);
+        setEditingReader(null);
+        setForm(buildDefaultForm());
+    }
+
+    function buildPayload() {
+        return {
+            maDocGia: form.maDocGia,
+            maTaiKhoan: form.maTaiKhoan,
+            tenDangNhap: form.tenDangNhap,
+            matKhau: form.matKhau,
+            maNhomDocGia: form.maNhomDocGia,
+            maGoiThanhVien: form.maGoiThanhVien || null,
+            hoTen: form.hoTen,
+            ngaySinh: form.ngaySinh,
+            diaChi: form.diaChi,
+            email: form.email,
+            soDienThoai: form.soDienThoai,
+            ngayLapThe: form.ngayLapThe || null
+        };
+    }
+
+    async function saveReader(event) {
+        event.preventDefault();
         setLoading(true);
 
         try {
-            await libraryApi.createReader({
-                maDocGia: form.maDocGia,
-                maTaiKhoan: form.maTaiKhoan,
-                tenDangNhap: form.tenDangNhap,
-                matKhau: form.matKhau,
-                maNhomDocGia: form.maNhomDocGia,
-                maGoiThanhVien: form.maGoiThanhVien || null,
-                hoTen: form.hoTen,
-                ngaySinh: form.ngaySinh,
-                diaChi: form.diaChi,
-                email: form.email,
-                soDienThoai: form.soDienThoai,
-                ngayLapThe: form.ngayLapThe || null
-            });
+            const payload = buildPayload();
 
-            toast.success("Thêm độc giả thành công");
-            setForm(buildDefaultForm());
-            setShowCreateModal(false);
+            if (editingReader) {
+                await libraryApi.updateReader(editingReader.maDocGia, payload);
+            } else {
+                await libraryApi.createReader(payload);
+            }
+
+            toast.success(editingReader ? "Cập nhật độc giả thành công" : "Thêm độc giả thành công");
+            closeModal();
             await load();
         } catch (err) {
-            toast.error(err.message || "Thêm độc giả thất bại");
+            toast.error(err.message || "Lưu độc giả thất bại");
         } finally {
             setLoading(false);
         }
     }
 
-    async function deleteReader(maDocGia) {
-        const mode = await actionDialog.chooseDeleteMode(`độc giả ${maDocGia}`);
+    async function hideReader(maDocGia) {
+        const confirmed = await actionDialog.confirm({
+            title: `Ẩn độc giả ${maDocGia}`,
+            message: "Độc giả sẽ ngừng hoạt động nhưng dữ liệu vẫn được giữ lại.",
+            confirmLabel: "Ẩn"
+        });
 
-        if (!mode) {
-            return;
-        }
+        if (!confirmed) return;
 
         setLoading(true);
-
         try {
-            await libraryApi.deleteReader(maDocGia, mode);
-            toast.success(mode === "hard" ? "Đã xóa độc giả" : "Đã ngừng hoạt động độc giả");
+            await libraryApi.deleteReader(maDocGia, "soft");
+            toast.success("Đã ẩn độc giả");
+            await load();
+        } catch (err) {
+            toast.error(err.message || "Ẩn độc giả thất bại");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function hardDeleteReader(maDocGia) {
+        const confirmed = await actionDialog.confirm({
+            title: `Xóa độc giả ${maDocGia}`,
+            message: "Thao tác này sẽ xóa vĩnh viễn nếu dữ liệu chưa có liên kết nghiệp vụ.",
+            confirmLabel: "Xóa",
+            danger: true
+        });
+
+        if (!confirmed) return;
+
+        setLoading(true);
+        try {
+            await libraryApi.deleteReader(maDocGia, "hard");
+            toast.success("Đã xóa độc giả");
             setSelectedIds((prev) => prev.filter((id) => id !== maDocGia));
             await load();
         } catch (err) {
             toast.error(err.message || "Xóa độc giả thất bại");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function restoreReader(maDocGia) {
+        const confirmed = await actionDialog.confirm({
+            title: `Khôi phục độc giả ${maDocGia}`,
+            message: "Độc giả sẽ được đưa về trạng thái hoạt động.",
+            confirmLabel: "Khôi phục"
+        });
+
+        if (!confirmed) return;
+
+        setLoading(true);
+        try {
+            await libraryApi.restoreReader(maDocGia);
+            toast.success("Đã khôi phục độc giả");
+            await load();
+        } catch (err) {
+            toast.error(err.message || "Khôi phục độc giả thất bại");
         } finally {
             setLoading(false);
         }
@@ -149,12 +256,9 @@ export default function ReadersPage() {
 
         const mode = await actionDialog.chooseDeleteMode(`${selectedIds.length} độc giả đã chọn`);
 
-        if (!mode) {
-            return;
-        }
+        if (!mode) return;
 
         setLoading(true);
-
         try {
             for (const id of selectedIds) {
                 await libraryApi.deleteReader(id, mode);
@@ -186,41 +290,48 @@ export default function ReadersPage() {
                 />
             </div>
 
-            {showCreateModal && (
-                <ResultModal title="Thêm độc giả" onClose={() => setShowCreateModal(false)} className="form-modal-card">
-                    <form className="form-panel modal-form" onSubmit={createReader}>
-                        <div className="panel-title">
-                            <h2>Thêm độc giả</h2>
-                            <Plus size={20} />
-                        </div>
-
+            {showModal && (
+                <ResultModal title={editingReader ? "Sửa thông tin độc giả" : "Thêm độc giả"} onClose={closeModal} className="form-modal-card">
+                    <form className="form-panel modal-form" onSubmit={saveReader}>
                         <div className="form-grid-3">
                             <div className="form-row">
                                 <label>Mã độc giả</label>
-                                <input value={form.maDocGia} onChange={(e) => updateField("maDocGia", e.target.value)} />
+                                <input value={form.maDocGia} onChange={(e) => updateField("maDocGia", e.target.value)} disabled={Boolean(editingReader)} />
                             </div>
                             <div className="form-row">
                                 <label>Mã tài khoản</label>
-                                <input value={form.maTaiKhoan} onChange={(e) => updateField("maTaiKhoan", e.target.value)} />
+                                <input value={form.maTaiKhoan} onChange={(e) => updateField("maTaiKhoan", e.target.value)} disabled={Boolean(editingReader)} />
                             </div>
                             <div className="form-row">
                                 <label>Tên đăng nhập</label>
-                                <input value={form.tenDangNhap} onChange={(e) => updateField("tenDangNhap", e.target.value)} />
+                                <input value={form.tenDangNhap} onChange={(e) => updateField("tenDangNhap", e.target.value)} disabled={Boolean(editingReader)} />
                             </div>
                         </div>
 
                         <div className="form-grid-3">
                             <div className="form-row">
                                 <label>Mật khẩu</label>
-                                <PasswordInput value={form.matKhau} onChange={(e) => updateField("matKhau", e.target.value)} />
+                                <PasswordInput value={form.matKhau} onChange={(e) => updateField("matKhau", e.target.value)} disabled={Boolean(editingReader)} />
                             </div>
                             <div className="form-row">
                                 <label>Nhóm độc giả</label>
-                                <input value={form.maNhomDocGia} onChange={(e) => updateField("maNhomDocGia", e.target.value)} />
+                                <select value={form.maNhomDocGia} onChange={(e) => updateField("maNhomDocGia", e.target.value)}>
+                                    {readerGroups.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="form-row">
                                 <label>Gói thành viên</label>
-                                <input value={form.maGoiThanhVien} onChange={(e) => updateField("maGoiThanhVien", e.target.value)} />
+                                <select value={form.maGoiThanhVien} onChange={(e) => updateField("maGoiThanhVien", e.target.value)}>
+                                    {membershipPlans.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
@@ -235,7 +346,7 @@ export default function ReadersPage() {
                             </div>
                             <div className="form-row">
                                 <label>Ngày lập thẻ</label>
-                                <input type="date" value={form.ngayLapThe} onChange={(e) => updateField("ngayLapThe", e.target.value)} />
+                                <input type="date" value={form.ngayLapThe} onChange={(e) => updateField("ngayLapThe", e.target.value)} disabled={Boolean(editingReader)} />
                             </div>
                         </div>
 
@@ -255,14 +366,14 @@ export default function ReadersPage() {
                         </div>
 
                         <button className="primary-button" disabled={loading}>
-                            Thêm độc giả
+                            {editingReader ? "Lưu thông tin" : "Thêm độc giả"}
                         </button>
                     </form>
                 </ResultModal>
             )}
 
             <div className="list-toolbar">
-                <button className="primary-button" type="button" onClick={() => setShowCreateModal(true)}>
+                <button className="primary-button" type="button" onClick={openCreateModal}>
                     <Plus size={17} />
                     Thêm độc giả
                 </button>
@@ -308,12 +419,18 @@ export default function ReadersPage() {
                     {
                         key: "actions",
                         title: "Thao tác",
-                        width: "130px",
+                        width: "120px",
                         render: (row) => (
-                            <button className="soft-button danger-button" onClick={() => deleteReader(row.maDocGia)}>
-                                <Trash2 size={15} />
-                                Xóa
-                            </button>
+                            <InlineActionMenu
+                                label={`Mở thao tác cho độc giả ${row.maDocGia}`}
+                                disabled={loading}
+                                actions={[
+                                    { key: "edit", label: "Sửa thông tin", icon: Pencil, onClick: () => openEditModal(row) },
+                                    { key: "hide", label: "Ẩn", icon: EyeOff, onClick: () => hideReader(row.maDocGia), disabled: row.trangThai === "Ngừng hoạt động" },
+                                    { key: "restore", label: "Khôi phục", icon: RotateCcw, onClick: () => restoreReader(row.maDocGia), disabled: row.trangThai === "Hoạt động" },
+                                    { key: "delete", label: "Xóa", icon: Trash2, danger: true, onClick: () => hardDeleteReader(row.maDocGia) }
+                                ]}
+                            />
                         )
                     }
                 ]}
