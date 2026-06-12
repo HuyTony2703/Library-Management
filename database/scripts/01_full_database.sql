@@ -909,11 +909,16 @@
 
         MERGE LOAITHONGBAO AS T
         USING (VALUES
-            ('TB_SAP_DEN_HAN', N'Sắp đến hạn trả', N'Thông báo nhắc độc giả sắp đến hạn trả sách'),
-            ('TB_GIA_HAN_TC', N'Gia hạn thành công', N'Thông báo gia hạn sách thành công'),
-            ('TB_BI_PHAT', N'Bị tính tiền phạt', N'Thông báo phát sinh tiền phạt'),
-            ('TB_DAT_TRUOC_TC', N'Đặt trước thành công', N'Thông báo đặt trước sách thành công'),
-            ('TB_SACH_DA_CO', N'Sách đặt trước đã có', N'Thông báo sách đặt trước đã sẵn sàng')
+            ('TB_SAP_DEN_HAN', N'Sách sắp đến hạn trả', N'Thông báo nhắc độc giả sắp đến hạn trả sách'),
+            ('TB_QUA_HAN_TRA', N'Sách đã quá hạn trả', N'Thông báo nhắc độc giả có sách đã quá hạn trả'),
+            ('TB_PHAT_SINH_PHAT', N'Phát sinh tiền phạt', N'Thông báo phát sinh tiền phạt mới'),
+            ('TB_SACH_DA_CO', N'Sách đặt trước đã có', N'Thông báo sách đặt trước đã sẵn sàng'),
+            ('TB_MUA_GOI_TC', N'Mua hoặc gia hạn gói thành viên thành công', N'Thông báo mua hoặc gia hạn gói thành viên thành công'),
+            ('TB_GOI_SAP_HET_HAN', N'Gói thành viên sắp hết hạn', N'Thông báo nhắc gói thành viên sắp hết hạn'),
+            ('TB_TAIKHOAN_THE_DOI_TRANGTHAI', N'Tài khoản hoặc thẻ độc giả thay đổi trạng thái', N'Thông báo khi tài khoản hoặc thẻ độc giả thay đổi trạng thái'),
+            ('TB_BI_PHAT', N'Bị tính tiền phạt', N'Tương thích dữ liệu cũ: thông báo phát sinh tiền phạt'),
+            ('TB_GIA_HAN_TC', N'Gia hạn thành công', N'Tương thích dữ liệu cũ: thông báo gia hạn sách thành công'),
+            ('TB_DAT_TRUOC_TC', N'Đặt trước thành công', N'Tương thích dữ liệu cũ: thông báo đặt trước sách thành công')
         ) AS S(MaLoaiThongBao, TenLoaiThongBao, MoTa)
         ON T.MaLoaiThongBao = S.MaLoaiThongBao
         WHEN NOT MATCHED THEN

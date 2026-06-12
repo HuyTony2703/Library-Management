@@ -90,7 +90,7 @@ const BUSINESS_RULES = [
         title: "Gửi thông báo",
         points: [
             "Hệ thống gửi thông báo trong app và có thể gửi email cho độc giả.",
-            "Loại thông báo gồm sắp đến hạn trả, gia hạn thành công, bị tính tiền phạt, đặt trước thành công và sách đặt trước đã có.",
+            "Loại thông báo gồm sách sắp đến hạn trả, sách đã quá hạn trả, phát sinh tiền phạt, sách đặt trước đã có, mua hoặc gia hạn gói thành viên thành công, gói thành viên sắp hết hạn, và tài khoản hoặc thẻ độc giả thay đổi trạng thái.",
             "Cần lưu lịch sử thông báo, trạng thái gửi email, số lần thử gửi và thời điểm gửi email cuối cùng để tránh gửi trùng."
         ]
     }

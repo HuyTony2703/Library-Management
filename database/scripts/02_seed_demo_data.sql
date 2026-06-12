@@ -289,6 +289,26 @@ IF NOT EXISTS (SELECT 1 FROM LOAITHONGBAO WHERE MaLoaiThongBao = 'TB_SACH_DA_CO'
 INSERT INTO LOAITHONGBAO(MaLoaiThongBao, TenLoaiThongBao, MoTa)
 VALUES ('TB_SACH_DA_CO', N'Sách đặt trước đã có', N'Thông báo sách đặt trước đã sẵn sàng');
 
+IF NOT EXISTS (SELECT 1 FROM LOAITHONGBAO WHERE MaLoaiThongBao = 'TB_QUA_HAN_TRA')
+INSERT INTO LOAITHONGBAO(MaLoaiThongBao, TenLoaiThongBao, MoTa)
+VALUES ('TB_QUA_HAN_TRA', N'Sách đã quá hạn trả', N'Thông báo nhắc độc giả có sách đã quá hạn trả');
+
+IF NOT EXISTS (SELECT 1 FROM LOAITHONGBAO WHERE MaLoaiThongBao = 'TB_PHAT_SINH_PHAT')
+INSERT INTO LOAITHONGBAO(MaLoaiThongBao, TenLoaiThongBao, MoTa)
+VALUES ('TB_PHAT_SINH_PHAT', N'Phát sinh tiền phạt', N'Thông báo phát sinh tiền phạt mới');
+
+IF NOT EXISTS (SELECT 1 FROM LOAITHONGBAO WHERE MaLoaiThongBao = 'TB_MUA_GOI_TC')
+INSERT INTO LOAITHONGBAO(MaLoaiThongBao, TenLoaiThongBao, MoTa)
+VALUES ('TB_MUA_GOI_TC', N'Mua hoặc gia hạn gói thành viên thành công', N'Thông báo mua hoặc gia hạn gói thành viên thành công');
+
+IF NOT EXISTS (SELECT 1 FROM LOAITHONGBAO WHERE MaLoaiThongBao = 'TB_GOI_SAP_HET_HAN')
+INSERT INTO LOAITHONGBAO(MaLoaiThongBao, TenLoaiThongBao, MoTa)
+VALUES ('TB_GOI_SAP_HET_HAN', N'Gói thành viên sắp hết hạn', N'Thông báo nhắc gói thành viên sắp hết hạn');
+
+IF NOT EXISTS (SELECT 1 FROM LOAITHONGBAO WHERE MaLoaiThongBao = 'TB_TAIKHOAN_THE_DOI_TRANGTHAI')
+INSERT INTO LOAITHONGBAO(MaLoaiThongBao, TenLoaiThongBao, MoTa)
+VALUES ('TB_TAIKHOAN_THE_DOI_TRANGTHAI', N'Tài khoản hoặc thẻ độc giả thay đổi trạng thái', N'Thông báo khi tài khoản hoặc thẻ độc giả thay đổi trạng thái');
+
 /* =========================================================
    1. CHI NHÁNH, NHÂN VIÊN, TÀI KHOẢN NHÂN VIÊN
    ========================================================= */
