@@ -54,4 +54,10 @@ public class CuonSachController {
         cuonSachService.disable(maCuonSach);
         return "Ngừng lưu thông cuốn sách thành công";
     }
+
+    @PatchMapping("/{maCuonSach}/restore")
+    public String restore(@PathVariable String maCuonSach) {
+        cuonSachService.restore(maCuonSach);
+        return "Khôi phục cuốn sách thành công";
+    }
 }

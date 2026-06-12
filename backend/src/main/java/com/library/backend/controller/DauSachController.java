@@ -54,4 +54,10 @@ public class DauSachController {
         dauSachService.disable(maDauSach);
         return "Ngừng hiển thị đầu sách thành công";
     }
+
+    @PatchMapping("/{maDauSach}/restore")
+    public String restore(@PathVariable String maDauSach) {
+        dauSachService.restore(maDauSach);
+        return "Khôi phục đầu sách thành công";
+    }
 }

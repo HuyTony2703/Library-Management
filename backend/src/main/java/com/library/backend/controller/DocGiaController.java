@@ -54,4 +54,10 @@ public class DocGiaController {
         docGiaService.disable(maDocGia);
         return "Ngừng hoạt động độc giả thành công";
     }
+
+    @PatchMapping("/{maDocGia}/restore")
+    public String restore(@PathVariable String maDocGia) {
+        docGiaService.restore(maDocGia);
+        return "Khôi phục độc giả thành công";
+    }
 }
