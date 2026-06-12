@@ -19,23 +19,13 @@ export default function BookCopiesPage() {
     const [search, setSearch] = useState(searchParams.get("search") || "");
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedIds, setSelectedIds] = useState([]);
-    const [form, setForm] = useState({
-        maCuonSach: `COPY_${Date.now().toString().slice(-6)}`,
-        maDauSach: "F01",
-        maChiNhanh: "CN_TD",
-        maViTri: "VT_M01_N01",
-        maTrangThai: "TT_SANCO",
-        maVach: "",
-        maQrCode: "",
-        ngayNhapSach: new Date().toISOString().slice(0, 10),
-        ghiChu: ""
-    });
+    const [form, setForm] = useState(() => buildDefaultCopyForm());
 
     async function load() {
         try {
             setData(await libraryApi.bookCopies());
         } catch (err) {
-            toast.error(err.message);
+            toast.error(err.message || "Không tải được danh sách cuốn sách");
         }
     }
 
@@ -44,8 +34,12 @@ export default function BookCopiesPage() {
     }, []);
 
     useEffect(() => {
-        setSearch(searchParams.get("search") || "");
-    }, [searchParams]);
+        const timer = window.setTimeout(() => {
+            setSearchParams(search.trim() ? { search: search.trim() } : {}, { replace: true });
+        }, 250);
+
+        return () => window.clearTimeout(timer);
+    }, [search]);
 
     const filteredData = useMemo(() => {
         const keyword = search.trim().toLowerCase();
@@ -88,11 +82,6 @@ export default function BookCopiesPage() {
         setSelectedIds([]);
     }
 
-    function submitSearch(event) {
-        event.preventDefault();
-        setSearchParams(search.trim() ? { search: search.trim() } : {});
-    }
-
     function updateField(field, value) {
         setForm((prev) => ({ ...prev, [field]: value }));
     }
@@ -110,7 +99,7 @@ export default function BookCopiesPage() {
             });
 
             toast.success("Thêm cuốn sách thành công");
-            updateField("maCuonSach", `COPY_${Date.now().toString().slice(-6)}`);
+            setForm(buildDefaultCopyForm());
             setShowCreateModal(false);
             await load();
         } catch (err) {
@@ -178,79 +167,78 @@ export default function BookCopiesPage() {
                 description="Theo dõi từng bản sách vật lý, vị trí, chi nhánh và trạng thái."
             />
 
-            <form className="panel search-panel" onSubmit={submitSearch}>
+            <div className="panel search-panel">
                 <input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder="Tìm theo mã cuốn, đầu sách, chi nhánh, vị trí, trạng thái..."
                 />
-                <button className="soft-button" type="submit">Tìm kiếm</button>
-            </form>
+            </div>
 
             {showCreateModal && (
                 <ResultModal title="Thêm cuốn sách" onClose={() => setShowCreateModal(false)} className="form-modal-card">
-            <form className="form-panel modal-form" onSubmit={createBookCopy}>
-                <div className="panel-title">
-                    <h2>Thêm cuốn sách</h2>
-                    <Plus size={20} />
-                </div>
+                    <form className="form-panel modal-form" onSubmit={createBookCopy}>
+                        <div className="panel-title">
+                            <h2>Thêm cuốn sách</h2>
+                            <Plus size={20} />
+                        </div>
 
-                <div className="form-grid-3">
-                    <div className="form-row">
-                        <label>Mã cuốn sách</label>
-                        <input value={form.maCuonSach} onChange={(e) => updateField("maCuonSach", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Mã đầu sách</label>
-                        <input value={form.maDauSach} onChange={(e) => updateField("maDauSach", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Chi nhánh</label>
-                        <input value={form.maChiNhanh} onChange={(e) => updateField("maChiNhanh", e.target.value)} />
-                    </div>
-                </div>
+                        <div className="form-grid-3">
+                            <div className="form-row">
+                                <label>Mã cuốn sách</label>
+                                <input value={form.maCuonSach} onChange={(e) => updateField("maCuonSach", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Mã đầu sách</label>
+                                <input value={form.maDauSach} onChange={(e) => updateField("maDauSach", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Chi nhánh</label>
+                                <input value={form.maChiNhanh} onChange={(e) => updateField("maChiNhanh", e.target.value)} />
+                            </div>
+                        </div>
 
-                <div className="form-grid-3">
-                    <div className="form-row">
-                        <label>Vị trí</label>
-                        <input value={form.maViTri} onChange={(e) => updateField("maViTri", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Trạng thái</label>
-                        <select value={form.maTrangThai} onChange={(e) => updateField("maTrangThai", e.target.value)}>
-                            <option value="TT_SANCO">Sẵn có</option>
-                            <option value="TT_DANGMUON">Đang mượn</option>
-                            <option value="TT_DANGDATTRUOC">Đang đặt trước</option>
-                            <option value="TT_HONG">Hỏng</option>
-                            <option value="TT_MAT">Mất</option>
-                            <option value="TT_NGUNGLUUTHONG">Ngừng lưu thông</option>
-                        </select>
-                    </div>
-                    <div className="form-row">
-                        <label>Ngày nhập sách</label>
-                        <input type="date" value={form.ngayNhapSach} onChange={(e) => updateField("ngayNhapSach", e.target.value)} />
-                    </div>
-                </div>
+                        <div className="form-grid-3">
+                            <div className="form-row">
+                                <label>Vị trí</label>
+                                <input value={form.maViTri} onChange={(e) => updateField("maViTri", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Trạng thái</label>
+                                <select value={form.maTrangThai} onChange={(e) => updateField("maTrangThai", e.target.value)}>
+                                    <option value="TT_SANCO">Sẵn có</option>
+                                    <option value="TT_DANGMUON">Đang mượn</option>
+                                    <option value="TT_DANGDATTRUOC">Đang đặt trước</option>
+                                    <option value="TT_HONG">Bị hỏng</option>
+                                    <option value="TT_MAT">Bị mất</option>
+                                    <option value="TT_NGUNGLUUTHONG">Ngừng lưu thông</option>
+                                </select>
+                            </div>
+                            <div className="form-row">
+                                <label>Ngày nhập sách</label>
+                                <input type="date" value={form.ngayNhapSach} onChange={(e) => updateField("ngayNhapSach", e.target.value)} />
+                            </div>
+                        </div>
 
-                <div className="form-grid-3">
-                    <div className="form-row">
-                        <label>Mã vạch</label>
-                        <input value={form.maVach} onChange={(e) => updateField("maVach", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Mã QR</label>
-                        <input value={form.maQrCode} onChange={(e) => updateField("maQrCode", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Ghi chú</label>
-                        <input value={form.ghiChu} onChange={(e) => updateField("ghiChu", e.target.value)} />
-                    </div>
-                </div>
+                        <div className="form-grid-3">
+                            <div className="form-row">
+                                <label>Mã vạch</label>
+                                <input value={form.maVach} onChange={(e) => updateField("maVach", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Mã QR</label>
+                                <input value={form.maQrCode} onChange={(e) => updateField("maQrCode", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Ghi chú</label>
+                                <input value={form.ghiChu} onChange={(e) => updateField("ghiChu", e.target.value)} />
+                            </div>
+                        </div>
 
-                <button className="primary-button" disabled={loading}>
-                    Thêm cuốn sách
-                </button>
-            </form>
+                        <button className="primary-button" disabled={loading}>
+                            Thêm cuốn sách
+                        </button>
+                    </form>
                 </ResultModal>
             )}
 
@@ -276,11 +264,13 @@ export default function BookCopiesPage() {
 
             <DataTable
                 data={filteredData}
+                rowClassName={(row) => selectedIds.includes(row.maCuonSach) ? "selected-row" : ""}
                 columns={[
                     {
                         key: "select",
                         title: `${selectedIds.length} mục`,
                         className: "selection-count-cell",
+                        width: "76px",
                         render: (row) => (
                             <input
                                 className="table-checkbox"
@@ -300,6 +290,7 @@ export default function BookCopiesPage() {
                     {
                         key: "actions",
                         title: "Thao tác",
+                        width: "130px",
                         render: (row) => (
                             <button className="soft-button danger-button" onClick={() => deleteBookCopy(row.maCuonSach)}>
                                 <Trash2 size={15} />
@@ -311,4 +302,20 @@ export default function BookCopiesPage() {
             />
         </div>
     );
+}
+
+function buildDefaultCopyForm() {
+    const suffix = Date.now().toString().slice(-6);
+
+    return {
+        maCuonSach: `COPY_${suffix}`,
+        maDauSach: "F01",
+        maChiNhanh: "CN_TD",
+        maViTri: "VT_M01_N01",
+        maTrangThai: "TT_SANCO",
+        maVach: "",
+        maQrCode: "",
+        ngayNhapSach: new Date().toISOString().slice(0, 10),
+        ghiChu: ""
+    };
 }

@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { libraryApi } from "../api/libraryApi";
 import DataTable from "../components/DataTable";
 import PageHeader from "../components/PageHeader";
+import PasswordInput from "../components/PasswordInput";
 import ResultModal from "../components/ResultModal";
 import StatusBadge from "../components/StatusBadge";
 import { useToast } from "../components/ToastProvider";
@@ -25,7 +26,7 @@ export default function ReadersPage() {
         try {
             setData(await libraryApi.readers());
         } catch (err) {
-            toast.error(err.message);
+            toast.error(err.message || "Không tải được danh sách độc giả");
         }
     }
 
@@ -34,8 +35,12 @@ export default function ReadersPage() {
     }, []);
 
     useEffect(() => {
-        setSearch(searchParams.get("search") || "");
-    }, [searchParams]);
+        const timer = window.setTimeout(() => {
+            setSearchParams(search.trim() ? { search: search.trim() } : {}, { replace: true });
+        }, 250);
+
+        return () => window.clearTimeout(timer);
+    }, [search]);
 
     const filteredData = useMemo(() => {
         const keyword = search.trim().toLowerCase();
@@ -78,11 +83,6 @@ export default function ReadersPage() {
 
     function clearSelected() {
         setSelectedIds([]);
-    }
-
-    function submitSearch(event) {
-        event.preventDefault();
-        setSearchParams(search.trim() ? { search: search.trim() } : {});
     }
 
     function updateField(field, value) {
@@ -178,87 +178,86 @@ export default function ReadersPage() {
                 description="Thông tin độc giả, email, số điện thoại, hạn thẻ và trạng thái."
             />
 
-            <form className="panel search-panel" onSubmit={submitSearch}>
+            <div className="panel search-panel">
                 <input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder="Tìm theo mã, tên, email, số điện thoại, nhóm độc giả..."
                 />
-                <button className="soft-button" type="submit">Tìm kiếm</button>
-            </form>
+            </div>
 
             {showCreateModal && (
                 <ResultModal title="Thêm độc giả" onClose={() => setShowCreateModal(false)} className="form-modal-card">
-            <form className="form-panel modal-form" onSubmit={createReader}>
-                <div className="panel-title">
-                    <h2>Thêm độc giả</h2>
-                    <Plus size={20} />
-                </div>
+                    <form className="form-panel modal-form" onSubmit={createReader}>
+                        <div className="panel-title">
+                            <h2>Thêm độc giả</h2>
+                            <Plus size={20} />
+                        </div>
 
-                <div className="form-grid-3">
-                    <div className="form-row">
-                        <label>Mã độc giả</label>
-                        <input value={form.maDocGia} onChange={(e) => updateField("maDocGia", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Mã tài khoản</label>
-                        <input value={form.maTaiKhoan} onChange={(e) => updateField("maTaiKhoan", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Tên đăng nhập</label>
-                        <input value={form.tenDangNhap} onChange={(e) => updateField("tenDangNhap", e.target.value)} />
-                    </div>
-                </div>
+                        <div className="form-grid-3">
+                            <div className="form-row">
+                                <label>Mã độc giả</label>
+                                <input value={form.maDocGia} onChange={(e) => updateField("maDocGia", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Mã tài khoản</label>
+                                <input value={form.maTaiKhoan} onChange={(e) => updateField("maTaiKhoan", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Tên đăng nhập</label>
+                                <input value={form.tenDangNhap} onChange={(e) => updateField("tenDangNhap", e.target.value)} />
+                            </div>
+                        </div>
 
-                <div className="form-grid-3">
-                    <div className="form-row">
-                        <label>Mật khẩu</label>
-                        <input type="password" value={form.matKhau} onChange={(e) => updateField("matKhau", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Nhóm độc giả</label>
-                        <input value={form.maNhomDocGia} onChange={(e) => updateField("maNhomDocGia", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Gói thành viên</label>
-                        <input value={form.maGoiThanhVien} onChange={(e) => updateField("maGoiThanhVien", e.target.value)} />
-                    </div>
-                </div>
+                        <div className="form-grid-3">
+                            <div className="form-row">
+                                <label>Mật khẩu</label>
+                                <PasswordInput value={form.matKhau} onChange={(e) => updateField("matKhau", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Nhóm độc giả</label>
+                                <input value={form.maNhomDocGia} onChange={(e) => updateField("maNhomDocGia", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Gói thành viên</label>
+                                <input value={form.maGoiThanhVien} onChange={(e) => updateField("maGoiThanhVien", e.target.value)} />
+                            </div>
+                        </div>
 
-                <div className="form-grid-3">
-                    <div className="form-row">
-                        <label>Họ tên</label>
-                        <input value={form.hoTen} onChange={(e) => updateField("hoTen", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Ngày sinh</label>
-                        <input type="date" value={form.ngaySinh} onChange={(e) => updateField("ngaySinh", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Ngày lập thẻ</label>
-                        <input type="date" value={form.ngayLapThe} onChange={(e) => updateField("ngayLapThe", e.target.value)} />
-                    </div>
-                </div>
+                        <div className="form-grid-3">
+                            <div className="form-row">
+                                <label>Họ tên</label>
+                                <input value={form.hoTen} onChange={(e) => updateField("hoTen", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Ngày sinh</label>
+                                <input type="date" value={form.ngaySinh} onChange={(e) => updateField("ngaySinh", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Ngày lập thẻ</label>
+                                <input type="date" value={form.ngayLapThe} onChange={(e) => updateField("ngayLapThe", e.target.value)} />
+                            </div>
+                        </div>
 
-                <div className="form-grid-3">
-                    <div className="form-row">
-                        <label>Email</label>
-                        <input value={form.email} onChange={(e) => updateField("email", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Số điện thoại</label>
-                        <input value={form.soDienThoai} onChange={(e) => updateField("soDienThoai", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Địa chỉ</label>
-                        <input value={form.diaChi} onChange={(e) => updateField("diaChi", e.target.value)} />
-                    </div>
-                </div>
+                        <div className="form-grid-3">
+                            <div className="form-row">
+                                <label>Email</label>
+                                <input value={form.email} onChange={(e) => updateField("email", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Số điện thoại</label>
+                                <input value={form.soDienThoai} onChange={(e) => updateField("soDienThoai", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Địa chỉ</label>
+                                <input value={form.diaChi} onChange={(e) => updateField("diaChi", e.target.value)} />
+                            </div>
+                        </div>
 
-                <button className="primary-button" disabled={loading}>
-                    Thêm độc giả
-                </button>
-            </form>
+                        <button className="primary-button" disabled={loading}>
+                            Thêm độc giả
+                        </button>
+                    </form>
                 </ResultModal>
             )}
 
@@ -284,11 +283,13 @@ export default function ReadersPage() {
 
             <DataTable
                 data={filteredData}
+                rowClassName={(row) => selectedIds.includes(row.maDocGia) ? "selected-row" : ""}
                 columns={[
                     {
                         key: "select",
                         title: `${selectedIds.length} mục`,
                         className: "selection-count-cell",
+                        width: "76px",
                         render: (row) => (
                             <input
                                 className="table-checkbox"
@@ -307,6 +308,7 @@ export default function ReadersPage() {
                     {
                         key: "actions",
                         title: "Thao tác",
+                        width: "130px",
                         render: (row) => (
                             <button className="soft-button danger-button" onClick={() => deleteReader(row.maDocGia)}>
                                 <Trash2 size={15} />

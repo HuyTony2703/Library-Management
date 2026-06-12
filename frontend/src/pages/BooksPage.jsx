@@ -19,25 +19,13 @@ export default function BooksPage() {
     const [search, setSearch] = useState(searchParams.get("search") || "");
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedIds, setSelectedIds] = useState([]);
-    const [form, setForm] = useState({
-        maDauSach: `BOOK_${Date.now().toString().slice(-6)}`,
-        maNhaXuatBan: "NXB_KIMDONG",
-        tenDauSach: "Sách test nghiệp vụ",
-        isbn: "",
-        namXuatBan: new Date().getFullYear(),
-        ngonNgu: "Tiếng Việt",
-        soTrang: 120,
-        triGia: 50000,
-        maTacGiasText: "TG_NNA",
-        maTheLoaisText: "TL_VANHOC",
-        moTa: ""
-    });
+    const [form, setForm] = useState(() => buildDefaultBookForm());
 
     async function load() {
         try {
             setData(await libraryApi.books());
         } catch (err) {
-            toast.error(err.message);
+            toast.error(err.message || "Không tải được danh sách đầu sách");
         }
     }
 
@@ -46,8 +34,12 @@ export default function BooksPage() {
     }, []);
 
     useEffect(() => {
-        setSearch(searchParams.get("search") || "");
-    }, [searchParams]);
+        const timer = window.setTimeout(() => {
+            setSearchParams(search.trim() ? { search: search.trim() } : {}, { replace: true });
+        }, 250);
+
+        return () => window.clearTimeout(timer);
+    }, [search]);
 
     const filteredData = useMemo(() => {
         const keyword = search.trim().toLowerCase();
@@ -90,11 +82,6 @@ export default function BooksPage() {
         setSelectedIds([]);
     }
 
-    function submitSearch(event) {
-        event.preventDefault();
-        setSearchParams(search.trim() ? { search: search.trim() } : {});
-    }
-
     function updateField(field, value) {
         setForm((prev) => ({ ...prev, [field]: value }));
     }
@@ -133,7 +120,7 @@ export default function BooksPage() {
             });
 
             toast.success("Thêm sách thành công");
-            updateField("maDauSach", `BOOK_${Date.now().toString().slice(-6)}`);
+            setForm(buildDefaultBookForm());
             setShowCreateModal(false);
             await load();
         } catch (err) {
@@ -201,83 +188,82 @@ export default function BooksPage() {
                 description="Danh sách đầu sách, ISBN, trị giá và trạng thái hiển thị."
             />
 
-            <form className="panel search-panel" onSubmit={submitSearch}>
+            <div className="panel search-panel">
                 <input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder="Tìm theo mã, tên sách, ISBN, tác giả, thể loại..."
                 />
-                <button className="soft-button" type="submit">Tìm kiếm</button>
-            </form>
+            </div>
 
             {showCreateModal && (
                 <ResultModal title="Thêm sách" onClose={() => setShowCreateModal(false)} className="form-modal-card">
-            <form className="form-panel modal-form" onSubmit={createBook}>
-                <div className="panel-title">
-                    <h2>Thêm sách</h2>
-                    <Plus size={20} />
-                </div>
+                    <form className="form-panel modal-form" onSubmit={createBook}>
+                        <div className="panel-title">
+                            <h2>Thêm sách</h2>
+                            <Plus size={20} />
+                        </div>
 
-                <div className="form-grid-3">
-                    <div className="form-row">
-                        <label>Mã đầu sách</label>
-                        <input value={form.maDauSach} onChange={(e) => updateField("maDauSach", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Tên đầu sách</label>
-                        <input value={form.tenDauSach} onChange={(e) => updateField("tenDauSach", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Nhà xuất bản</label>
-                        <input value={form.maNhaXuatBan} onChange={(e) => updateField("maNhaXuatBan", e.target.value)} />
-                    </div>
-                </div>
+                        <div className="form-grid-3">
+                            <div className="form-row">
+                                <label>Mã đầu sách</label>
+                                <input value={form.maDauSach} onChange={(e) => updateField("maDauSach", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Tên đầu sách</label>
+                                <input value={form.tenDauSach} onChange={(e) => updateField("tenDauSach", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Nhà xuất bản</label>
+                                <input value={form.maNhaXuatBan} onChange={(e) => updateField("maNhaXuatBan", e.target.value)} />
+                            </div>
+                        </div>
 
-                <div className="form-grid-3">
-                    <div className="form-row">
-                        <label>ISBN</label>
-                        <input value={form.isbn} onChange={(e) => updateField("isbn", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Năm xuất bản</label>
-                        <input type="number" value={form.namXuatBan} onChange={(e) => updateField("namXuatBan", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Trị giá</label>
-                        <input type="number" value={form.triGia} onChange={(e) => updateField("triGia", e.target.value)} />
-                    </div>
-                </div>
+                        <div className="form-grid-3">
+                            <div className="form-row">
+                                <label>ISBN</label>
+                                <input value={form.isbn} onChange={(e) => updateField("isbn", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Năm xuất bản</label>
+                                <input type="number" value={form.namXuatBan} onChange={(e) => updateField("namXuatBan", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Trị giá</label>
+                                <input type="number" value={form.triGia} onChange={(e) => updateField("triGia", e.target.value)} />
+                            </div>
+                        </div>
 
-                <div className="form-grid-3">
-                    <div className="form-row">
-                        <label>Ngôn ngữ</label>
-                        <input value={form.ngonNgu} onChange={(e) => updateField("ngonNgu", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Số trang</label>
-                        <input type="number" value={form.soTrang} onChange={(e) => updateField("soTrang", e.target.value)} />
-                    </div>
-                    <div className="form-row">
-                        <label>Tác giả</label>
-                        <input value={form.maTacGiasText} onChange={(e) => updateField("maTacGiasText", e.target.value)} placeholder="TG001, TG002" />
-                    </div>
-                </div>
+                        <div className="form-grid-3">
+                            <div className="form-row">
+                                <label>Ngôn ngữ</label>
+                                <input value={form.ngonNgu} onChange={(e) => updateField("ngonNgu", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Số trang</label>
+                                <input type="number" value={form.soTrang} onChange={(e) => updateField("soTrang", e.target.value)} />
+                            </div>
+                            <div className="form-row">
+                                <label>Tác giả</label>
+                                <input value={form.maTacGiasText} onChange={(e) => updateField("maTacGiasText", e.target.value)} placeholder="TG001, TG002" />
+                            </div>
+                        </div>
 
-                <div className="form-grid-2">
-                    <div className="form-row">
-                        <label>Thể loại</label>
-                        <input value={form.maTheLoaisText} onChange={(e) => updateField("maTheLoaisText", e.target.value)} placeholder="TL_MANGA, TL_VANHOC" />
-                    </div>
-                    <div className="form-row">
-                        <label>Mô tả</label>
-                        <input value={form.moTa} onChange={(e) => updateField("moTa", e.target.value)} />
-                    </div>
-                </div>
+                        <div className="form-grid-2">
+                            <div className="form-row">
+                                <label>Thể loại</label>
+                                <input value={form.maTheLoaisText} onChange={(e) => updateField("maTheLoaisText", e.target.value)} placeholder="TL_MANGA, TL_VANHOC" />
+                            </div>
+                            <div className="form-row">
+                                <label>Mô tả</label>
+                                <input value={form.moTa} onChange={(e) => updateField("moTa", e.target.value)} />
+                            </div>
+                        </div>
 
-                <button className="primary-button" disabled={loading}>
-                    Thêm sách
-                </button>
-            </form>
+                        <button className="primary-button" disabled={loading}>
+                            Thêm sách
+                        </button>
+                    </form>
                 </ResultModal>
             )}
 
@@ -303,11 +289,13 @@ export default function BooksPage() {
 
             <DataTable
                 data={filteredData}
+                rowClassName={(row) => selectedIds.includes(row.maDauSach) ? "selected-row" : ""}
                 columns={[
                     {
                         key: "select",
                         title: `${selectedIds.length} mục`,
                         className: "selection-count-cell",
+                        width: "76px",
                         render: (row) => (
                             <input
                                 className="table-checkbox"
@@ -326,6 +314,7 @@ export default function BooksPage() {
                     {
                         key: "actions",
                         title: "Thao tác",
+                        width: "130px",
                         render: (row) => (
                             <button className="soft-button danger-button" onClick={() => deleteBook(row.maDauSach)}>
                                 <Trash2 size={15} />
@@ -337,4 +326,22 @@ export default function BooksPage() {
             />
         </div>
     );
+}
+
+function buildDefaultBookForm() {
+    const suffix = Date.now().toString().slice(-6);
+
+    return {
+        maDauSach: `BOOK_${suffix}`,
+        maNhaXuatBan: "NXB_KIMDONG",
+        tenDauSach: "Sách test nghiệp vụ",
+        isbn: "",
+        namXuatBan: new Date().getFullYear(),
+        ngonNgu: "Tiếng Việt",
+        soTrang: 120,
+        triGia: 50000,
+        maTacGiasText: "TG_NNA",
+        maTheLoaisText: "TL_VANHOC",
+        moTa: ""
+    };
 }
