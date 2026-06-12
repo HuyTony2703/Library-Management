@@ -6,7 +6,8 @@ export default function DataTable({
     data,
     emptyText = "Chưa có dữ liệu",
     pageSize = 6,
-    rowKey
+    rowKey,
+    rowClassName
 }) {
     const [page, setPage] = useState(0);
     const rows = Array.isArray(data) ? data : [];
@@ -93,7 +94,7 @@ export default function DataTable({
                 <tbody>
                 {rows.length > 0 ? (
                     visibleRows.map((row, index) => (
-                        <tr key={getKey(row, index)}>
+                        <tr key={getKey(row, index)} className={rowClassName?.(row) || undefined}>
                             {columns.map((column) => (
                                 <td
                                     key={column.key}

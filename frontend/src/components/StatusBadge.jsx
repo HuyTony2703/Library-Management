@@ -2,13 +2,25 @@ import { displayStatus } from "../utils/displayUtils";
 
 export default function StatusBadge({ value }) {
     const text = displayStatus(value);
+    const lower = text.toLowerCase();
 
     const type =
-        text.includes("Sẵn") || text.includes("Hoạt động") || text.includes("Thành công") || text.includes("Đã")
+        lower.includes("sẵn") ||
+        lower.includes("hoạt động") ||
+        lower.includes("thành công") ||
+        lower.includes("đã thanh toán") ||
+        lower.includes("đã ẩn") ||
+        lower.includes("đã xóa")
             ? "good"
-            : text.includes("mượn") || text.includes("Đang") || text.includes("một phần")
+            : lower.includes("mượn") ||
+                lower.includes("đang") ||
+                lower.includes("một phần") ||
+                lower.includes("chưa thanh toán")
                 ? "warn"
-                : text.includes("Mất") || text.includes("Hỏng") || text.includes("Khóa")
+                : lower.includes("mất") ||
+                    lower.includes("hỏng") ||
+                    lower.includes("khóa") ||
+                    lower.includes("ngừng")
                     ? "bad"
                     : "neutral";
 

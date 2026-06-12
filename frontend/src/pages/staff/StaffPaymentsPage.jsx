@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { RefreshCcw, Search } from "lucide-react";
+import { RefreshCcw, Search, Trash2 } from "lucide-react";
 import { libraryApi } from "../../api/libraryApi";
 import { staffApi } from "../../api/staffApi";
 import PageHeader from "../../components/PageHeader";
@@ -40,9 +40,18 @@ export default function StaffPaymentsPage() {
         return Number(row.soTienConLai ?? row.SoTienConLai ?? row.conLai ?? 0);
     }
 
+    function getDebtId(row) {
+        return row.maKhoanNo ?? row.MaKhoanNo ?? row.maNo ?? row.id;
+    }
+
     async function loadDebts() {
+        if (!maDocGia.trim()) {
+            toast.error("Vui lòng nhập mã độc giả");
+            return;
+        }
+
         try {
-            const data = await staffApi.getReaderDebts(maDocGia);
+            const data = await staffApi.getReaderDebts(maDocGia.trim());
             setDebts(Array.isArray(data) ? data : []);
             setSelected({});
             toast.success("Đã tải khoản nợ");
@@ -67,21 +76,39 @@ export default function StaffPaymentsPage() {
     function toggleDebt(row) {
         const remaining = getDebtRemaining(row);
 
+        if (remaining <= 0) {
+            toast.info("Khoản nợ này đã thanh toán xong nên không thể chọn để thu");
+            return;
+        }
+
         setSelected((prev) => {
             const copy = { ...prev };
 
-            if (copy[row.maKhoanNo] !== undefined) {
-                delete copy[row.maKhoanNo];
+            const debtId = getDebtId(row);
+
+            if (!debtId) {
+                toast.error("Khoản nợ thiếu mã nên không thể chọn");
+                return copy;
+            }
+
+            if (copy[debtId] !== undefined) {
+                delete copy[debtId];
             } else {
-                copy[row.maKhoanNo] = remaining;
+                copy[debtId] = remaining;
             }
 
             return copy;
         });
     }
 
-    function updateDebtAmount(maKhoanNo, value) {
-        setSelected((prev) => ({ ...prev, [maKhoanNo]: Number(value) }));
+    function updateDebtAmount(row, value) {
+        const amount = Number(value);
+        const remaining = getDebtRemaining(row);
+
+        setSelected((prev) => ({
+            ...prev,
+            [getDebtId(row)]: Math.max(0, Math.min(amount, remaining))
+        }));
     }
 
     const selectedTotal = useMemo(() => {
@@ -102,10 +129,20 @@ export default function StaffPaymentsPage() {
             const remaining = getDebtRemaining(row);
 
             if (remaining > 0) {
-                nextSelected[row.maKhoanNo] = remaining;
+                const debtId = getDebtId(row);
+
+                if (!debtId) {
+                    return;
+                }
+
+                nextSelected[debtId] = remaining;
                 total += remaining;
             }
         });
+
+        if (Object.keys(nextSelected).length === 0) {
+            toast.info("Không có khoản nợ còn lại để chọn");
+        }
 
         setSelected(nextSelected);
         updateField("soTienThu", total);
@@ -114,6 +151,16 @@ export default function StaffPaymentsPage() {
     function clearSelectedDebts() {
         setSelected({});
         updateField("soTienThu", 0);
+    }
+
+    function deleteSelectedDebtsFromSelection() {
+        if (selectedDebtCount === 0) {
+            toast.error("Chưa chọn khoản nợ nào để xóa");
+            return;
+        }
+
+        clearSelectedDebts();
+        toast.success("Đã xóa các khoản khỏi danh sách đang chọn");
     }
 
     function buildSelectedDetails() {
@@ -153,7 +200,7 @@ export default function StaffPaymentsPage() {
         try {
             const data = await staffApi.createPayment({
                 maPhieuThu: form.maPhieuThu,
-                maDocGia,
+                maDocGia: maDocGia.trim(),
                 maNhanVienThu: form.maNhanVienThu,
                 maPhuongThuc: form.maPhuongThuc,
                 soTienThu: Number(form.soTienThu),
@@ -184,7 +231,7 @@ export default function StaffPaymentsPage() {
         try {
             const data = await staffApi.createPayment({
                 maPhieuThu: form.maPhieuThu,
-                maDocGia,
+                maDocGia: maDocGia.trim(),
                 maNhanVienThu: form.maNhanVienThu,
                 maPhuongThuc: form.maPhuongThuc,
                 soTienThu: Number(form.soTienThu),
@@ -219,48 +266,56 @@ export default function StaffPaymentsPage() {
                 }
             />
 
-            <div className="panel">
+            <div className="panel payment-debt-panel">
                 <div className="panel-title">
                     <h2>Danh sách khoản nợ</h2>
                     <span>{debts.length} khoản</span>
                 </div>
 
-                <div className="payment-debt-search">
-                    <label>Mã độc giả</label>
-                    <input value={maDocGia} onChange={(e) => setMaDocGia(e.target.value)} />
-                    <button className="soft-button" type="button" onClick={loadDebts}>
-                        <Search size={17} />
-                        Xem nợ
-                    </button>
-                </div>
+                <div className="payment-debt-toolbar">
+                    <div className="selection-toolbar stacked-selection-toolbar payment-selection-toolbar">
+                        <button type="button" className="soft-button" onClick={selectAllDebts}>
+                            Chọn tất cả
+                        </button>
+                        <button type="button" className="primary-button compact-primary-button" onClick={clearSelectedDebts}>
+                            Bỏ chọn tất cả
+                        </button>
+                        <button type="button" className="soft-button danger-button compact-primary-button" onClick={deleteSelectedDebtsFromSelection}>
+                            <Trash2 size={16} />
+                            Xóa
+                        </button>
+                    </div>
 
-                <div className="selection-toolbar">
-                    <button type="button" className="soft-button" onClick={selectAllDebts}>
-                        Chọn tất cả
-                    </button>
-                    <button type="button" className="primary-button compact-primary-button" onClick={clearSelectedDebts}>
-                        Bỏ chọn tất cả
-                    </button>
+                    <div className="payment-debt-search">
+                        <label>Mã độc giả</label>
+                        <input value={maDocGia} onChange={(e) => setMaDocGia(e.target.value)} />
+                        <button className="soft-button" type="button" onClick={loadDebts}>
+                            <Search size={17} />
+                            Xem nợ
+                        </button>
+                    </div>
                 </div>
 
                 <DataTable
                     data={debts}
+                    rowClassName={(row) => selected[getDebtId(row)] !== undefined ? "selected-row" : ""}
                     columns={[
                         {
                             key: "chon",
                             title: `${selectedDebtCount} mục`,
                             className: "selection-count-cell",
+                            width: "76px",
                             render: (row) => (
                                 <input
                                     className="table-checkbox"
                                     type="checkbox"
-                                    checked={selected[row.maKhoanNo] !== undefined}
+                                    checked={selected[getDebtId(row)] !== undefined}
                                     onChange={() => toggleDebt(row)}
                                 />
                             )
                         },
                         { key: "maKhoanNo", title: "Mã nợ" },
-                        { key: "maLoaiKhoanNo", title: "Loại" },
+                        { key: "maLoaiKhoanNo", title: "Loại", render: (row) => displayCode(row.maLoaiKhoanNo) },
                         { key: "lyDo", title: "Lý do" },
                         { key: "soTienPhatSinh", title: "Phát sinh", render: (row) => formatMoney(row.soTienPhatSinh) },
                         { key: "soTienDaThanhToan", title: "Đã trả", render: (row) => formatMoney(row.soTienDaThanhToan) },
@@ -269,11 +324,13 @@ export default function StaffPaymentsPage() {
                             key: "soTienApDung",
                             title: "Tiền áp dụng",
                             render: (row) =>
-                                selected[row.maKhoanNo] !== undefined ? (
+                                selected[getDebtId(row)] !== undefined ? (
                                     <input
                                         type="number"
-                                        value={selected[row.maKhoanNo]}
-                                        onChange={(e) => updateDebtAmount(row.maKhoanNo, e.target.value)}
+                                        min="0"
+                                        max={getDebtRemaining(row)}
+                                        value={selected[getDebtId(row)]}
+                                        onChange={(e) => updateDebtAmount(row, e.target.value)}
                                     />
                                 ) : (
                                     "-"

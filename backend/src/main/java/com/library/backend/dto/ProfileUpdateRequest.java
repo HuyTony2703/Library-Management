@@ -10,6 +10,7 @@ public class ProfileUpdateRequest {
     @Size(max = 150, message = "Họ tên tối đa 150 ký tự")
     private String hoTen;
 
+    @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không hợp lệ")
     @Size(max = 255, message = "Email tối đa 255 ký tự")
     private String email;
