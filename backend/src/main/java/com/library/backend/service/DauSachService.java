@@ -119,6 +119,15 @@ public class DauSachService {
     }
 
     @Transactional
+    public void restore(String maDauSach) {
+        DauSach dauSach = dauSachRepository.findById(maDauSach)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đầu sách"));
+
+        dauSach.setTrangThai("Hoạt động");
+        dauSachRepository.save(dauSach);
+    }
+
+    @Transactional
     public void hardDelete(String maDauSach) {
         DauSach dauSach = dauSachRepository.findById(maDauSach)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đầu sách"));

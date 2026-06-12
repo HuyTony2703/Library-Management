@@ -166,6 +166,14 @@ public class DocGiaService {
             throw new RuntimeException("Email độc giả đã tồn tại");
         }
 
+        String maGoi = request.getMaGoiThanhVien() == null || request.getMaGoiThanhVien().isBlank()
+                ? null
+                : request.getMaGoiThanhVien();
+
+        if (maGoi != null && !goiThanhVienRepository.existsById(maGoi)) {
+            throw new RuntimeException("Gói thành viên không tồn tại");
+        }
+
         docGia.setMaNhomDocGia(request.getMaNhomDocGia());
         docGia.setHoTen(request.getHoTen());
         docGia.setNgaySinh(request.getNgaySinh());
@@ -173,7 +181,17 @@ public class DocGiaService {
         docGia.setEmail(request.getEmail());
         docGia.setSoDienThoai(request.getSoDienThoai());
 
-        return toResponse(docGiaRepository.save(docGia));
+        DocGia updated = docGiaRepository.save(docGia);
+
+        if (maGoi != null) {
+            jdbcTemplate.update(
+                    "UPDATE LICHSUGOITHANHVIEN SET MaGoiThanhVien = ? WHERE MaDocGia = ? AND TrangThai = N'Đang sử dụng'",
+                    maGoi,
+                    maDocGia
+            );
+        }
+
+        return toResponse(updated);
     }
 
     @Transactional
@@ -182,6 +200,15 @@ public class DocGiaService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy độc giả"));
 
         docGia.setTrangThai("Ngừng hoạt động");
+        docGiaRepository.save(docGia);
+    }
+
+    @Transactional
+    public void restore(String maDocGia) {
+        DocGia docGia = docGiaRepository.findById(maDocGia)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy độc giả"));
+
+        docGia.setTrangThai("Hoạt động");
         docGiaRepository.save(docGia);
     }
 

@@ -135,6 +135,19 @@ public class CuonSachService {
     }
 
     @Transactional
+    public void restore(String maCuonSach) {
+        CuonSach cuonSach = cuonSachRepository.findById(maCuonSach)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy cuốn sách"));
+
+        if (!trangThaiCuonSachRepository.existsById(TT_SANCO)) {
+            throw new RuntimeException("Thiếu trạng thái TT_SANCO trong database");
+        }
+
+        cuonSach.setMaTrangThai(TT_SANCO);
+        cuonSachRepository.save(cuonSach);
+    }
+
+    @Transactional
     public void hardDelete(String maCuonSach) {
         CuonSach cuonSach = cuonSachRepository.findById(maCuonSach)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy cuốn sách"));
