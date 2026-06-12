@@ -851,6 +851,17 @@ textarea:focus {
   color: white;
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
   border: none;
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.24);
+}
+
+.selection-toolbar .ghost-button:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.3);
+}
+
+.selection-toolbar .soft-button:not(.danger-button) {
+  color: var(--primary);
+  background: rgba(37, 99, 235, 0.1);
   box-shadow: none;
 }
 
@@ -1072,6 +1083,20 @@ textarea:focus {
 :root[data-theme="dark"] .soft-button {
   color: #93c5fd;
   background: rgba(37, 99, 235, 0.18);
+}
+
+:root[data-theme="dark"] .selection-toolbar .ghost-button,
+.selection-toolbar .ghost-button {
+  color: white;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  border: none;
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.24);
+}
+
+:root[data-theme="dark"] .selection-toolbar .ghost-button:hover,
+.selection-toolbar .ghost-button:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.3);
 }
 
 :root[data-theme="dark"] .danger-button,
@@ -1644,6 +1669,45 @@ textarea:focus {
   gap: 12px;
 }
 
+.settings-notification-layout {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(280px, 1.2fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.settings-notification-group {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(37, 99, 235, 0.06);
+  align-content: start;
+}
+
+.settings-subtitle {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.compact-toggle-list {
+  display: grid;
+  gap: 6px;
+}
+
+.compact-toggle-list .settings-toggle-row {
+  min-height: 42px;
+  padding-bottom: 7px;
+}
+
+.settings-notification-section .settings-section-actions {
+  align-self: end;
+}
+
 .settings-info-row,
 .settings-toggle-row {
   display: flex;
@@ -1723,12 +1787,13 @@ textarea:focus {
 
   .settings-shortcuts-section,
   .settings-notification-section {
-    min-height: 396px;
-    height: 396px;
+    min-height: 540px;
+    height: 540px;
   }
 
   .settings-notification-section {
-    align-content: space-between;
+    grid-template-rows: auto 1fr auto;
+    align-content: stretch;
   }
 
   .settings-password-section .form-grid-3,
@@ -1869,6 +1934,10 @@ body[data-density="compact"] .settings-card {
 
   .settings-dashboard-grid {
     gap: 18px;
+  }
+
+  .settings-notification-layout {
+    grid-template-columns: 1fr;
   }
 
   .settings-column {

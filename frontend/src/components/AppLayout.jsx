@@ -1,15 +1,17 @@
 import {
+    ArrowLeftRight,
     BarChart3,
+    Bell,
+    BookCopy,
     BookOpen,
-    Boxes,
+    ClipboardList,
     CreditCard,
     Home,
     Library,
     MessageSquare,
-    RefreshCcw,
-    RotateCcw,
     Settings,
     ShieldCheck,
+    UserCog,
     UserRound,
     UsersRound
 } from "lucide-react";
@@ -21,10 +23,10 @@ import { isAdmin } from "../utils/roleUtils";
 const staffMenu = [
     { to: "/", label: "Tổng quan", icon: Home },
     { to: "/books", label: "Đầu sách", icon: BookOpen },
-    { to: "/book-copies", label: "Cuốn sách", icon: Boxes },
+    { to: "/book-copies", label: "Cuốn sách", icon: BookCopy },
     { to: "/readers", label: "Độc giả", icon: UsersRound },
-    { to: "/staff/loans", label: "Mượn sách", icon: RefreshCcw },
-    { to: "/staff/returns", label: "Trả sách", icon: RotateCcw },
+    { to: "/staff/loans", label: "Mượn sách", icon: ArrowLeftRight },
+    { to: "/staff/returns", label: "Trả sách", icon: ClipboardList },
     { to: "/staff/payments", label: "Thu tiền", icon: CreditCard },
     { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
     { to: "/settings", label: "Cài đặt", icon: Settings }
@@ -32,9 +34,9 @@ const staffMenu = [
 
 const adminExtraMenu = [
     { to: "/admin/reports", label: "Báo cáo hệ thống", icon: BarChart3 },
-    { to: "/admin/rules", label: "Quy định hệ thống", icon: Settings },
-    { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
-    { to: "/admin/librarians", label: "Tài khoản thủ thư", icon: ShieldCheck }
+    { to: "/admin/rules", label: "Quy định hệ thống", icon: ShieldCheck },
+    { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: Bell },
+    { to: "/admin/librarians", label: "Tài khoản thủ thư", icon: UserCog }
 ];
 
 export default function AppLayout() {

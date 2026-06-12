@@ -32,8 +32,21 @@ const defaultPreferences = {
 const defaultNotificationSettings = {
     inApp: true,
     browser: false,
-    email: false
+    email: false,
+    loanReminders: true,
+    debtAndFineAlerts: true,
+    reservationAlerts: true,
+    membershipAlerts: true,
+    accountStatusAlerts: true
 };
+
+const notificationCoverageChecks = [
+    { key: "loanReminders", events: ["due_soon", "overdue"] },
+    { key: "debtAndFineAlerts", events: ["fine_created"] },
+    { key: "reservationAlerts", events: ["reservation_ready"] },
+    { key: "membershipAlerts", events: ["membership_success", "membership_expiring"] },
+    { key: "accountStatusAlerts", events: ["account_status_changed"] }
+];
 
 export default function AccountSettingsContent({ portal = "staff" }) {
     const { user, logout, refreshUser } = useAuth();
@@ -245,6 +258,15 @@ export default function AccountSettingsContent({ portal = "staff" }) {
     async function testNotifications() {
         if (!notifications.inApp && !notifications.browser && !notifications.email) {
             toast.error("Vui lòng bật ít nhất một kênh thông báo trước khi kiểm tra");
+            return;
+        }
+
+        const disabledCoverage = notificationCoverageChecks
+            .filter((check) => !notifications[check.key])
+            .flatMap((check) => check.events);
+
+        if (disabledCoverage.length === notificationCoverageChecks.flatMap((check) => check.events).length) {
+            toast.error("Vui lòng bật ít nhất một nhóm nội dung thông báo");
             return;
         }
 
@@ -502,22 +524,58 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                             </div>
                         </div>
 
-                        <div className="settings-toggle-list">
-                            <ToggleRow
-                                label="Thông báo trong ứng dụng"
-                                checked={notifications.inApp}
-                                onChange={(checked) => updateNotification("inApp", checked)}
-                            />
-                            <ToggleRow
-                                label="Thông báo trình duyệt"
-                                checked={notifications.browser}
-                                onChange={(checked) => updateNotification("browser", checked)}
-                            />
-                            <ToggleRow
-                                label="Nhận email khi có thay đổi quan trọng"
-                                checked={notifications.email}
-                                onChange={(checked) => updateNotification("email", checked)}
-                            />
+                        <div className="settings-notification-layout">
+                            <div className="settings-notification-group">
+                                <p className="settings-subtitle">Kênh nhận</p>
+                                <div className="settings-toggle-list compact-toggle-list">
+                                    <ToggleRow
+                                        label="Trong ứng dụng"
+                                        checked={notifications.inApp}
+                                        onChange={(checked) => updateNotification("inApp", checked)}
+                                    />
+                                    <ToggleRow
+                                        label="Trình duyệt"
+                                        checked={notifications.browser}
+                                        onChange={(checked) => updateNotification("browser", checked)}
+                                    />
+                                    <ToggleRow
+                                        label="Email quan trọng"
+                                        checked={notifications.email}
+                                        onChange={(checked) => updateNotification("email", checked)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="settings-notification-group">
+                                <p className="settings-subtitle">Nội dung muốn nhận</p>
+                                <div className="settings-toggle-list compact-toggle-list">
+                                    <ToggleRow
+                                        label="Nhắc hạn trả và quá hạn"
+                                        checked={notifications.loanReminders}
+                                        onChange={(checked) => updateNotification("loanReminders", checked)}
+                                    />
+                                    <ToggleRow
+                                        label="Phát sinh tiền phạt"
+                                        checked={notifications.debtAndFineAlerts}
+                                        onChange={(checked) => updateNotification("debtAndFineAlerts", checked)}
+                                    />
+                                    <ToggleRow
+                                        label="Sách đặt trước đã có"
+                                        checked={notifications.reservationAlerts}
+                                        onChange={(checked) => updateNotification("reservationAlerts", checked)}
+                                    />
+                                    <ToggleRow
+                                        label="Gói thành viên"
+                                        checked={notifications.membershipAlerts}
+                                        onChange={(checked) => updateNotification("membershipAlerts", checked)}
+                                    />
+                                    <ToggleRow
+                                        label="Trạng thái tài khoản hoặc thẻ"
+                                        checked={notifications.accountStatusAlerts}
+                                        onChange={(checked) => updateNotification("accountStatusAlerts", checked)}
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div className="settings-section-actions">
