@@ -1,4 +1,4 @@
-import { RotateCcw, Search } from "lucide-react";
+import { Check, RotateCcw, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import ReaderBookCard from "../../components/reader/ReaderBookCard";
@@ -195,19 +195,22 @@ export default function ReaderBooksPage() {
                     <option value="available">Còn sách trước</option>
                 </select>
 
-                <label className="reader-check-filter">
-                    <input
-                        type="checkbox"
-                        checked={filters.onlyAvailable}
-                        onChange={(e) => updateFilter("onlyAvailable", e.target.checked)}
-                    />
-                    Chỉ sách còn có thể mượn
-                </label>
+                <div className="reader-filter-actions">
+                    <button
+                        type="button"
+                        className={`reader-availability-toggle ${filters.onlyAvailable ? "is-active" : ""}`}
+                        aria-pressed={filters.onlyAvailable}
+                        onClick={() => updateFilter("onlyAvailable", !filters.onlyAvailable)}
+                    >
+                        <Check size={16} />
+                        Chỉ sách còn có thể mượn
+                    </button>
 
-                <button type="button" className="reader-secondary-button" onClick={resetFilters}>
-                    <RotateCcw size={16} />
-                    Đặt lại bộ lọc
-                </button>
+                    <button type="button" className="reader-secondary-button" onClick={resetFilters}>
+                        <RotateCcw size={16} />
+                        Đặt lại bộ lọc
+                    </button>
+                </div>
             </div>
 
             {!loading && !error && (
