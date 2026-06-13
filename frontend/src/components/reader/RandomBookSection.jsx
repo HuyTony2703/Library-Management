@@ -53,11 +53,14 @@ export default function RandomBookSection({ limit = 12 }) {
     const toast = useToast();
     const navigate = useNavigate();
     const trackRef = useRef(null);
-    const scrollSnapshotRef = useRef(null);
 
     const [activeType, setActiveType] = useState(recommendationTypes[0].type);
     const [booksByType, setBooksByType] = useState({});
     const [loadingKey, setLoadingKey] = useState("");
+    const [canScrollPrev, setCanScrollPrev] = useState(false);
+    const [canScrollNext, setCanScrollNext] = useState(false);
+    const [isPaging, setIsPaging] = useState(false);
+    const [pagingDirection, setPagingDirection] = useState("");
 
     const activeMeta = recommendationTypes.find((item) => item.type === activeType) ?? recommendationTypes[0];
     const activeCacheKey = getCacheKey(activeType, limit);
@@ -86,24 +89,26 @@ export default function RandomBookSection({ limit = 12 }) {
         }
     }
 
-    function preservePageScroll() {
-        scrollSnapshotRef.current = window.scrollY;
-
-        window.requestAnimationFrame(() => {
-            if (scrollSnapshotRef.current !== null) {
-                window.scrollTo({ top: scrollSnapshotRef.current, left: window.scrollX, behavior: "auto" });
-            }
-        });
-    }
-
     function handleSelectType(type) {
         if (type === activeType) {
             return;
         }
 
-        preservePageScroll();
         setActiveType(type);
         trackRef.current?.scrollTo({ left: 0, behavior: "smooth" });
+    }
+
+    function updateScrollControls() {
+        const track = trackRef.current;
+        if (!track) {
+            setCanScrollPrev(false);
+            setCanScrollNext(false);
+            return;
+        }
+
+        const maxScrollLeft = track.scrollWidth - track.clientWidth;
+        setCanScrollPrev(track.scrollLeft > 4);
+        setCanScrollNext(track.scrollLeft < maxScrollLeft - 4);
     }
 
     function scrollBooks(direction) {
@@ -112,10 +117,30 @@ export default function RandomBookSection({ limit = 12 }) {
             return;
         }
 
-        track.scrollBy({
-            left: direction * Math.max(track.clientWidth - 48, 280),
+        updateScrollControls();
+
+        const maxScrollLeft = track.scrollWidth - track.clientWidth;
+        if (maxScrollLeft <= 4) {
+            return;
+        }
+
+        const pageSize = Math.max(track.clientWidth - 48, 280);
+        const targetLeft = direction > 0
+            ? (canScrollNext ? track.scrollLeft + pageSize : 0)
+            : (canScrollPrev ? track.scrollLeft - pageSize : maxScrollLeft);
+
+        setPagingDirection(direction > 0 ? "next" : "prev");
+        setIsPaging(true);
+        track.scrollTo({
+            left: targetLeft,
             behavior: "smooth"
         });
+
+        window.setTimeout(() => {
+            setIsPaging(false);
+            setPagingDirection("");
+            updateScrollControls();
+        }, 680);
     }
 
     useEffect(() => {
@@ -123,15 +148,68 @@ export default function RandomBookSection({ limit = 12 }) {
     }, [activeType, limit]);
 
     useEffect(() => {
-        if (scrollSnapshotRef.current === null) {
-            return;
+        let isCancelled = false;
+
+        async function preloadRecommendationTypes() {
+            const inactiveTypes = recommendationTypes
+                .map((item) => item.type)
+                .filter((type) => type !== recommendationTypes[0].type);
+
+            const results = await Promise.allSettled(
+                inactiveTypes.map(async (type) => ({
+                    cacheKey: getCacheKey(type, limit),
+                    books: await readerApi.getRecommendations({ type, limit })
+                }))
+            );
+
+            if (isCancelled) {
+                return;
+            }
+
+            setBooksByType((current) => {
+                const next = { ...current };
+
+                results.forEach((result) => {
+                    if (result.status !== "fulfilled" || next[result.value.cacheKey]) {
+                        return;
+                    }
+
+                    next[result.value.cacheKey] = Array.isArray(result.value.books)
+                        ? result.value.books
+                        : [];
+                });
+
+                return next;
+            });
         }
 
-        window.requestAnimationFrame(() => {
-            window.scrollTo({ top: scrollSnapshotRef.current, left: window.scrollX, behavior: "auto" });
-            scrollSnapshotRef.current = null;
-        });
-    }, [books, loading]);
+        preloadRecommendationTypes();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [limit]);
+
+    useEffect(() => {
+        const track = trackRef.current;
+        if (!track) {
+            updateScrollControls();
+            return undefined;
+        }
+
+        updateScrollControls();
+
+        const handleScroll = () => updateScrollControls();
+        const handleResize = () => updateScrollControls();
+
+        track.addEventListener("scroll", handleScroll, { passive: true });
+        window.addEventListener("resize", handleResize);
+
+        return () => {
+            track.removeEventListener("scroll", handleScroll);
+            window.removeEventListener("resize", handleResize);
+        };
+    }, [books, activeType]);
 
     return (
         <section className="random-book-section">
@@ -189,12 +267,13 @@ export default function RandomBookSection({ limit = 12 }) {
                         type="button"
                         className="reader-icon-button recommendation-arrow"
                         onClick={() => scrollBooks(-1)}
+                        disabled={!canScrollPrev && !canScrollNext}
                         title="Sách trước"
                     >
                         <ChevronLeft size={19} />
                     </button>
 
-                    <div className="recommendation-track" ref={trackRef}>
+                    <div className={`recommendation-track ${isPaging ? `is-paging is-paging-${pagingDirection}` : ""}`} ref={trackRef}>
                         {books.map((book) => (
                             <article
                                 key={book.maDauSach}
@@ -236,6 +315,7 @@ export default function RandomBookSection({ limit = 12 }) {
                         type="button"
                         className="reader-icon-button recommendation-arrow"
                         onClick={() => scrollBooks(1)}
+                        disabled={!canScrollPrev && !canScrollNext}
                         title="Sách tiếp theo"
                     >
                         <ChevronRight size={19} />
