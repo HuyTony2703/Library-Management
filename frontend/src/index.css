@@ -179,7 +179,7 @@ button {
   inset: 0 auto 0 0;
   width: 286px;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden;
   z-index: 50;
   background: #0f172a;
   color: white;
@@ -190,6 +190,7 @@ button {
 }
 
 .brand {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -222,6 +223,38 @@ button {
   gap: 8px;
 }
 
+.sidebar > .nav-menu:not(.nav-menu-bottom) {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.28) transparent;
+}
+
+.sidebar > .nav-menu:not(.nav-menu-bottom)::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar > .nav-menu:not(.nav-menu-bottom)::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar > .nav-menu:not(.nav-menu-bottom)::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.28);
+  border-radius: 999px;
+}
+
+.sidebar > .nav-menu:not(.nav-menu-bottom):hover::-webkit-scrollbar-thumb,
+.sidebar > .nav-menu:not(.nav-menu-bottom):focus-within::-webkit-scrollbar-thumb {
+  background: rgba(203, 213, 225, 0.48);
+}
+
+.nav-menu-bottom {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
 .nav-menu a {
   display: flex;
   align-items: center;
@@ -240,7 +273,8 @@ button {
 }
 
 .sidebar-user {
-  margin-top: auto;
+  flex: 0 0 auto;
+  margin-top: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -449,6 +483,49 @@ button {
   justify-content: flex-end;
   gap: 10px;
   flex-wrap: nowrap;
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.guide-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.guide-card-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: white;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+}
+
+.guide-card h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.guide-card ol {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.guide-card li + li {
+  margin-top: 7px;
 }
 
 .chart-box {
@@ -679,6 +756,15 @@ textarea {
   outline: none;
   background: rgba(255, 255, 255, 0.96);
   color: var(--text);
+}
+
+select {
+  appearance: none;
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
 }
 
 input.read-only-field,
@@ -1080,6 +1166,13 @@ textarea:focus {
   border-color: var(--line);
 }
 
+:root[data-theme="dark"] select {
+  background-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+}
+
 :root[data-theme="dark"] .soft-button {
   color: #93c5fd;
   background: rgba(37, 99, 235, 0.18);
@@ -1255,6 +1348,7 @@ textarea:focus {
 
 @media (max-width: 1100px) {
   .stat-grid,
+  .guide-grid,
   .grid-2,
   .form-layout {
     grid-template-columns: 1fr;
@@ -1280,6 +1374,7 @@ textarea:focus {
     z-index: 20;
     width: auto;
     height: auto;
+    overflow: visible;
   }
 
   .workspace {
@@ -1289,6 +1384,15 @@ textarea:focus {
   .nav-menu {
     display: flex;
     overflow-x: auto;
+  }
+
+  .sidebar > .nav-menu:not(.nav-menu-bottom) {
+    overflow-y: visible;
+    padding-right: 0;
+  }
+
+  .nav-menu-bottom {
+    margin-top: 0;
   }
 
   .nav-menu a {
@@ -1585,6 +1689,11 @@ textarea:focus {
   background: rgba(255, 255, 255, 0.99);
   color: var(--text);
   box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.03);
+}
+
+.settings-section select {
+  padding-right: 44px;
+  background-position: right 14px center;
 }
 
 .password-input-wrap {

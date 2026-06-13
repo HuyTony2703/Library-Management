@@ -1,9 +1,9 @@
 import {
     ArrowLeftRight,
     BarChart3,
-    Bell,
     BookCopy,
     BookOpen,
+    CircleHelp,
     ClipboardList,
     CreditCard,
     Home,
@@ -29,24 +29,28 @@ const staffMenu = [
     { to: "/staff/returns", label: "Trả sách", icon: ClipboardList },
     { to: "/staff/payments", label: "Thu tiền", icon: CreditCard },
     { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
+    { to: "/guide", label: "Hướng dẫn sử dụng", icon: CircleHelp },
     { to: "/settings", label: "Cài đặt", icon: Settings }
 ];
 
 const adminExtraMenu = [
     { to: "/admin/reports", label: "Báo cáo hệ thống", icon: BarChart3 },
     { to: "/admin/rules", label: "Quy định hệ thống", icon: ShieldCheck },
-    { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: Bell },
-    { to: "/admin/librarians", label: "Tài khoản thủ thư", icon: UserCog }
+    { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
+    { to: "/admin/librarians", label: "Tài khoản thủ thư", icon: UserCog },
+    { to: "/admin/guide", label: "Hướng dẫn sử dụng", icon: CircleHelp }
 ];
 
 export default function AppLayout() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const displayName = getUserDisplayName(user);
-    const menu = isAdmin(user)
+    const adminUser = isAdmin(user);
+    const menu = adminUser
         ? [
-            ...staffMenu.filter((item) => item.to !== "/reports" && item.to !== "/admin/comments"),
-            ...adminExtraMenu
+            ...staffMenu.filter((item) => !["/admin/comments", "/guide", "/settings"].includes(item.to)),
+            ...adminExtraMenu,
+            { to: "/settings", label: "Cài đặt", icon: Settings }
         ]
         : staffMenu;
 
@@ -77,18 +81,7 @@ export default function AppLayout() {
                     </div>
                 </div>
 
-                <nav className="nav-menu">
-                    {menu.map((item) => {
-                        const Icon = item.icon;
-
-                        return (
-                            <NavLink key={item.to} to={item.to} end={item.to === "/"}>
-                                <Icon size={18} />
-                                <span>{item.label}</span>
-                            </NavLink>
-                        );
-                    })}
-                </nav>
+                <NavMenu items={menu} />
 
                 <button type="button" className="sidebar-user sidebar-user-button" onClick={goToProfileSettings}>
                     <div className="avatar">
@@ -102,19 +95,28 @@ export default function AppLayout() {
             </aside>
 
             <main className="workspace">
-                <header className="topbar">
-                    <div className="topbar-actions">
-                        <button type="button" className="user-chip user-chip-button" onClick={goToProfileSettings}>
-                            {displayName}
-                        </button>
-                    </div>
-                </header>
-
                 <section className="page-container">
                     <Outlet />
                 </section>
             </main>
         </div>
+    );
+}
+
+function NavMenu({ items, className = "" }) {
+    return (
+        <nav className={`nav-menu ${className}`.trim()}>
+            {items.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                    <NavLink key={item.to} to={item.to} end={item.to === "/"}>
+                        <Icon size={18} />
+                        <span>{item.label}</span>
+                    </NavLink>
+                );
+            })}
+        </nav>
     );
 }
 
