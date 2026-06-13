@@ -90,6 +90,10 @@ export default function ReadersPage() {
         );
     }, [data, search]);
 
+    const membershipPlanLabelById = useMemo(() => {
+        return Object.fromEntries(membershipPlans.map((option) => [option.value, option.label]));
+    }, [membershipPlans]);
+
     useEffect(() => {
         setSelectedIds((prev) => prev.filter((id) => data.some((row) => row.maDocGia === id)));
     }, [data]);
@@ -168,12 +172,23 @@ export default function ReadersPage() {
             const payload = buildPayload();
 
             if (editingReader) {
-                await libraryApi.updateReader(editingReader.maDocGia, payload);
+                const membershipChanged = (editingReader.maGoiThanhVien || "") !== (payload.maGoiThanhVien || "");
+                const profileChanged = hasProfileChanged(editingReader, payload);
+
+                if (profileChanged) {
+                    await libraryApi.updateReader(editingReader.maDocGia, payload);
+                }
+
+                if (membershipChanged) {
+                    await libraryApi.updateReaderMembership(editingReader.maDocGia, {
+                        maGoiThanhVien: payload.maGoiThanhVien
+                    });
+                }
             } else {
                 await libraryApi.createReader(payload);
             }
 
-            toast.success(editingReader ? "Cập nhật độc giả thành công" : "Thêm độc giả thành công");
+            toast.success(editingReader ? "Cập nhật độc giả và gói thành viên thành công" : "Thêm độc giả thành công");
             closeModal();
             await load();
         } catch (err) {
@@ -414,6 +429,12 @@ export default function ReadersPage() {
                     { key: "hoTen", title: "Họ tên" },
                     { key: "email", title: "Email" },
                     { key: "soDienThoai", title: "SĐT" },
+                    {
+                        key: "maGoiThanhVien",
+                        title: "Gói",
+                        render: (row) => membershipPlanLabelById[row.maGoiThanhVien] || row.maGoiThanhVien || "Chưa có"
+                    },
+                    { key: "ngayHetHanGoi", title: "Hạn gói", render: (row) => formatDate(row.ngayHetHanGoi) },
                     { key: "ngayHetHanThe", title: "Hạn thẻ", render: (row) => formatDate(row.ngayHetHanThe) },
                     { key: "trangThai", title: "Trạng thái", render: (row) => <StatusBadge value={row.trangThai} /> },
                     {
@@ -456,4 +477,15 @@ function buildDefaultForm() {
         soDienThoai: "0922222999",
         ngayLapThe: new Date().toISOString().slice(0, 10)
     };
+}
+
+function hasProfileChanged(reader, payload) {
+    return [
+        "maNhomDocGia",
+        "hoTen",
+        "ngaySinh",
+        "diaChi",
+        "email",
+        "soDienThoai"
+    ].some((field) => (reader[field] || "") !== (payload[field] || ""));
 }

@@ -57,6 +57,11 @@ export const libraryApi = {
             method: "PUT",
             body: JSON.stringify(payload)
         }),
+    updateReaderMembership: (id, payload) =>
+        apiFetch(`/api/readers/${id}/membership`, {
+            method: "PATCH",
+            body: JSON.stringify(payload)
+        }),
     deleteReader: (id, mode = "soft") =>
         apiFetch(`/api/readers/${id}?mode=${encodeURIComponent(mode)}`, {
             method: "DELETE"
