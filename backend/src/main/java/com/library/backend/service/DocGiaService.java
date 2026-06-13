@@ -21,6 +21,7 @@ public class DocGiaService {
 
     private static final String VAI_TRO_DOC_GIA = "VT_DOC_GIA";
     private static final String GOI_MAC_DINH = "GOI_THUONG";
+    private static final String TRANG_THAI_GOI_DANG_DUNG = "Đang sử dụng";
 
     private final DocGiaRepository docGiaRepository;
     private final TaiKhoanRepository taiKhoanRepository;
@@ -184,14 +185,30 @@ public class DocGiaService {
         DocGia updated = docGiaRepository.save(docGia);
 
         if (maGoi != null) {
-            jdbcTemplate.update(
-                    "UPDATE LICHSUGOITHANHVIEN SET MaGoiThanhVien = ? WHERE MaDocGia = ? AND TrangThai = N'Đang sử dụng'",
-                    maGoi,
-                    maDocGia
-            );
+            syncMembershipPlan(maDocGia, request.getMaNhomDocGia(), maGoi);
         }
 
         return toResponse(updated);
+    }
+
+    @Transactional
+    public DocGiaResponse updateMembershipPlan(String maDocGia, String maGoiThanhVien) {
+        DocGia docGia = docGiaRepository.findById(maDocGia)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy độc giả"));
+
+        String maGoi = maGoiThanhVien == null ? "" : maGoiThanhVien.trim();
+
+        if (maGoi.isBlank()) {
+            throw new RuntimeException("Mã gói thành viên không được để trống");
+        }
+
+        if (!goiThanhVienRepository.existsById(maGoi)) {
+            throw new RuntimeException("Gói thành viên không tồn tại");
+        }
+
+        syncMembershipPlan(maDocGia, docGia.getMaNhomDocGia(), maGoi);
+
+        return toResponse(docGia);
     }
 
     @Transactional
@@ -233,15 +250,9 @@ public class DocGiaService {
                 .map(TaiKhoan::getTenDangNhap)
                 .orElse(null);
 
-        LichSuGoiThanhVien goiHienTai = lichSuGoiThanhVienRepository
-                .findFirstByMaDocGiaAndTrangThaiOrderByNgayBatDauDesc(
-                        docGia.getMaDocGia(),
-                        "Đang sử dụng"
-                )
-                .orElse(null);
-
-        String maGoi = goiHienTai == null ? null : goiHienTai.getMaGoiThanhVien();
-        LocalDate ngayHetHanGoi = goiHienTai == null ? null : goiHienTai.getNgayKetThuc();
+        CurrentMembership goiHienTai = getCurrentMembership(docGia.getMaDocGia());
+        String maGoi = goiHienTai == null ? null : goiHienTai.maGoiThanhVien();
+        LocalDate ngayHetHanGoi = goiHienTai == null ? null : goiHienTai.ngayKetThuc();
 
         return new DocGiaResponse(
                 docGia.getMaDocGia(),
@@ -310,6 +321,82 @@ public class DocGiaService {
         return result.get(0);
     }
 
+    private void syncMembershipPlan(String maDocGia, String maNhomDocGia, String maGoiThanhVienMoi) {
+        CurrentMembership current = getCurrentMembership(maDocGia);
+        LocalDate ngayBatDau = LocalDate.now();
+        int thoiHanGoiTheoNgay = getThoiHanGoiTheoNgay(maGoiThanhVienMoi, maNhomDocGia);
+        LocalDate ngayKetThuc = ngayBatDau.plusDays(thoiHanGoiTheoNgay);
+
+        if (current != null && maGoiThanhVienMoi.equals(current.maGoiThanhVien())) {
+            return;
+        }
+
+        int updatedRows = updateExistingMembership(maDocGia, maGoiThanhVienMoi, ngayBatDau, ngayKetThuc);
+
+        if (updatedRows == 0) {
+            throw new RuntimeException("Độc giả chưa có lịch sử gói thành viên để cập nhật");
+        }
+    }
+
+    private int updateExistingMembership(
+            String maDocGia,
+            String maGoiThanhVienMoi,
+            LocalDate ngayBatDau,
+            LocalDate ngayKetThuc
+    ) {
+        return jdbcTemplate.update(
+                """
+                WITH GoiCanCapNhat AS (
+                    SELECT TOP 1 *
+                    FROM LICHSUGOITHANHVIEN
+                    WHERE MaDocGia = ?
+                    ORDER BY
+                        CASE
+                            WHEN TrangThai = N'Đang sử dụng'
+                             AND CAST(GETDATE() AS DATE) BETWEEN NgayBatDau AND NgayKetThuc THEN 0
+                            WHEN TrangThai = N'Đang sử dụng' THEN 1
+                            ELSE 2
+                        END,
+                        NgayKetThuc DESC,
+                        NgayBatDau DESC
+                )
+                UPDATE GoiCanCapNhat
+                SET MaGoiThanhVien = ?,
+                    NgayBatDau = ?,
+                    NgayKetThuc = ?,
+                    TrangThai = N'Đang sử dụng',
+                    GhiChu = N'Thủ thư/admin cập nhật gói thành viên cho độc giả'
+                """,
+                maDocGia,
+                maGoiThanhVienMoi,
+                ngayBatDau,
+                ngayKetThuc
+        );
+    }
+
+    private CurrentMembership getCurrentMembership(String maDocGia) {
+        String sql = """
+                SELECT TOP 1 MaGoiThanhVien, NgayKetThuc
+                FROM LICHSUGOITHANHVIEN
+                WHERE MaDocGia = ?
+                  AND TrangThai = ?
+                  AND CAST(GETDATE() AS DATE) BETWEEN NgayBatDau AND NgayKetThuc
+                ORDER BY NgayKetThuc DESC, NgayBatDau DESC
+                """;
+
+        List<CurrentMembership> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> new CurrentMembership(
+                        rs.getString("MaGoiThanhVien"),
+                        rs.getDate("NgayKetThuc").toLocalDate()
+                ),
+                maDocGia,
+                TRANG_THAI_GOI_DANG_DUNG
+        );
+
+        return result.isEmpty() ? null : result.get(0);
+    }
+
     private static class ThamSoDocGia {
         private final int tuoiToiThieu;
         private final int tuoiToiDa;
@@ -320,5 +407,8 @@ public class DocGiaService {
             this.tuoiToiDa = tuoiToiDa;
             this.thoiHanTheTheoThang = thoiHanTheTheoThang;
         }
+    }
+
+    private record CurrentMembership(String maGoiThanhVien, LocalDate ngayKetThuc) {
     }
 }

@@ -2,6 +2,7 @@ package com.library.backend.controller;
 
 import com.library.backend.dto.DocGiaRequest;
 import com.library.backend.dto.DocGiaResponse;
+import com.library.backend.dto.ReaderMembershipUpdateRequest;
 import com.library.backend.service.DocGiaService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +40,14 @@ public class DocGiaController {
             @Valid @RequestBody DocGiaRequest request
     ) {
         return docGiaService.update(maDocGia, request);
+    }
+
+    @PatchMapping("/{maDocGia}/membership")
+    public DocGiaResponse updateMembershipPlan(
+            @PathVariable String maDocGia,
+            @Valid @RequestBody ReaderMembershipUpdateRequest request
+    ) {
+        return docGiaService.updateMembershipPlan(maDocGia, request.getMaGoiThanhVien());
     }
 
     @DeleteMapping("/{maDocGia}")
