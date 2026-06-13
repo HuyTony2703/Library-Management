@@ -7,6 +7,7 @@ import StatCard from "../components/StatCard";
 import { libraryApi } from "../api/libraryApi";
 import { useToast } from "../components/ToastProvider";
 import { useAuth } from "../context/AuthContext";
+import { chartAxisTick, chartTheme, chartTooltipItemStyle, chartTooltipLabelStyle, chartTooltipStyle } from "../utils/chartTheme";
 
 export default function DashboardPage() {
     const toast = useToast();
@@ -92,11 +93,16 @@ export default function DashboardPage() {
                         <div className="chart-box">
                             <ResponsiveContainer width="100%" height={260}>
                                 <BarChart data={chartData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="name" />
-                                    <YAxis allowDecimals={false} />
-                                    <Tooltip />
-                                    <Bar dataKey="value" radius={[8, 8, 0, 0]} />
+                                    <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="name" tick={chartAxisTick} axisLine={{ stroke: chartTheme.grid }} tickLine={{ stroke: chartTheme.grid }} />
+                                    <YAxis allowDecimals={false} tick={chartAxisTick} axisLine={{ stroke: chartTheme.grid }} tickLine={{ stroke: chartTheme.grid }} />
+                                    <Tooltip
+                                        contentStyle={chartTooltipStyle}
+                                        labelStyle={chartTooltipLabelStyle}
+                                        itemStyle={chartTooltipItemStyle}
+                                        cursor={{ fill: chartTheme.hover }}
+                                    />
+                                    <Bar dataKey="value" fill={chartTheme.bar} radius={[8, 8, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>

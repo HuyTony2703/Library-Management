@@ -115,7 +115,7 @@ const adminGuide = [
         title: "Tài khoản thủ thư",
         steps: [
             "Vào Tài khoản thủ thư để tạo, cập nhật, khóa hoặc đặt lại mật khẩu cho nhân viên.",
-            "Gán đúng thông tin nhân viên và trạng thái tài khoản trước khi bàn giao đăng nhập.",
+            "Gắn đúng thông tin nhân viên và trạng thái tài khoản trước khi bàn giao đăng nhập.",
             "Thu hồi hoặc khóa tài khoản khi nhân viên không còn phụ trách hệ thống."
         ]
     }

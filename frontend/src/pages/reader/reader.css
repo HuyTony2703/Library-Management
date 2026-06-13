@@ -515,6 +515,31 @@
     background: white;
     color: #0f172a;
     font: inherit;
+    color-scheme: light;
+}
+
+.reader-filter-panel input[type="number"],
+.reader-form-row input[type="number"] {
+    padding-right: 11px;
+}
+
+.reader-filter-panel input[type="number"]::-webkit-inner-spin-button,
+.reader-filter-panel input[type="number"]::-webkit-outer-spin-button,
+.reader-form-row input[type="number"]::-webkit-inner-spin-button,
+.reader-form-row input[type="number"]::-webkit-outer-spin-button {
+    opacity: 0;
+    transition: opacity 0.16s ease;
+}
+
+.reader-filter-panel input[type="number"]:hover::-webkit-inner-spin-button,
+.reader-filter-panel input[type="number"]:hover::-webkit-outer-spin-button,
+.reader-filter-panel input[type="number"]:focus::-webkit-inner-spin-button,
+.reader-filter-panel input[type="number"]:focus::-webkit-outer-spin-button,
+.reader-form-row input[type="number"]:hover::-webkit-inner-spin-button,
+.reader-form-row input[type="number"]:hover::-webkit-outer-spin-button,
+.reader-form-row input[type="number"]:focus::-webkit-inner-spin-button,
+.reader-form-row input[type="number"]:focus::-webkit-outer-spin-button {
+    opacity: 0.72;
 }
 
 .reader-filter-panel > input,
@@ -2705,6 +2730,25 @@
     background: #0b1220;
     color: #f8fafc;
     border-color: rgba(148, 163, 184, 0.36);
+    color-scheme: dark;
+}
+
+:root[data-theme="dark"] .reader-filter-panel input[type="number"]::-webkit-inner-spin-button,
+:root[data-theme="dark"] .reader-filter-panel input[type="number"]::-webkit-outer-spin-button,
+:root[data-theme="dark"] .reader-form-row input[type="number"]::-webkit-inner-spin-button,
+:root[data-theme="dark"] .reader-form-row input[type="number"]::-webkit-outer-spin-button {
+    opacity: 0;
+}
+
+:root[data-theme="dark"] .reader-filter-panel input[type="number"]:hover::-webkit-inner-spin-button,
+:root[data-theme="dark"] .reader-filter-panel input[type="number"]:hover::-webkit-outer-spin-button,
+:root[data-theme="dark"] .reader-filter-panel input[type="number"]:focus::-webkit-inner-spin-button,
+:root[data-theme="dark"] .reader-filter-panel input[type="number"]:focus::-webkit-outer-spin-button,
+:root[data-theme="dark"] .reader-form-row input[type="number"]:hover::-webkit-inner-spin-button,
+:root[data-theme="dark"] .reader-form-row input[type="number"]:hover::-webkit-outer-spin-button,
+:root[data-theme="dark"] .reader-form-row input[type="number"]:focus::-webkit-inner-spin-button,
+:root[data-theme="dark"] .reader-form-row input[type="number"]:focus::-webkit-outer-spin-button {
+    opacity: 0.68;
 }
 
 :root[data-theme="dark"] .reader-availability-toggle.is-active {

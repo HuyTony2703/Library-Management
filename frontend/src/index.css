@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --bg: #eef2ff;
   --surface: rgba(255, 255, 255, 0.86);
   --surface-solid: #ffffff;
@@ -12,9 +13,18 @@
   --bad: #dc2626;
   --shadow: 0 18px 60px rgba(15, 23, 42, 0.12);
   --radius: 22px;
+  --chart-axis: #475569;
+  --chart-grid: rgba(71, 85, 105, 0.28);
+  --chart-bar: #2563eb;
+  --chart-hover: rgba(37, 99, 235, 0.1);
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.96);
+  --chart-tooltip-border: rgba(15, 23, 42, 0.14);
+  --chart-tooltip-text: #0f172a;
+  --chart-tooltip-shadow: 0 18px 46px rgba(15, 23, 42, 0.18);
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --bg: #101827;
   --surface: rgba(15, 23, 42, 0.9);
   --surface-solid: #111827;
@@ -22,6 +32,14 @@
   --text: #e5e7eb;
   --muted: #94a3b8;
   --shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+  --chart-axis: #cbd5e1;
+  --chart-grid: rgba(203, 213, 225, 0.28);
+  --chart-bar: #60a5fa;
+  --chart-hover: rgba(96, 165, 250, 0.16);
+  --chart-tooltip-bg: rgba(15, 23, 42, 0.98);
+  --chart-tooltip-border: rgba(148, 163, 184, 0.42);
+  --chart-tooltip-text: #f8fafc;
+  --chart-tooltip-shadow: 0 22px 54px rgba(0, 0, 0, 0.42);
 }
 
 :root[data-theme="dark"] body {
@@ -532,6 +550,33 @@ button {
   height: 280px;
 }
 
+.chart-box .recharts-cartesian-axis-tick-value {
+  fill: var(--chart-axis);
+}
+
+.chart-box .recharts-cartesian-axis-line,
+.chart-box .recharts-cartesian-axis-tick-line {
+  stroke: var(--chart-grid);
+}
+
+.chart-box .recharts-cartesian-grid line {
+  stroke: var(--chart-grid);
+}
+
+.chart-box .recharts-default-tooltip {
+  background: var(--chart-tooltip-bg) !important;
+  border: 1px solid var(--chart-tooltip-border) !important;
+  border-radius: 14px !important;
+  color: var(--chart-tooltip-text) !important;
+  box-shadow: var(--chart-tooltip-shadow);
+}
+
+.chart-box .recharts-tooltip-label,
+.chart-box .recharts-tooltip-item,
+.chart-box .recharts-legend-item-text {
+  color: var(--chart-tooltip-text) !important;
+}
+
 /* Table */
 
 .table-card {
@@ -756,6 +801,24 @@ textarea {
   outline: none;
   background: rgba(255, 255, 255, 0.96);
   color: var(--text);
+  color-scheme: light;
+}
+
+input[type="number"] {
+  padding-right: 12px;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+input[type="number"]:hover::-webkit-inner-spin-button,
+input[type="number"]:hover::-webkit-outer-spin-button,
+input[type="number"]:focus::-webkit-inner-spin-button,
+input[type="number"]:focus::-webkit-outer-spin-button {
+  opacity: 0.72;
 }
 
 select {
@@ -1164,6 +1227,19 @@ textarea:focus {
   background: #111827;
   color: var(--text);
   border-color: var(--line);
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] input[type="number"]::-webkit-inner-spin-button,
+:root[data-theme="dark"] input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0;
+}
+
+:root[data-theme="dark"] input[type="number"]:hover::-webkit-inner-spin-button,
+:root[data-theme="dark"] input[type="number"]:hover::-webkit-outer-spin-button,
+:root[data-theme="dark"] input[type="number"]:focus::-webkit-inner-spin-button,
+:root[data-theme="dark"] input[type="number"]:focus::-webkit-outer-spin-button {
+  opacity: 0.68;
 }
 
 :root[data-theme="dark"] select {

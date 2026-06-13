@@ -7,6 +7,7 @@ import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import StatusBadge from "../../components/StatusBadge";
 import { useToast } from "../../components/ToastProvider";
+import { chartAxisTick, chartTheme, chartTooltipItemStyle, chartTooltipLabelStyle, chartTooltipStyle } from "../../utils/chartTheme";
 import { formatDateTime, formatMoney } from "../../utils/displayUtils";
 
 export default function AdminReportsPage() {
@@ -130,11 +131,16 @@ export default function AdminReportsPage() {
                 <div className="chart-box">
                     <ResponsiveContainer width="100%" height={280}>
                         <BarChart data={borrowByCategory}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="tenTheLoai" />
-                            <YAxis allowDecimals={false} />
-                            <Tooltip />
-                            <Bar dataKey="soLuotMuon" name="Số lượt mượn" fill="#2563eb" />
+                            <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="tenTheLoai" tick={chartAxisTick} axisLine={{ stroke: chartTheme.grid }} tickLine={{ stroke: chartTheme.grid }} />
+                            <YAxis allowDecimals={false} tick={chartAxisTick} axisLine={{ stroke: chartTheme.grid }} tickLine={{ stroke: chartTheme.grid }} />
+                            <Tooltip
+                                contentStyle={chartTooltipStyle}
+                                labelStyle={chartTooltipLabelStyle}
+                                itemStyle={chartTooltipItemStyle}
+                                cursor={{ fill: chartTheme.hover }}
+                            />
+                            <Bar dataKey="soLuotMuon" name="Số lượt mượn" fill={chartTheme.bar} radius={[8, 8, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
