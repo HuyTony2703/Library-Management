@@ -1,8 +1,6 @@
 import {
-    Bell,
     BookOpen,
     BookmarkCheck,
-    Calculator,
     CircleHelp,
     CreditCard,
     Heart,
@@ -35,19 +33,17 @@ const menuGroups = [
         ]
     },
     {
-        label: "Tài khoản",
-        items: [
-            { to: "/reader/notifications", label: "Thông báo", icon: Bell },
-            { to: "/reader/membership", label: "Gói thành viên", icon: CreditCard },
-            { to: "/reader/settings", label: "Cài đặt", icon: Settings }
-        ]
-    },
-    {
         label: "Hỗ trợ",
         items: [
             { to: "/reader/guide", label: "Hướng dẫn", icon: CircleHelp },
-            { to: "/reader/rules", label: "Quy định", icon: ShieldCheck },
-            { to: "/reader/penalty-rules", label: "Cách tính phạt", icon: Calculator }
+            { to: "/reader/rules", label: "Quy định", icon: ShieldCheck }
+        ]
+    },
+    {
+        label: "Tài khoản",
+        items: [
+            { to: "/reader/membership", label: "Gói thành viên", icon: CreditCard },
+            { to: "/reader/settings", label: "Cài đặt", icon: Settings }
         ]
     }
 ];
