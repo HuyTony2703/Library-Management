@@ -5,7 +5,6 @@ import {
     KeyRound,
     LogOut,
     MessageSquare,
-    RefreshCcw,
     RotateCcw,
     Save,
     Settings,
@@ -67,7 +66,6 @@ export default function AccountSettingsContent({ portal = "staff" }) {
     const [notifications, setNotifications] = useState(() => loadJson("library_notification_preferences", defaultNotificationSettings));
     const [savingPassword, setSavingPassword] = useState(false);
     const [savingProfile, setSavingProfile] = useState(false);
-    const [refreshingProfile, setRefreshingProfile] = useState(false);
     const [editingProfile, setEditingProfile] = useState(false);
 
     useEffect(() => {
@@ -197,34 +195,9 @@ export default function AccountSettingsContent({ portal = "staff" }) {
         }
     }
 
-    async function reloadProfile() {
-        if (!refreshUser) {
-            toast.error("Không thể làm mới thông tin tài khoản");
-            return;
-        }
-
-        setRefreshingProfile(true);
-
-        try {
-            await refreshUser();
-            setEditingProfile(false);
-            toast.success("Đã làm mới thông tin tài khoản");
-        } catch (err) {
-            toast.error(err.message || "Không làm mới được thông tin tài khoản");
-        } finally {
-            setRefreshingProfile(false);
-        }
-    }
-
     function cancelEditProfile() {
         setProfileForm(buildProfileForm(user));
         setEditingProfile(false);
-    }
-
-    function savePreferences() {
-        localStorage.setItem("library_ui_preferences", JSON.stringify(preferences));
-        applyPreferences(preferences);
-        toast.success("Đã lưu cài đặt giao diện");
     }
 
     function resetPreferences() {
@@ -412,10 +385,6 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                                     </button>
                                 </>
                             )}
-                            <button type="button" className="soft-button" onClick={reloadProfile} disabled={refreshingProfile}>
-                                <RefreshCcw size={17} />
-                                {refreshingProfile ? "Đang tải..." : "Làm mới"}
-                            </button>
                         </div>
                     </form>
 
@@ -504,10 +473,6 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                         </div>
 
                         <div className="settings-section-actions">
-                            <button type="button" className="primary-button" onClick={savePreferences}>
-                                <Save size={17} />
-                                Lưu giao diện
-                            </button>
                             <button type="button" className="soft-button" onClick={resetPreferences}>
                                 <RotateCcw size={17} />
                                 Mặc định
