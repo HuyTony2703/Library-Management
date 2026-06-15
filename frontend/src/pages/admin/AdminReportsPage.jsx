@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { RefreshCcw } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { adminApi } from "../../api/adminApi";
 import { libraryApi } from "../../api/libraryApi";
@@ -14,10 +13,8 @@ export default function AdminReportsPage() {
     const toast = useToast();
     const now = new Date();
 
-    const [filter, setFilter] = useState({
-        month: now.getMonth() + 1,
-        year: now.getFullYear()
-    });
+    const [reportMonth, setReportMonth] = useState(() => `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
+    const selectedReportPeriod = useMemo(() => parseReportMonth(reportMonth), [reportMonth]);
 
     const [overview, setOverview] = useState(null);
     const [debts, setDebts] = useState([]);
@@ -31,26 +28,16 @@ export default function AdminReportsPage() {
         return borrowByCategory.reduce((sum, item) => sum + Number(item.soLuotMuon || 0), 0);
     }, [borrowByCategory]);
 
-    function updateFilter(field, value) {
-        setFilter((prev) => ({ ...prev, [field]: Number(value) }));
-    }
-
-    async function loadReports() {
-        if (filter.month < 1 || filter.month > 12) {
-            toast.error("Tháng báo cáo phải nằm trong khoảng 1 đến 12");
-            return;
-        }
-
-        if (filter.year < 2000 || filter.year > 2100) {
-            toast.error("Năm báo cáo phải nằm trong khoảng 2000 đến 2100");
+    async function loadReports(period = selectedReportPeriod) {
+        if (!period) {
+            toast.error("Tháng báo cáo không hợp lệ.");
             return;
         }
 
         setLoading(true);
 
         try {
-            const month = filter.month;
-            const year = filter.year;
+            const { month, year } = period;
 
             const results = await Promise.allSettled([
                 loadOverviewWithFallback(month, year),
@@ -71,8 +58,6 @@ export default function AdminReportsPage() {
             const failedCount = results.filter((result) => result.status === "rejected").length;
             if (failedCount > 0) {
                 toast.error(`Có ${failedCount} phần báo cáo tải lỗi. Các phần còn lại vẫn được hiển thị.`);
-            } else {
-                toast.success("Đã tải báo cáo");
             }
         } catch (err) {
             toast.error(err.message || "Không tải được báo cáo");
@@ -82,8 +67,10 @@ export default function AdminReportsPage() {
     }
 
     useEffect(() => {
-        loadReports();
-    }, []);
+        if (selectedReportPeriod) {
+            loadReports(selectedReportPeriod);
+        }
+    }, [selectedReportPeriod]);
 
     return (
         <div>
@@ -91,24 +78,19 @@ export default function AdminReportsPage() {
                 eyebrow="Admin"
                 title="Báo cáo hệ thống"
                 description="Thống kê mượn sách, trả trễ, khoản nợ và phiếu thu theo tháng."
-                right={
-                    <button className="soft-button" onClick={loadReports} disabled={loading}>
-                        <RefreshCcw size={17} />
-                        Tải báo cáo
-                    </button>
-                }
             />
 
-            <div className="panel compact-form">
-                <label>Tháng</label>
-                <input type="number" min="1" max="12" value={filter.month} onChange={(event) => updateFilter("month", event.target.value)} />
-
-                <label>Năm</label>
-                <input type="number" min="2000" max="2100" value={filter.year} onChange={(event) => updateFilter("year", event.target.value)} />
-
-                <button className="primary-button" onClick={loadReports} disabled={loading}>
-                    Xem báo cáo
-                </button>
+            <div className="panel compact-form report-filter-panel">
+                <label>Tháng báo cáo</label>
+                <input
+                    type="month"
+                    min="2000-01"
+                    max="2100-12"
+                    value={reportMonth}
+                    onChange={(event) => setReportMonth(event.target.value)}
+                    disabled={loading}
+                />
+                <span className="form-note">Báo cáo tự cập nhật khi đổi tháng.</span>
             </div>
 
             <div className="report-card-grid">
@@ -243,6 +225,22 @@ export default function AdminReportsPage() {
             </div>
         </div>
     );
+}
+
+function parseReportMonth(value) {
+    const match = /^(\d{4})-(\d{2})$/.exec(value || "");
+    if (!match) {
+        return null;
+    }
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+
+    if (year < 2000 || year > 2100 || month < 1 || month > 12) {
+        return null;
+    }
+
+    return { month, year };
 }
 
 function applyReportResult(result, setter) {
