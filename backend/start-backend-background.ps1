@@ -87,7 +87,8 @@ Start-Process `
         "-NoProfile",
         "-ExecutionPolicy", "Bypass",
         "-File", $backendScript,
-        "-Root", $Root
+        "-Root", $Root,
+        "-NoSetupPrompt"
     ) `
     -RedirectStandardOutput $backendOutLogFile `
     -RedirectStandardError $backendErrLogFile
