@@ -1,6 +1,7 @@
 param(
     [string]$Root = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)),
-    [switch]$ValidateOnly
+    [switch]$ValidateOnly,
+    [switch]$NoSetupPrompt
 )
 
 $ErrorActionPreference = "Stop"
@@ -196,6 +197,12 @@ if ((Test-Path -Path $configFile) -and (Test-Path -Path $passwordFile)) {
     $env:DB_USERNAME = $dbConfig.DB_USERNAME
     $env:DB_PASSWORD = $dbConfig.DB_PASSWORD
 } else {
+    if ($NoSetupPrompt) {
+        Write-Host "[ERROR] Chua co cau hinh database."
+        Write-Host "Hay chay start-backend.bat hoac start-libradesk.bat trong cua so hien thi de nhap cau hinh DB."
+        exit 1
+    }
+
     Write-Host "Chua co cau hinh database."
     Write-Host "Vui long nhap thong tin SQL Server cho lan chay dau tien."
     Write-Host ""
@@ -253,6 +260,13 @@ try {
     Write-Host "Chi tiet loi:"
     Write-Host $_.Exception.Message
     Write-Host ""
+
+    if ($NoSetupPrompt) {
+        Write-Host "Tien trinh nen se khong hoi nhap lai cau hinh de tranh bi treo."
+        Write-Host "Hay chay start-backend.bat hoac start-libradesk.bat de nhap lai cau hinh DB."
+        exit 1
+    }
+
     Write-Host "Vui long nhap lai thong tin SQL Server."
     Write-Host ""
 
