@@ -2,11 +2,20 @@
 chcp 65001 >nul
 title Start LibraDesk
 
-setlocal
+setlocal EnableExtensions
 
 set "ROOT=%~dp0"
 if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
 set "START_SCRIPT=%ROOT%\start-libradesk.ps1"
+set "BACKEND_JAR=%ROOT%\release\backend-0.0.1-SNAPSHOT.jar"
+set "BACKEND_EXE=%ROOT%\release\backend.exe"
+set "APP_EXE=%ROOT%\release\LibraDesk-1.0.0-portable.exe"
+set "APP_EXE_FALLBACK=%ROOT%\release\win-ia32-unpacked\LibraDesk.exe"
+set "ELECTRON_CMD=%ROOT%\frontend\node_modules\.bin\electron.cmd"
+set "ELECTRON_EXE=%ROOT%\frontend\node_modules\electron\dist\electron.exe"
+set "VITE_CMD=%ROOT%\frontend\node_modules\.bin\vite.cmd"
+set "FRONTEND_DIST=%ROOT%\frontend\dist\index.html"
+set "POWERSHELL_EXE=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
 
 if not exist "%START_SCRIPT%" (
     echo [ERROR] Khong tim thay script:
@@ -16,10 +25,63 @@ if not exist "%START_SCRIPT%" (
     exit /b 1
 )
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%START_SCRIPT%" -Root "%ROOT%"
-
-if errorlevel 1 (
+if not exist "%BACKEND_JAR%" if not exist "%BACKEND_EXE%" (
+    echo [ERROR] Khong tim thay backend release artifact.
+    echo Can co mot trong hai file:
+    echo %BACKEND_JAR%
+    echo %BACKEND_EXE%
+    echo.
+    echo Hay build backend truoc khi chay app:
+    echo build-backend-aot.bat
+    echo.
+    pause
     exit /b 1
+)
+
+if not exist "%APP_EXE%" if not exist "%APP_EXE_FALLBACK%" if not exist "%ELECTRON_CMD%" if not exist "%VITE_CMD%" (
+    echo [ERROR] Khong tim thay ung dung LibraDesk da build.
+    echo Can co mot trong cac file:
+    echo %APP_EXE%
+    echo %APP_EXE_FALLBACK%
+    echo %ELECTRON_CMD%
+    echo %VITE_CMD%
+    echo.
+    echo Hay build frontend desktop truoc khi chay:
+    echo cd frontend
+    echo npm run dist:win
+    echo.
+    pause
+    exit /b 1
+)
+
+if not exist "%APP_EXE%" if not exist "%APP_EXE_FALLBACK%" if not exist "%FRONTEND_DIST%" (
+    echo [ERROR] Khong tim thay frontend dist de chay Electron local:
+    echo %FRONTEND_DIST%
+    echo.
+    echo Hay build frontend truoc khi chay:
+    echo cd frontend
+    echo npm run build
+    echo.
+    pause
+    exit /b 1
+)
+
+if not exist "%POWERSHELL_EXE%" (
+    set "POWERSHELL_EXE=powershell"
+)
+
+pushd "%ROOT%" >nul
+"%POWERSHELL_EXE%" -NoProfile -ExecutionPolicy Bypass -File "%START_SCRIPT%" -Root "%ROOT%"
+set "EXIT_CODE=%ERRORLEVEL%"
+popd >nul
+
+if not "%EXIT_CODE%"=="0" (
+    echo.
+    echo [ERROR] LibraDesk khoi dong that bai. Ma loi: %EXIT_CODE%
+    echo Hay xem thong bao phia tren hoac log backend trong %%APPDATA%%\LibraDesk.
+    echo.
+    pause
+    exit /b %EXIT_CODE%
 )
 
 exit /b 0
