@@ -1,5 +1,6 @@
 import {
     Bell,
+    BookCopy,
     BookOpen,
     CreditCard,
     KeyRound,
@@ -7,6 +8,7 @@ import {
     MessageSquare,
     RotateCcw,
     Save,
+    Search,
     Settings,
     ShieldCheck,
     SlidersHorizontal,
@@ -683,6 +685,7 @@ function getShortcutActions(role, portal) {
     if (role === "STAFF") {
         return [
             { to: "/books", label: "Quản lý đầu sách", icon: BookOpen },
+            { to: "/book-copies", label: "Quản lý cuốn sách", icon: BookCopy },
             { to: "/readers", label: "Quản lý độc giả", icon: UsersRound },
             { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
             { to: "/staff/payments", label: "Thu tiền", icon: CreditCard }
@@ -691,6 +694,7 @@ function getShortcutActions(role, portal) {
 
     return [
         { to: portal === "reader" ? "/reader" : "/", label: "Thông tin cá nhân", icon: UserRoundCog },
+        { to: "/reader/books", label: "Tra cứu sách", icon: Search },
         { to: "/reader/notifications", label: "Thông báo", icon: Bell },
         { to: "/reader/rules", label: "Quy định thư viện", icon: ShieldCheck },
         { to: "/reader/favorites", label: "Sách yêu thích", icon: BookOpen }

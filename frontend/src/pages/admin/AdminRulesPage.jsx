@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { RefreshCcw, Rocket, Plus } from "lucide-react";
+import { Rocket, Plus } from "lucide-react";
 import { adminApi } from "../../api/adminApi";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
@@ -161,12 +161,6 @@ export default function AdminRulesPage() {
         eyebrow="Admin"
         title="Quy định hệ thống"
         description="Tạo phiên bản quy định mới và áp dụng cho các nghiệp vụ phát sinh sau thời điểm áp dụng."
-        right={
-          <button className="soft-button" onClick={loadData}>
-            <RefreshCcw size={17} />
-            Tải lại
-          </button>
-        }
       />
 
       <div className="panel">
