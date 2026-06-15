@@ -50,6 +50,7 @@
 }
 
 .reader-nav {
+    flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     padding-right: 6px;
@@ -110,7 +111,7 @@
 
 .reader-account {
     flex: 0 0 auto;
-    margin-top: 0;
+    margin-top: auto;
     display: flex;
     align-items: center;
     gap: 12px;
