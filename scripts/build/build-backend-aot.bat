@@ -4,9 +4,10 @@ title Build LibraDesk Backend AOT JAR
 
 setlocal
 
-set "ROOT=%~dp0"
-set "BACKEND_DIR=%ROOT%backend"
-set "RELEASE_DIR=%ROOT%release"
+set "SCRIPT_DIR=%~dp0"
+for %%I in ("%SCRIPT_DIR%..\..") do set "ROOT=%%~fI"
+set "BACKEND_DIR=%ROOT%\backend"
+set "RELEASE_DIR=%ROOT%\release"
 set "TARGET_JAR=%BACKEND_DIR%\target\backend-0.0.1-SNAPSHOT.jar"
 set "RELEASE_JAR=%RELEASE_DIR%\backend-0.0.1-SNAPSHOT.jar"
 
