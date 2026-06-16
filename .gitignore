@@ -40,3 +40,6 @@ backend/local-db.bat
 .DS_Store
 Thumbs.db
 
+# Local duplicate repository snapshots
+/Library-Management/
+
