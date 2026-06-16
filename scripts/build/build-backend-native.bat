@@ -4,9 +4,10 @@ title Build LibraDesk Backend Native
 
 setlocal
 
-set "ROOT=%~dp0"
-set "BACKEND_DIR=%ROOT%backend"
-set "RELEASE_DIR=%ROOT%release"
+set "SCRIPT_DIR=%~dp0"
+for %%I in ("%SCRIPT_DIR%..\..") do set "ROOT=%%~fI"
+set "BACKEND_DIR=%ROOT%\backend"
+set "RELEASE_DIR=%ROOT%\release"
 set "TARGET_EXE=%BACKEND_DIR%\target\backend.exe"
 set "RELEASE_EXE=%RELEASE_DIR%\backend.exe"
 
