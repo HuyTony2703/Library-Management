@@ -1,13 +1,13 @@
 param(
-    [string]$Root = $PSScriptRoot
+    [string]$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 )
 
 $ErrorActionPreference = "Stop"
 
 $Root = $Root.Trim().Trim('"').TrimEnd("\")
-$backendBat = Join-Path $Root "start-backend.bat"
+$backendBat = Join-Path $Root "scripts\runtime\start-backend.bat"
 $backendScript = Join-Path $Root "backend\run-backend.ps1"
-$resetDbConfigBat = Join-Path $Root "reset-db-config.bat"
+$resetDbConfigBat = Join-Path $Root "scripts\runtime\reset-db-config.bat"
 $frontendDir = Join-Path $Root "frontend"
 $electronCmd = Join-Path $frontendDir "node_modules\.bin\electron.cmd"
 $electronExe = Join-Path $frontendDir "node_modules\electron\dist\electron.exe"
@@ -242,13 +242,13 @@ if (Test-BackendHealth) {
         Write-Host "[ERROR] Backend runner da ket thuc nhung health endpoint van chua san sang."
         Write-Host ""
         Write-Host "Huong xu ly nhanh:"
-        Write-Host "1. Chay reset-db-config.bat de xoa cau hinh database da luu."
+        Write-Host "1. Chay scripts\runtime\reset-db-config.bat de xoa cau hinh database da luu."
         Write-Host "2. Chay lai start-libradesk.bat va nhap lai thong tin SQL Server."
         Write-Host ""
         Write-Host "File reset:"
         Write-Host $resetDbConfigBat
         Write-Host ""
-        Write-Host "Neu van loi, hay chay start-backend.bat truc tiep de xem log chi tiet."
+        Write-Host "Neu van loi, hay chay scripts\runtime\start-backend.bat truc tiep de xem log chi tiet."
         Write-Host "Neu backend chay nen, log nam tai:"
         Write-Host $backendOutLogFile
         Write-Host $backendErrLogFile
