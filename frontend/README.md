@@ -1,16 +1,61 @@
-# React + Vite
+# LibraDesk Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend của LibraDesk dùng React, Vite và Electron để đóng gói thành ứng dụng desktop Windows.
 
-Currently, two official plugins are available:
+## Cấu Trúc Chính
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```text
+frontend/
+├─ electron/       # Main process Electron
+├─ public/         # Static assets
+├─ src/
+│  ├─ api/         # Module gọi API theo vai trò
+│  ├─ assets/      # Tài nguyên giao diện
+│  ├─ components/  # Component dùng chung
+│  ├─ context/     # Context React
+│  ├─ pages/       # Page theo nhóm admin/staff/reader
+│  ├─ routes/      # Điều hướng
+│  └─ utils/       # Helper frontend
+├─ package.json
+└─ vite.config.js
+```
 
-## React Compiler
+## Lệnh Thường Dùng
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Cài dependency:
 
-## Expanding the ESLint configuration
+```bat
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Chạy web dev server:
+
+```bat
+npm run dev
+```
+
+Build frontend:
+
+```bat
+npm run build
+```
+
+Chạy Electron khi phát triển:
+
+```bat
+npm run electron:dev
+```
+
+Build desktop portable:
+
+```bat
+npm run dist:win
+```
+
+Artifact desktop được xuất ra thư mục `../release`.
+
+## Ghi Chú
+
+- API base mặc định trỏ về backend local `http://localhost:8080`.
+- Khi thay đổi route hoặc API, ưu tiên cập nhật module trong `src/api/` thay vì gọi `fetch` rải rác trong page.
+- Root project có `start-libradesk.bat` để chạy app hoàn chỉnh sau khi đã có backend/frontend artifact.
