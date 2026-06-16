@@ -4,8 +4,8 @@ title LibraDesk Backend
 
 setlocal
 
-set "ROOT=%~dp0"
-if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
+set "SCRIPT_DIR=%~dp0"
+for %%I in ("%SCRIPT_DIR%..\..") do set "ROOT=%%~fI"
 set "START_BACKEND=%ROOT%\backend\start-backend-background.ps1"
 
 if not exist "%START_BACKEND%" (
