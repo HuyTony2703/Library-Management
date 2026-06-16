@@ -61,7 +61,7 @@ if exist "%DB_JSON_CONFIG_FILE%" (
 
 echo.
 echo [3/3] Hoan tat reset.
-echo Lan sau chay start-backend.bat hoac start-libradesk.bat, he thong se yeu cau nhap lai thong tin SQL Server.
+echo Lan sau chay scripts\runtime\start-backend.bat hoac start-libradesk.bat, he thong se yeu cau nhap lai thong tin SQL Server.
 echo.
 echo Cua so nay se tu dong dong sau 5 giay...
 timeout /t 5 /nobreak >nul
