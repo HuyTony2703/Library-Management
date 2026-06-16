@@ -6,7 +6,7 @@ setlocal EnableExtensions
 
 set "ROOT=%~dp0"
 if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
-set "START_SCRIPT=%ROOT%\start-libradesk.ps1"
+set "START_SCRIPT=%ROOT%\scripts\runtime\start-libradesk.ps1"
 set "BACKEND_JAR=%ROOT%\release\backend-0.0.1-SNAPSHOT.jar"
 set "BACKEND_EXE=%ROOT%\release\backend.exe"
 set "APP_EXE=%ROOT%\release\LibraDesk-1.0.0-portable.exe"
@@ -32,7 +32,7 @@ if not exist "%BACKEND_JAR%" if not exist "%BACKEND_EXE%" (
     echo %BACKEND_EXE%
     echo.
     echo Hay build backend truoc khi chay app:
-    echo build-backend-aot.bat
+    echo scripts\build\build-backend-aot.bat
     echo.
     pause
     exit /b 1
