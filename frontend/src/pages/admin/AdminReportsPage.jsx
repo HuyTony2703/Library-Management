@@ -22,6 +22,7 @@ export default function AdminReportsPage() {
     const [borrowByCategory, setBorrowByCategory] = useState([]);
     const [lateReturns, setLateReturns] = useState([]);
     const [payments, setPayments] = useState([]);
+    const [selectedDebtReaders, setSelectedDebtReaders] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const totalBorrow = useMemo(() => {
@@ -71,6 +72,26 @@ export default function AdminReportsPage() {
             loadReports(selectedReportPeriod);
         }
     }, [selectedReportPeriod]);
+
+    useEffect(() => {
+        setSelectedDebtReaders((prev) =>
+            prev.filter((readerId) => debts.some((row) => getDebtReaderId(row) === readerId))
+        );
+    }, [debts]);
+
+    function toggleDebtReader(row) {
+        const readerId = getDebtReaderId(row);
+
+        if (!readerId) {
+            return;
+        }
+
+        setSelectedDebtReaders((prev) =>
+            prev.includes(readerId)
+                ? prev.filter((item) => item !== readerId)
+                : [...prev, readerId]
+        );
+    }
 
     return (
         <div>
@@ -167,7 +188,25 @@ export default function AdminReportsPage() {
 
                 <DataTable
                     data={debts}
+                    rowClassName={(row) => selectedDebtReaders.includes(getDebtReaderId(row)) ? "selected-row" : ""}
                     columns={[
+                        {
+                            key: "chon",
+                            title: "Chọn",
+                            width: "76px",
+                            render: (row) => {
+                                const readerId = getDebtReaderId(row);
+
+                                return (
+                                    <input
+                                        className="table-checkbox"
+                                        type="checkbox"
+                                        checked={selectedDebtReaders.includes(readerId)}
+                                        onChange={() => toggleDebtReader(row)}
+                                    />
+                                );
+                            }
+                        },
                         { key: "maDocGia", title: "Mã độc giả" },
                         { key: "hoTen", title: "Họ tên" },
                         { key: "tongNoConLai", title: "Tổng nợ còn lại", render: (row) => formatMoney(row.tongNoConLai) }
@@ -315,6 +354,10 @@ function normalizeCurrentLoans(items) {
             soNgayConLai: null
         };
     });
+}
+
+function getDebtReaderId(row) {
+    return row?.maDocGia ?? row?.MaDocGia ?? row?.id ?? "";
 }
 
 function ReportCard({ label, value }) {
