@@ -20,25 +20,93 @@ import { useAuth } from "../context/AuthContext";
 import { isReaderUser } from "../utils/authRole";
 import { isAdmin } from "../utils/roleUtils";
 
-const staffMenu = [
-    { to: "/", label: "Tổng quan", icon: Home },
-    { to: "/books", label: "Đầu sách", icon: BookOpen },
-    { to: "/book-copies", label: "Cuốn sách", icon: BookCopy },
-    { to: "/readers", label: "Độc giả", icon: UsersRound },
-    { to: "/staff/loans", label: "Mượn sách", icon: ArrowLeftRight },
-    { to: "/staff/returns", label: "Trả sách", icon: ClipboardList },
-    { to: "/staff/payments", label: "Thu tiền", icon: CreditCard },
-    { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
-    { to: "/guide", label: "Hướng dẫn sử dụng", icon: CircleHelp },
-    { to: "/settings", label: "Cài đặt", icon: Settings }
+const staffMenuGroups = [
+    {
+        label: "Chính",
+        items: [
+            { to: "/", label: "Tổng quan", icon: Home }
+        ]
+    },
+    {
+        label: "Quản lý thư viện",
+        items: [
+            { to: "/books", label: "Đầu sách", icon: BookOpen },
+            { to: "/book-copies", label: "Cuốn sách", icon: BookCopy },
+            { to: "/readers", label: "Độc giả", icon: UsersRound }
+        ]
+    },
+    {
+        label: "Nghiệp vụ",
+        items: [
+            { to: "/staff/loans", label: "Mượn sách", icon: ArrowLeftRight },
+            { to: "/staff/returns", label: "Trả sách", icon: ClipboardList },
+            { to: "/staff/payments", label: "Thu tiền", icon: CreditCard }
+        ]
+    },
+    {
+        label: "Kiểm duyệt",
+        items: [
+            { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare }
+        ]
+    },
+    {
+        label: "Hỗ trợ",
+        items: [
+            { to: "/guide", label: "Hướng dẫn sử dụng", icon: CircleHelp }
+        ]
+    },
+    {
+        label: "Tài khoản",
+        items: [
+            { to: "/settings", label: "Cài đặt", icon: Settings }
+        ]
+    }
 ];
 
-const adminExtraMenu = [
-    { to: "/admin/reports", label: "Báo cáo hệ thống", icon: BarChart3 },
-    { to: "/admin/rules", label: "Quy định hệ thống", icon: ShieldCheck },
-    { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
-    { to: "/admin/librarians", label: "Tài khoản thủ thư", icon: UserCog },
-    { to: "/admin/guide", label: "Hướng dẫn sử dụng", icon: CircleHelp }
+const adminMenuGroups = [
+    {
+        label: "Chính",
+        items: [
+            { to: "/", label: "Tổng quan", icon: Home }
+        ]
+    },
+    {
+        label: "Quản lý thư viện",
+        items: [
+            { to: "/books", label: "Đầu sách", icon: BookOpen },
+            { to: "/book-copies", label: "Cuốn sách", icon: BookCopy },
+            { to: "/readers", label: "Độc giả", icon: UsersRound }
+        ]
+    },
+    {
+        label: "Nghiệp vụ",
+        items: [
+            { to: "/staff/loans", label: "Mượn sách", icon: ArrowLeftRight },
+            { to: "/staff/returns", label: "Trả sách", icon: ClipboardList },
+            { to: "/staff/payments", label: "Thu tiền", icon: CreditCard }
+        ]
+    },
+    {
+        label: "Quản trị hệ thống",
+        items: [
+            { to: "/admin/reports", label: "Báo cáo hệ thống", icon: BarChart3 },
+            { to: "/admin/rules", label: "Quy định hệ thống", icon: ShieldCheck },
+            { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
+            { to: "/admin/librarians", label: "Tài khoản thủ thư", icon: UserCog }
+        ]
+    },
+    {
+        label: "Hỗ trợ",
+        items: [
+            { to: "/admin/guide", label: "Hướng dẫn sử dụng", icon: CircleHelp }
+        ]
+    },
+    {
+        label: "Tài khoản",
+        items: [
+            { to: "/settings", label: "Cài đặt", icon: Settings }
+        ]
+    }
 ];
 
 export default function AppLayout() {
@@ -46,13 +114,7 @@ export default function AppLayout() {
     const navigate = useNavigate();
     const displayName = getUserDisplayName(user);
     const adminUser = isAdmin(user);
-    const menu = adminUser
-        ? [
-            ...staffMenu.filter((item) => !["/admin/comments", "/guide", "/settings"].includes(item.to)),
-            ...adminExtraMenu,
-            { to: "/settings", label: "Cài đặt", icon: Settings }
-        ]
-        : staffMenu;
+    const menuGroups = adminUser ? adminMenuGroups : staffMenuGroups;
 
     if (isReaderUser(user)) {
         return <Navigate to="/reader" replace />;
@@ -81,7 +143,7 @@ export default function AppLayout() {
                     </div>
                 </div>
 
-                <NavMenu items={menu} />
+                <NavMenu groups={menuGroups} />
 
                 <button type="button" className="sidebar-user sidebar-user-button" onClick={goToProfileSettings}>
                     <div className="avatar">
@@ -103,19 +165,24 @@ export default function AppLayout() {
     );
 }
 
-function NavMenu({ items, className = "" }) {
+function NavMenu({ groups, className = "" }) {
     return (
         <nav className={`nav-menu ${className}`.trim()}>
-            {items.map((item) => {
-                const Icon = item.icon;
+            {groups.map((group) => (
+                <div className="nav-group" key={group.label}>
+                    <span>{group.label}</span>
+                    {group.items.map((item) => {
+                        const Icon = item.icon;
 
-                return (
-                    <NavLink key={item.to} to={item.to} end={item.to === "/"}>
-                        <Icon size={18} />
-                        <span>{item.label}</span>
-                    </NavLink>
-                );
-            })}
+                        return (
+                            <NavLink key={item.to} to={item.to} end={item.to === "/"}>
+                                <Icon size={18} />
+                                <span>{item.label}</span>
+                            </NavLink>
+                        );
+                    })}
+                </div>
+            ))}
         </nav>
     );
 }
