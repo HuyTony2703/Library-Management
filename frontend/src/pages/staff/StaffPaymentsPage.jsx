@@ -416,7 +416,11 @@ export default function StaffPaymentsPage() {
                     </button>
                 </form>
 
-                <DebtorOverviewPanel debtors={debtors} />
+                <DebtorOverviewPanel
+                    debtors={debtors}
+                    selectedReaderId={maDocGia.trim()}
+                    onSelectReader={(readerId) => setMaDocGia(readerId)}
+                />
             </div>
 
             {result && showResult && (
@@ -429,7 +433,11 @@ export default function StaffPaymentsPage() {
     );
 }
 
-function DebtorOverviewPanel({ debtors }) {
+function DebtorOverviewPanel({ debtors, selectedReaderId, onSelectReader }) {
+    function getDebtorId(row) {
+        return row.maDocGia ?? row.MaDocGia ?? row.id;
+    }
+
     return (
         <div className="panel preview-panel">
             <div className="panel-title">
@@ -439,7 +447,25 @@ function DebtorOverviewPanel({ debtors }) {
 
             <DataTable
                 data={debtors}
+                rowClassName={(row) => selectedReaderId === getDebtorId(row) ? "selected-row" : ""}
                 columns={[
+                    {
+                        key: "chon",
+                        title: "Chọn",
+                        width: "76px",
+                        render: (row) => {
+                            const debtorId = getDebtorId(row);
+
+                            return (
+                                <input
+                                    className="table-checkbox"
+                                    type="checkbox"
+                                    checked={selectedReaderId === debtorId}
+                                    onChange={(event) => debtorId && onSelectReader(event.target.checked ? debtorId : "")}
+                                />
+                            );
+                        }
+                    },
                     { key: "maDocGia", title: "Mã độc giả" },
                     { key: "hoTen", title: "Họ tên" },
                     { key: "tongNoConLai", title: "Tổng nợ", render: (row) => formatMoney(row.tongNoConLai) }
