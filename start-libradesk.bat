@@ -2,7 +2,7 @@
 chcp 65001 >nul
 title Start LibraDesk
 
-setlocal EnableExtensions
+setlocal EnableExtensions EnableDelayedExpansion
 
 set "ROOT=%~dp0"
 if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
@@ -16,6 +16,8 @@ set "ELECTRON_EXE=%ROOT%\frontend\node_modules\electron\dist\electron.exe"
 set "VITE_CMD=%ROOT%\frontend\node_modules\.bin\vite.cmd"
 set "FRONTEND_DIST=%ROOT%\frontend\dist\index.html"
 set "POWERSHELL_EXE=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
+set "NPM_CMD=npm.cmd"
+set "HAS_APP_RELEASE=0"
 
 if not exist "%START_SCRIPT%" (
     echo [ERROR] Khong tim thay script:
@@ -36,6 +38,51 @@ if not exist "%BACKEND_JAR%" if not exist "%BACKEND_EXE%" (
     echo.
     pause
     exit /b 1
+)
+
+where npm.cmd >nul 2>nul
+if errorlevel 1 set "NPM_CMD=npm"
+
+if exist "%APP_EXE%" set "HAS_APP_RELEASE=1"
+if exist "%APP_EXE_FALLBACK%" set "HAS_APP_RELEASE=1"
+
+if "%HAS_APP_RELEASE%"=="0" if not exist "%VITE_CMD%" if exist "%ROOT%\frontend\package-lock.json" (
+    echo [INFO] Frontend dependencies chua co. Dang cai dat bang npm ci...
+    pushd "%ROOT%\frontend" >nul
+    call "%NPM_CMD%" ci
+    set "NPM_EXIT=!ERRORLEVEL!"
+    popd >nul
+    if not "!NPM_EXIT!"=="0" (
+        if exist "%APP_EXE%" (
+            echo [WARN] npm ci that bai. Se tiep tuc bang app release da build.
+        ) else if exist "%APP_EXE_FALLBACK%" (
+            echo [WARN] npm ci that bai. Se tiep tuc bang app release da build.
+        ) else (
+            echo [ERROR] npm ci that bai. Khong the chuan bi frontend local.
+            echo Hay kiem tra Node.js/npm va ket noi mang, sau do chay lai.
+            pause
+            exit /b !NPM_EXIT!
+        )
+    )
+)
+
+if "%HAS_APP_RELEASE%"=="0" if not exist "%FRONTEND_DIST%" if exist "%VITE_CMD%" (
+    echo [INFO] Chua co frontend dist. Dang build frontend...
+    pushd "%ROOT%\frontend" >nul
+    call "%NPM_CMD%" run build
+    set "BUILD_EXIT=!ERRORLEVEL!"
+    popd >nul
+    if not "!BUILD_EXIT!"=="0" (
+        if exist "%APP_EXE%" (
+            echo [WARN] npm run build that bai. Se tiep tuc bang app release da build.
+        ) else if exist "%APP_EXE_FALLBACK%" (
+            echo [WARN] npm run build that bai. Se tiep tuc bang app release da build.
+        ) else (
+            echo [ERROR] npm run build that bai. Khong the chuan bi frontend local.
+            pause
+            exit /b !BUILD_EXIT!
+        )
+    )
 )
 
 if not exist "%APP_EXE%" if not exist "%APP_EXE_FALLBACK%" if not exist "%ELECTRON_CMD%" if not exist "%VITE_CMD%" (
