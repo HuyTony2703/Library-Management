@@ -238,7 +238,22 @@ button {
 
 .nav-menu {
   display: grid;
-  gap: 8px;
+  gap: 15px;
+}
+
+.nav-group {
+  display: grid;
+  gap: 7px;
+}
+
+.nav-group > span {
+  padding: 0 14px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-transform: uppercase;
 }
 
 .sidebar > .nav-menu:not(.nav-menu-bottom) {
@@ -284,6 +299,10 @@ button {
   font-weight: 700;
 }
 
+.nav-menu a svg {
+  flex: 0 0 auto;
+}
+
 .nav-menu a:hover,
 .nav-menu a.active {
   background: rgba(255, 255, 255, 0.1);
@@ -292,7 +311,7 @@ button {
 
 .sidebar-user {
   flex: 0 0 auto;
-  margin-top: 0;
+  margin-top: auto;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -808,6 +827,16 @@ input[type="number"] {
   padding-right: 12px;
 }
 
+input[type="date"] {
+  appearance: auto;
+  color-scheme: light;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.78;
+}
+
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   opacity: 0;
@@ -823,6 +852,7 @@ input[type="number"]:focus::-webkit-outer-spin-button {
 
 select {
   appearance: none;
+  cursor: pointer;
   padding-right: 44px;
   background-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -981,6 +1011,10 @@ textarea:focus {
   align-items: center;
 }
 
+.selection-toolbar button {
+  min-height: 44px;
+}
+
 .list-toolbar {
   display: flex;
   justify-content: space-between;
@@ -1022,6 +1056,10 @@ textarea:focus {
   color: var(--primary);
   background: rgba(37, 99, 235, 0.1);
   box-shadow: none;
+}
+
+.selection-toolbar .soft-button:not(.danger-button):hover {
+  background: rgba(37, 99, 235, 0.16);
 }
 
 .list-toolbar .selection-toolbar span {
@@ -1095,7 +1133,7 @@ textarea:focus {
   grid-template-columns: auto minmax(420px, 1fr);
   gap: 18px;
   align-items: end;
-  margin: 34px 0 18px;
+  margin: 28px 0 18px;
 }
 
 .payment-debt-toolbar .selection-toolbar {
@@ -1117,7 +1155,7 @@ textarea:focus {
   align-items: center;
   gap: 12px;
   margin: 0;
-  padding-top: 22px;
+  padding-top: 18px;
 }
 
 .payment-debt-search label {
@@ -1245,6 +1283,15 @@ textarea:focus {
   opacity: 0;
 }
 
+:root[data-theme="dark"] input[type="date"] {
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.78;
+}
+
 :root[data-theme="dark"] input[type="number"]:hover::-webkit-inner-spin-button,
 :root[data-theme="dark"] input[type="number"]:hover::-webkit-outer-spin-button,
 :root[data-theme="dark"] input[type="number"]:focus::-webkit-inner-spin-button,
@@ -1272,6 +1319,12 @@ textarea:focus {
   box-shadow: 0 12px 26px rgba(37, 99, 235, 0.24);
 }
 
+:root[data-theme="dark"] .selection-toolbar .soft-button:not(.danger-button) {
+  color: #bfdbfe;
+  background: rgba(37, 99, 235, 0.16);
+  border: 1px solid rgba(147, 197, 253, 0.18);
+}
+
 :root[data-theme="dark"] .selection-toolbar .ghost-button:hover,
 .selection-toolbar .ghost-button:hover {
   filter: brightness(1.05);
@@ -1290,6 +1343,13 @@ textarea:focus {
   background: #0b1220;
   color: var(--text);
   border-color: rgba(226, 232, 240, 0.22);
+}
+
+:root[data-theme="dark"] .settings-section select {
+  background-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
 }
 
 :root[data-theme="dark"] input.read-only-field,
@@ -1734,6 +1794,10 @@ textarea:focus {
   align-self: start;
 }
 
+.settings-shortcuts-section {
+  grid-template-rows: auto 1fr;
+}
+
 .settings-password-section,
 .settings-appearance-section {
   gap: 14px;
@@ -1779,7 +1843,12 @@ textarea:focus {
 
 .settings-section select {
   padding-right: 44px;
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
   background-position: right 14px center;
+  background-size: 16px;
 }
 
 .password-input-wrap {
@@ -1934,6 +2003,7 @@ textarea:focus {
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
+  align-content: start;
 }
 
 .settings-shortcut {
@@ -1984,6 +2054,15 @@ textarea:focus {
   .settings-notification-section {
     min-height: 540px;
     height: 540px;
+  }
+
+  .settings-shortcuts-section,
+  .settings-notification-section {
+    align-self: stretch;
+  }
+
+  .settings-shortcuts-section .settings-shortcut-grid {
+    align-content: space-between;
   }
 
   .settings-notification-section {
