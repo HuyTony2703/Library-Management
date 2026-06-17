@@ -1,8 +1,12 @@
 import {
+    ArrowLeftRight,
+    BarChart3,
     Bell,
     BookCopy,
     BookOpen,
+    ClipboardList,
     CreditCard,
+    Home,
     KeyRound,
     LogOut,
     MessageSquare,
@@ -648,7 +652,9 @@ function getDisplayName(user) {
 }
 
 function displayRole(user, role) {
-    if (user?.tenVaiTro) {
+    const rawRoleName = user?.tenVaiTro;
+
+    if (rawRoleName && !["QUAN_TRI_VIEN", "THU_THU", "DOC_GIA"].includes(rawRoleName)) {
         return user.tenVaiTro;
     }
 
@@ -674,26 +680,29 @@ function getShortcutActions(role, portal) {
     if (role === "ADMIN") {
         return [
             { to: "/books", label: "Quản lý đầu sách", icon: BookOpen },
+            { to: "/book-copies", label: "Quản lý cuốn sách", icon: BookCopy },
             { to: "/readers", label: "Quản lý độc giả", icon: UsersRound },
             { to: "/admin/librarians", label: "Quản lý thủ thư", icon: UsersRound },
             { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
             { to: "/admin/rules", label: "Quy định hệ thống", icon: ShieldCheck },
-            { to: "/admin/reports", label: "Báo cáo hệ thống", icon: BookOpen }
+            { to: "/admin/reports", label: "Báo cáo hệ thống", icon: BarChart3 }
         ];
     }
 
     if (role === "STAFF") {
         return [
-            { to: "/books", label: "Quản lý đầu sách", icon: BookOpen },
-            { to: "/book-copies", label: "Quản lý cuốn sách", icon: BookCopy },
+            { to: "/", label: "Tổng quan", icon: Home },
             { to: "/readers", label: "Quản lý độc giả", icon: UsersRound },
+            { to: "/staff/loans", label: "Quản lý mượn sách", icon: ArrowLeftRight },
+            { to: "/staff/returns", label: "Quản lý trả sách", icon: ClipboardList },
+            { to: "/staff/payments", label: "Quản lý thu tiền", icon: CreditCard },
             { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
-            { to: "/staff/payments", label: "Thu tiền", icon: CreditCard }
         ];
     }
 
     return [
-        { to: portal === "reader" ? "/reader" : "/", label: "Thông tin cá nhân", icon: UserRoundCog },
+        { to: portal === "reader" ? "/reader" : "/", label: "Trang chủ", icon: Home },
+        { to: portal === "reader" ? "/reader/settings#profile" : "/settings#profile", label: "Thông tin cá nhân", icon: UserRoundCog },
         { to: "/reader/books", label: "Tra cứu sách", icon: Search },
         { to: "/reader/notifications", label: "Thông báo", icon: Bell },
         { to: "/reader/rules", label: "Quy định thư viện", icon: ShieldCheck },
