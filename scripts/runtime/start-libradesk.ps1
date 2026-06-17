@@ -1,5 +1,6 @@
 param(
-    [string]$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+    [string]$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path,
+    [switch]$AllowBrowserFallback
 )
 
 $ErrorActionPreference = "Stop"
@@ -130,11 +131,11 @@ function Start-LibraDeskFrontend {
 
     foreach ($candidate in $launchCandidates) {
         try {
-            Write-Step "Dang mo LibraDesk bang file da build: $candidate"
+            Write-Step "Dang mo LibraDesk bang file app: $candidate"
             Start-Process -FilePath $candidate -ErrorAction Stop
             return
         } catch {
-            Write-Host "[WARN] Khong mo duoc file nay:"
+            Write-Host "[WARN] Khong mo duoc file app nay:"
             Write-Host $candidate
             Write-Host $_.Exception.Message
             Write-Host ""
@@ -142,15 +143,23 @@ function Start-LibraDeskFrontend {
     }
 
     if (Test-ElectronFallback) {
-        Write-Step "Dang mo LibraDesk bang Electron local tu frontend\dist..."
-        Start-Process -FilePath $electronCmd -WorkingDirectory $frontendDir -ArgumentList "." -ErrorAction Stop
-        return
+        try {
+            Write-Step "Dang mo LibraDesk bang Electron local tu frontend\dist..."
+            Start-Process -FilePath $electronCmd -WorkingDirectory $frontendDir -ArgumentList "." -ErrorAction Stop
+            return
+        } catch {
+            Write-Host "[WARN] Khong mo duoc Electron local:"
+            Write-Host $_.Exception.Message
+            Write-Host ""
+        }
     }
 
-    if (Test-VitePreviewFallback) {
+    $browserFallbackEnabled = $AllowBrowserFallback -or ($env:LIBRADESK_ALLOW_BROWSER_FALLBACK -eq "1")
+
+    if ($browserFallbackEnabled -and (Test-VitePreviewFallback)) {
         if (-not (Test-FrontendPreviewHealth)) {
             New-Item -ItemType Directory -Path $configDir -Force | Out-Null
-            Write-Step "Portable/unpacked khong mo duoc. Dang chay frontend build bang Vite preview..."
+            Write-Step "Khong mo duoc app. Dang chay frontend build bang Vite preview vi browser fallback da duoc bat..."
             Start-Process `
                 -FilePath "cmd.exe" `
                 -WindowStyle Hidden `
@@ -172,7 +181,7 @@ function Start-LibraDeskFrontend {
         return
     }
 
-    throw "Khong mo duoc LibraDesk. Portable/unpacked bi chan hoac khong ton tai, Electron local thieu electron.exe, va Vite preview chua san sang."
+    throw "Khong mo duoc LibraDesk app. File release bi chan/khong ton tai hoac Electron local thieu electron.exe. Script se khong mo trinh duyet mac dinh; neu that su muon fallback web, dat LIBRADESK_ALLOW_BROWSER_FALLBACK=1 roi chay lai."
 }
 
 Write-Host "=========================================="
@@ -192,7 +201,7 @@ if (-not (Test-Path -Path $backendScript)) {
     exit 1
 }
 
-if ((@(Get-AppLaunchCandidates).Count -eq 0) -and (-not (Test-ElectronFallback)) -and (-not (Test-VitePreviewFallback))) {
+if ((@(Get-AppLaunchCandidates).Count -eq 0) -and (-not (Test-ElectronFallback)) -and (-not ($AllowBrowserFallback -or ($env:LIBRADESK_ALLOW_BROWSER_FALLBACK -eq "1")))) {
     Write-Host "[ERROR] Khong tim thay LibraDesk.exe:"
     Write-Host $appExe
     foreach ($fallback in $appExeFallbacks) {
@@ -204,8 +213,7 @@ if ((@(Get-AppLaunchCandidates).Count -eq 0) -and (-not (Test-ElectronFallback))
     Write-Host $electronExe
     Write-Host $frontendDistIndex
     Write-Host ""
-    Write-Host "Vite preview fallback cung chua san sang:"
-    Write-Host $viteCmd
+    Write-Host "Neu can mo tam tren trinh duyet, dat LIBRADESK_ALLOW_BROWSER_FALLBACK=1 roi chay lai."
     exit 1
 }
 
