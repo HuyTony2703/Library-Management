@@ -1,0 +1,14 @@
+{
+  "name": "libradesk-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Workspace scripts for LibraDesk.",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev --",
+    "build": "npm --prefix frontend run build",
+    "preview": "npm --prefix frontend run preview --",
+    "electron:dev": "npm --prefix frontend run electron:dev",
+    "electron:preview": "npm --prefix frontend run electron:preview",
+    "start": "start-libradesk.bat"
+  }
+}
