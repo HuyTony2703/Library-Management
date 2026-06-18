@@ -22,3 +22,9 @@ Thư mục này gom tài liệu kỹ thuật và tài liệu kiểm thử của 
 
 - [../database/README_DATABASE.md](../database/README_DATABASE.md): hướng dẫn database.
 - [../scripts/README.md](../scripts/README.md): hướng dẫn script runtime/build.
+
+## Ghi Chú Cập Nhật
+
+- Root project có `package.json` workspace để gọi nhanh script frontend và `start-libradesk.bat`.
+- Script khởi động ưu tiên artifact desktop trong `release/`; browser fallback cần bật bằng `LIBRADESK_ALLOW_BROWSER_FALLBACK=1`.
+- Dữ liệu seed có thêm các độc giả `DG024`, `DG025`, `DG026` cho demo khoản nợ và thu tiền.
