@@ -16,6 +16,14 @@ Trong đó:
 - `01_full_database.sql`: tạo schema, bảng, ràng buộc và dữ liệu nền cần thiết.
 - `02_seed_demo_data.sql`: tạo dữ liệu demo đầy đủ cho admin, thủ thư, độc giả, sách, mượn trả, nợ, phiếu thu, bình luận và thông báo.
 
+`02_seed_demo_data.sql` cũng có các case demo khoản nợ để kiểm tra màn thu tiền:
+
+| Độc giả | Tình huống |
+|---|---|
+| `DG024` | Nợ trả trễ, chưa thanh toán |
+| `DG025` | Nợ hỏng sách, chưa thanh toán |
+| `DG026` | Nhiều khoản nợ, đã thanh toán một phần |
+
 ## Script Phụ Trợ
 
 Các script sau dùng để kiểm thử hoặc reset từng nhóm dữ liệu, không bắt buộc chạy khi cài mới:
@@ -51,3 +59,5 @@ start-libradesk.bat
 | Admin | `admin` | `123456` |
 | Thủ thư | `thuthu01` | `123456` |
 | Độc giả | `docgia01` | `123456` |
+
+Các độc giả demo nợ dùng chung mật khẩu seed mặc định nếu tài khoản được bật trong dữ liệu demo.
