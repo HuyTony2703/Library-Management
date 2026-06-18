@@ -47,6 +47,8 @@ start-libradesk.bat
 
 Script sẽ tự kiểm tra backend tại `http://localhost:8080/api/health`, khởi động backend khi cần, warm-up backend và mở LibraDesk bằng artifact trong `release/` hoặc fallback sang Electron/Vite nếu phù hợp.
 
+Theo mặc định script ưu tiên mở app desktop đã build trong `release/`. Browser fallback chỉ bật khi đặt biến môi trường `LIBRADESK_ALLOW_BROWSER_FALLBACK=1`.
+
 Nếu cần reset cấu hình database đã lưu:
 
 ```bat
@@ -73,11 +75,21 @@ Một số mã dữ liệu demo thường dùng:
 |---|---|
 | Nhân viên thủ thư | `NV_TT001` |
 | Độc giả mẫu | `DG001` |
+| Độc giả demo có nợ | `DG024`, `DG025`, `DG026` |
 | Chi nhánh | `CN_TD` |
 | Đầu sách | `F01` |
 | Phương thức tiền mặt | `PT_TIEN_MAT` |
 
 ## Lệnh Phát Triển
+
+Từ root project có thể dùng các lệnh npm workspace:
+
+```bat
+npm run dev
+npm run build
+npm run electron:dev
+npm start
+```
 
 Backend:
 
