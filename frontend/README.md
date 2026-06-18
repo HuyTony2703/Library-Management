@@ -22,6 +22,17 @@ frontend/
 
 ## Lệnh Thường Dùng
 
+Từ root project:
+
+```bat
+npm run dev
+npm run build
+npm run electron:dev
+npm start
+```
+
+Các lệnh trên gọi lại script tương ứng trong `frontend/package.json`.
+
 Cài dependency:
 
 ```bat
@@ -59,3 +70,4 @@ Artifact desktop được xuất ra thư mục `../release`.
 - API base mặc định trỏ về backend local `http://localhost:8080`.
 - Khi thay đổi route hoặc API, ưu tiên cập nhật module trong `src/api/` thay vì gọi `fetch` rải rác trong page.
 - Root project có `start-libradesk.bat` để chạy app hoàn chỉnh sau khi đã có backend/frontend artifact.
+- `frontend/node_modules` và `frontend/dist` là output local, có thể sinh lại bằng `npm install` hoặc `npm run build`.
