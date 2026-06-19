@@ -1,4 +1,4 @@
-import AccountSettingsContent from "../../components/AccountSettingsContent";
+import AccountSettingsContent, { SettingsLogoutButton } from "../../components/AccountSettingsContent";
 
 export default function ReaderSettingsPage() {
     return (
@@ -9,9 +9,12 @@ export default function ReaderSettingsPage() {
                     <h1>Cài đặt</h1>
                     <p>Quản lý tài khoản, đổi mật khẩu, giao diện, thông báo và đăng xuất.</p>
                 </div>
+                <div className="reader-home-header-actions">
+                    <SettingsLogoutButton />
+                </div>
             </div>
 
-            <AccountSettingsContent portal="reader" />
+            <AccountSettingsContent />
         </div>
     );
 }
