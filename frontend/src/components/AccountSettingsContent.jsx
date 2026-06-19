@@ -1,23 +1,12 @@
 import {
-    ArrowLeftRight,
-    BarChart3,
     Bell,
-    BookCopy,
-    BookOpen,
-    ClipboardList,
-    CreditCard,
-    Home,
     KeyRound,
     LogOut,
-    MessageSquare,
     RotateCcw,
     Save,
-    Search,
     Settings,
-    ShieldCheck,
     SlidersHorizontal,
-    UserRoundCog,
-    UsersRound
+    UserRoundCog
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -45,20 +34,10 @@ const defaultNotificationSettings = {
     accountStatusAlerts: true
 };
 
-const notificationCoverageChecks = [
-    { key: "loanReminders", events: ["due_soon", "overdue"] },
-    { key: "debtAndFineAlerts", events: ["fine_created"] },
-    { key: "reservationAlerts", events: ["reservation_ready"] },
-    { key: "membershipAlerts", events: ["membership_success", "membership_expiring"] },
-    { key: "accountStatusAlerts", events: ["account_status_changed"] }
-];
-
-export default function AccountSettingsContent({ portal = "staff" }) {
-    const { user, logout, refreshUser } = useAuth();
-    const navigate = useNavigate();
+export default function AccountSettingsContent() {
+    const { user, refreshUser } = useAuth();
     const location = useLocation();
     const toast = useToast();
-    const actionDialog = useActionDialog();
     const role = normalizeRole(user);
     const displayName = getDisplayName(user);
 
@@ -73,6 +52,7 @@ export default function AccountSettingsContent({ portal = "staff" }) {
     const [savingPassword, setSavingPassword] = useState(false);
     const [savingProfile, setSavingProfile] = useState(false);
     const [editingProfile, setEditingProfile] = useState(false);
+    const [activeSettingsCategory, setActiveSettingsCategory] = useState("profile");
 
     useEffect(() => {
         setProfileForm(buildProfileForm(user));
@@ -88,6 +68,7 @@ export default function AccountSettingsContent({ portal = "staff" }) {
             return;
         }
 
+        setActiveSettingsCategory("profile");
         window.requestAnimationFrame(() => {
             document.getElementById("settings-profile")?.scrollIntoView({
                 behavior: "smooth",
@@ -96,7 +77,12 @@ export default function AccountSettingsContent({ portal = "staff" }) {
         });
     }, [location.hash]);
 
-    const shortcutActions = useMemo(() => getShortcutActions(role, portal), [role, portal]);
+    const settingsCategories = useMemo(() => [
+        { key: "profile", label: "Hồ sơ", description: "Thông tin cá nhân", icon: UserRoundCog },
+        { key: "security", label: "Bảo mật", description: "Đổi mật khẩu", icon: KeyRound },
+        { key: "appearance", label: "Giao diện", description: "Màu sắc và mật độ", icon: Settings },
+        { key: "notifications", label: "Thông báo", description: "Kênh và nội dung nhận", icon: Bell }
+    ], []);
 
     function updatePasswordField(field, value) {
         setPasswordForm((prev) => ({ ...prev, [field]: value }));
@@ -234,60 +220,6 @@ export default function AccountSettingsContent({ portal = "staff" }) {
         toast.success("Đã lưu cài đặt thông báo");
     }
 
-    async function testNotifications() {
-        if (!notifications.inApp && !notifications.browser && !notifications.email) {
-            toast.error("Vui lòng bật ít nhất một kênh thông báo trước khi kiểm tra");
-            return;
-        }
-
-        const disabledCoverage = notificationCoverageChecks
-            .filter((check) => !notifications[check.key])
-            .flatMap((check) => check.events);
-
-        if (disabledCoverage.length === notificationCoverageChecks.flatMap((check) => check.events).length) {
-            toast.error("Vui lòng bật ít nhất một nhóm nội dung thông báo");
-            return;
-        }
-
-        toast.success("Thông báo trong ứng dụng đang hoạt động");
-
-        if (notifications.browser) {
-            if (!("Notification" in window)) {
-                toast.error("Trình duyệt hiện tại không hỗ trợ thông báo");
-                return;
-            }
-
-            if (Notification.permission === "default") {
-                await Notification.requestPermission();
-            }
-
-            if (Notification.permission === "granted") {
-                new Notification("LibraDesk", {
-                    body: "Thông báo trình duyệt đã được bật cho tài khoản này."
-                });
-            } else {
-                toast.error("Trình duyệt chưa cho phép gửi thông báo");
-            }
-        }
-    }
-
-    async function confirmLogout() {
-        const confirmed = await actionDialog.confirm({
-            title: "Đăng xuất",
-            message: "Bạn chắc chắn muốn đăng xuất khỏi tài khoản hiện tại?",
-            confirmLabel: "Đăng xuất",
-            cancelLabel: "Ở lại",
-            danger: true
-        });
-
-        if (!confirmed) {
-            return;
-        }
-
-        logout();
-        navigate("/login", { replace: true });
-    }
-
     return (
         <div className="account-settings">
             <section className="settings-summary-grid">
@@ -308,9 +240,31 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                 </article>
             </section>
 
+            <nav className="settings-category-nav" aria-label="Danh mục cài đặt">
+                {settingsCategories.map((category) => {
+                    const Icon = category.icon;
+                    const isActive = activeSettingsCategory === category.key;
+
+                    return (
+                        <button
+                            key={category.key}
+                            type="button"
+                            className={`settings-category-button${isActive ? " is-active" : ""}`}
+                            onClick={() => setActiveSettingsCategory(category.key)}
+                        >
+                            <Icon size={19} />
+                            <span>
+                                <b>{category.label}</b>
+                                <small>{category.description}</small>
+                            </span>
+                        </button>
+                    );
+                })}
+            </nav>
+
             <section className="settings-dashboard-grid">
                 <div className="settings-column settings-column-left">
-                    <form id="settings-profile" className="panel settings-section settings-profile-section" onSubmit={submitProfile}>
+                    <form id="settings-profile" className={`panel settings-section settings-profile-section${activeSettingsCategory === "profile" ? " is-active" : ""}`} onSubmit={submitProfile}>
                         <div className="settings-section-title">
                             <UserRoundCog size={22} />
                             <div>
@@ -393,16 +347,10 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                             )}
                         </div>
                     </form>
-
-                    <SettingsShortcuts
-                        actions={shortcutActions}
-                        onNavigate={navigate}
-                        onLogout={confirmLogout}
-                    />
                 </div>
 
                 <div className="settings-column settings-column-right">
-                    <form className="panel settings-section settings-password-section" onSubmit={submitPassword}>
+                    <form className={`panel settings-section settings-password-section${activeSettingsCategory === "security" ? " is-active" : ""}`} onSubmit={submitPassword}>
                         <div className="settings-section-title">
                             <KeyRound size={22} />
                             <div>
@@ -443,7 +391,7 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                         </div>
                     </form>
 
-                    <article className="panel settings-section settings-appearance-section">
+                    <article className={`panel settings-section settings-appearance-section${activeSettingsCategory === "appearance" ? " is-active" : ""}`}>
                         <div className="settings-section-title">
                             <Settings size={22} />
                             <div>
@@ -486,7 +434,7 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                         </div>
                     </article>
 
-                    <article className="panel settings-section settings-notification-section">
+                    <article className={`panel settings-section settings-notification-section${activeSettingsCategory === "notifications" ? " is-active" : ""}`}>
                         <div className="settings-section-title">
                             <Bell size={22} />
                             <div>
@@ -554,10 +502,6 @@ export default function AccountSettingsContent({ portal = "staff" }) {
                                 <Save size={17} />
                                 Lưu thông báo
                             </button>
-                            <button type="button" className="soft-button" onClick={testNotifications}>
-                                <Bell size={17} />
-                                Kiểm tra
-                            </button>
                         </div>
                     </article>
                 </div>
@@ -566,40 +510,33 @@ export default function AccountSettingsContent({ portal = "staff" }) {
     );
 }
 
-function SettingsShortcuts({ actions, onNavigate, onLogout }) {
+export function SettingsLogoutButton() {
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+    const actionDialog = useActionDialog();
+
+    async function confirmLogout() {
+        const confirmed = await actionDialog.confirm({
+            title: "Đăng xuất",
+            message: "Bạn chắc chắn muốn đăng xuất khỏi tài khoản hiện tại?",
+            confirmLabel: "Đăng xuất",
+            cancelLabel: "Ở lại",
+            danger: true
+        });
+
+        if (!confirmed) {
+            return;
+        }
+
+        logout();
+        navigate("/login", { replace: true });
+    }
+
     return (
-        <section className="panel settings-section settings-shortcuts-section">
-            <div className="settings-section-title">
-                <ShieldCheck size={22} />
-                <div>
-                    <h2>Chức năng theo quyền</h2>
-                    <p>Các lối tắt bên dưới thay đổi theo vai trò tài khoản.</p>
-                </div>
-            </div>
-
-            <div className="settings-shortcut-grid">
-                {actions.map((action) => {
-                    const Icon = action.icon;
-
-                    return (
-                        <button
-                            key={action.to}
-                            type="button"
-                            className="settings-shortcut"
-                            onClick={() => onNavigate(action.to)}
-                        >
-                            <Icon size={20} />
-                            <span>{action.label}</span>
-                        </button>
-                    );
-                })}
-
-                <button type="button" className="settings-shortcut danger-shortcut" onClick={onLogout}>
-                    <LogOut size={20} />
-                    <span>Đăng xuất</span>
-                </button>
-            </div>
-        </section>
+        <button type="button" className="settings-logout-button" onClick={confirmLogout}>
+            <LogOut size={17} />
+            Đăng xuất
+        </button>
     );
 }
 
@@ -674,40 +611,6 @@ function getRoleDescription(role) {
     }
 
     return "Độc giả có thể xem hồ sơ, tra cứu sách, quản lý mượn trả, đặt trước, yêu thích, gói thành viên và thông báo cá nhân.";
-}
-
-function getShortcutActions(role, portal) {
-    if (role === "ADMIN") {
-        return [
-            { to: "/books", label: "Quản lý đầu sách", icon: BookOpen },
-            { to: "/book-copies", label: "Quản lý cuốn sách", icon: BookCopy },
-            { to: "/readers", label: "Quản lý độc giả", icon: UsersRound },
-            { to: "/admin/librarians", label: "Quản lý thủ thư", icon: UsersRound },
-            { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
-            { to: "/admin/rules", label: "Quy định hệ thống", icon: ShieldCheck },
-            { to: "/admin/reports", label: "Báo cáo hệ thống", icon: BarChart3 }
-        ];
-    }
-
-    if (role === "STAFF") {
-        return [
-            { to: "/", label: "Tổng quan", icon: Home },
-            { to: "/readers", label: "Quản lý độc giả", icon: UsersRound },
-            { to: "/staff/loans", label: "Quản lý mượn sách", icon: ArrowLeftRight },
-            { to: "/staff/returns", label: "Quản lý trả sách", icon: ClipboardList },
-            { to: "/staff/payments", label: "Quản lý thu tiền", icon: CreditCard },
-            { to: "/admin/comments", label: "Kiểm duyệt bình luận", icon: MessageSquare },
-        ];
-    }
-
-    return [
-        { to: portal === "reader" ? "/reader" : "/", label: "Trang chủ", icon: Home },
-        { to: portal === "reader" ? "/reader/settings#profile" : "/settings#profile", label: "Thông tin cá nhân", icon: UserRoundCog },
-        { to: "/reader/books", label: "Tra cứu sách", icon: Search },
-        { to: "/reader/notifications", label: "Thông báo", icon: Bell },
-        { to: "/reader/rules", label: "Quy định thư viện", icon: ShieldCheck },
-        { to: "/reader/favorites", label: "Sách yêu thích", icon: BookOpen }
-    ];
 }
 
 function loadJson(key, fallback) {
