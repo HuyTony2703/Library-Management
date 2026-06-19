@@ -203,7 +203,18 @@
 }
 
 .reader-home-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
     margin-bottom: 22px;
+}
+
+.reader-home-header-actions {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 4px;
 }
 
 .reader-home-header small {
