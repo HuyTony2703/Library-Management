@@ -1,49 +1,104 @@
-# Scripts
+# Script build và runtime
 
-Thư mục `scripts/` chứa các script phụ trợ để root project gọn hơn. Người dùng cuối vẫn chạy app bằng `start-libradesk.bat` ở root.
+Người dùng bình thường không cần chạy trực tiếp phần lớn file trong thư mục này. Điểm khởi động chính của toàn hệ thống là `start-libradesk.bat` tại thư mục gốc.
 
 ## Runtime
 
-```text
-scripts/runtime/start-libradesk.ps1
-scripts/runtime/start-backend.bat
-scripts/runtime/reset-db-config.bat
-```
+| File | Khi nào dùng |
+|---|---|
+| `runtime/start-libradesk.ps1` | Script PowerShell được launcher chính gọi tự động |
+| `runtime/start-backend.bat` | Chạy backend riêng để theo dõi lỗi hoặc cấu hình database |
+| `runtime/reset-db-config.bat` | Xóa cấu hình SQL Server đã lưu để nhập lại |
 
-- `start-libradesk.ps1`: script chính được `start-libradesk.bat` gọi để kiểm tra backend, warm-up và mở frontend.
-- `start-backend.bat`: chạy backend riêng, hữu ích khi cần xem log backend trực tiếp.
-- `reset-db-config.bat`: xóa cấu hình database runtime trong `%APPDATA%\LibraDesk`.
+### Luồng khởi động
 
-`start-libradesk.ps1` ưu tiên mở app desktop trong `release/`. Nếu cần fallback tạm sang Vite preview trên trình duyệt, đặt:
+`start-libradesk.bat` gọi `runtime/start-libradesk.ps1`. Script PowerShell sẽ:
+
+1. Kiểm tra health endpoint của backend.
+2. Gọi backend runner nếu backend chưa chạy.
+3. Warm-up backend.
+4. Ưu tiên mở app portable trong `release/`.
+5. Nếu không có app portable, thử Electron local từ `frontend/dist`.
+
+Browser fallback mặc định bị tắt. Chỉ bật khi thực sự cần:
 
 ```bat
 set LIBRADESK_ALLOW_BROWSER_FALLBACK=1
 start-libradesk.bat
 ```
 
-Khi chưa có app release, `start-libradesk.bat` có thể tự chạy `npm ci` và `npm run build` để chuẩn bị frontend local.
-
 ## Build
 
-```text
-scripts/build/build-backend-aot.bat
-scripts/build/build-backend-native.bat
+| File | Kết quả |
+|---|---|
+| `build/build-backend-aot.bat` | Build JAR và copy vào `release/backend-0.0.1-SNAPSHOT.jar` |
+| `build/build-backend-native.bat` | Build native executable khi máy có GraalVM Native Image và C++ build tools |
+
+Build backend JAR thông thường:
+
+```bat
+scripts\build\build-backend-aot.bat
 ```
 
-- `build-backend-aot.bat`: build backend artifact dùng cho release thông thường.
-- `build-backend-native.bat`: build native khi môi trường đã có đủ công cụ native tương ứng.
+Build app desktop:
 
-Artifact release đang dùng khi demo:
+```bat
+cd frontend
+npm ci
+npm run dist:win
+```
+
+## Artifact runtime
+
+Launcher ưu tiên các file:
 
 ```text
 release/backend-0.0.1-SNAPSHOT.jar
 release/LibraDesk-1.0.0-portable.exe
 ```
 
-## Entry Point Chính
+Khi thay đổi backend hoặc frontend, cần build lại artifact tương ứng trước khi phát hành hoặc demo.
 
-Không cần vào thư mục này để chạy app. Dùng:
+## Log và cấu hình
+
+Runtime lưu dữ liệu cục bộ tại:
+
+```text
+%APPDATA%\LibraDesk
+```
+
+Các file thường gặp:
+
+- `db-config.properties`: host, port và tên database.
+- `db-password.dpapi`: mật khẩu database đã được bảo vệ.
+- `backend.out.log`, `backend.err.log`: log backend.
+- `frontend.out.log`, `frontend.err.log`: log browser fallback nếu được bật.
+
+Không commit các file runtime này vào Git.
+
+## Xử lý lỗi nhanh
+
+### Backend không sẵn sàng
 
 ```bat
+scripts\runtime\start-backend.bat
+```
+
+### Sai cấu hình database
+
+```bat
+scripts\runtime\reset-db-config.bat
 start-libradesk.bat
 ```
+
+### Thiếu app desktop
+
+```bat
+cd frontend
+npm ci
+npm run dist:win
+```
+
+### File portable bị Windows chặn
+
+Thử chạy Electron local sau khi đã cài dependency và build frontend. Nếu máy thuộc tổ chức có Application Control policy, cần nhờ quản trị hệ thống cho phép file thực thi; không nên tắt chính sách bảo mật toàn máy.
