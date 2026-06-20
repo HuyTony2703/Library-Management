@@ -1,73 +1,114 @@
-# LibraDesk Frontend
+# Frontend LibraDesk
 
-Frontend của LibraDesk dùng React, Vite và Electron để đóng gói thành ứng dụng desktop Windows.
+Frontend sử dụng React, Vite và Electron. Cùng một code giao diện được dùng khi phát triển trên trình duyệt và khi đóng gói thành app desktop Windows.
 
-## Cấu Trúc Chính
+## Cấu trúc
 
 ```text
 frontend/
-├─ electron/       # Main process Electron
-├─ public/         # Static assets
-├─ src/
-│  ├─ api/         # Module gọi API theo vai trò
-│  ├─ assets/      # Tài nguyên giao diện
-│  ├─ components/  # Component dùng chung
-│  ├─ context/     # Context React
-│  ├─ pages/       # Page theo nhóm admin/staff/reader
-│  ├─ routes/      # Điều hướng
-│  └─ utils/       # Helper frontend
-├─ package.json
-└─ vite.config.js
+|-- electron/              Main process của Electron
+|-- public/                Tài nguyên tĩnh
+|-- src/
+|   |-- api/               API client và module theo vai trò
+|   |-- components/        Component dùng chung
+|   |-- context/           React context, gồm trạng thái đăng nhập
+|   |-- pages/             Trang chung và trang admin/staff/reader
+|   |-- routes/            Route theo vai trò
+|   `-- utils/             Helper hiển thị, vai trò và thông báo
+|-- dist/                  Output của Vite, có thể tạo lại
+|-- package.json
+`-- vite.config.js
 ```
 
-## Lệnh Thường Dùng
+## Cài dependency
 
-Từ root project:
+Chạy trong thư mục `frontend`:
 
 ```bat
-npm run dev
-npm run build
-npm run electron:dev
-npm start
+npm ci
 ```
 
-Các lệnh trên gọi lại script tương ứng trong `frontend/package.json`.
+Nếu `package-lock.json` chưa phù hợp hoặc đang phát triển dependency mới, dùng `npm install` rồi kiểm tra thay đổi lockfile trước khi commit.
 
-Cài dependency:
+## Lệnh thường dùng
 
-```bat
-npm install
+| Lệnh | Mục đích |
+|---|---|
+| `npm run dev` | Mở Vite dev server |
+| `npm run build` | Build production vào `dist/` |
+| `npm run preview` | Xem thử production build trên trình duyệt |
+| `npm run electron:dev` | Chạy Vite và Electron cùng lúc |
+| `npm run electron:preview` | Build rồi mở Electron local |
+| `npm run dist:win` | Đóng gói app portable vào `../release` |
+
+Từ thư mục gốc có thể dùng các lệnh rút gọn tương ứng như `npm run dev`, `npm run build` và `npm run electron:dev`.
+
+## Kết nối backend
+
+Backend local mặc định chạy tại:
+
+```text
+http://localhost:8080
 ```
 
-Chạy web dev server:
+Các nguyên tắc khi thêm API:
 
-```bat
-npm run dev
-```
+- Dùng `src/api/apiClient.js` cho xử lý request chung.
+- Đặt endpoint theo vai trò trong `adminApi.js`, `staffApi.js` hoặc `readerApi.js`.
+- Không gọi `fetch` trực tiếp rải rác trong page nếu API client hiện có đáp ứng được.
+- Hiển thị lỗi nghiệp vụ bằng toast hoặc dialog nhất quán, không render JSON thô.
+- Giá trị mã nội bộ có thể dùng trong request, nhưng nội dung hiển thị phải dùng tiếng Việt thân thiện.
 
-Build frontend:
+## Route và phân quyền
 
-```bat
-npm run build
-```
+- Route quản trị: `src/routes/adminRoutes.jsx`.
+- Route thủ thư: `src/routes/staffRoutes.jsx`.
+- Route độc giả: `src/routes/readerRoutes.jsx`.
+- Bảo vệ route dùng `ProtectedRoute` và context đăng nhập.
 
-Chạy Electron khi phát triển:
+Admin có toàn bộ quyền nghiệp vụ của thủ thư và thêm quyền quản trị. Không để trang admin-only xuất hiện hoặc gọi API admin khi đăng nhập bằng thủ thư.
 
-```bat
-npm run electron:dev
-```
+## Quy ước giao diện
 
-Build desktop portable:
+- Dùng component dùng chung như `DataTable`, `ResultModal`, `InlineActionMenu`, `StatusBadge` và các provider dialog/toast.
+- Bảng dữ liệu phải giữ cột ổn định khi phân trang.
+- Form thao tác chính nên mở trong modal/dialog thay vì chen vào góc trang.
+- Trạng thái chọn, hover, loading, empty và error phải nhìn thấy rõ ở cả nền sáng và nền tối.
+- Các thiết lập giao diện được lưu trên trình duyệt hiện tại.
+
+## Build desktop
 
 ```bat
 npm run dist:win
 ```
 
-Artifact desktop được xuất ra thư mục `../release`.
+Quá trình này tự build Vite trước, sau đó dùng electron-builder tạo:
 
-## Ghi Chú
+```text
+release/LibraDesk-1.0.0-portable.exe
+```
 
-- API base mặc định trỏ về backend local `http://localhost:8080`.
-- Khi thay đổi route hoặc API, ưu tiên cập nhật module trong `src/api/` thay vì gọi `fetch` rải rác trong page.
-- Root project có `start-libradesk.bat` để chạy app hoàn chỉnh sau khi đã có backend/frontend artifact.
-- `frontend/node_modules` và `frontend/dist` là output local, có thể sinh lại bằng `npm install` hoặc `npm run build`.
+Sau khi đóng gói, chạy `start-libradesk.bat` tại thư mục gốc để kiểm tra toàn bộ backend và app desktop.
+
+## Xử lý lỗi
+
+### `vite` không được nhận diện
+
+```bat
+cd frontend
+npm ci
+npm run dev
+```
+
+Không cài Vite global; project đã khai báo Vite trong `devDependencies`.
+
+### Electron tải lâu hoặc tự đóng
+
+- Đảm bảo `npm ci` đã hoàn tất.
+- Kiểm tra `frontend/node_modules/electron/dist/electron.exe`.
+- Chạy `npm run electron:preview` để xem lỗi trực tiếp.
+- Kiểm tra policy bảo mật Windows nếu file `.exe` bị chặn.
+
+### Build thành công nhưng app hiển thị giao diện cũ
+
+Build lại app portable bằng `npm run dist:win`, sau đó xác nhận timestamp của file trong `release/` đã thay đổi.
