@@ -1,63 +1,109 @@
-# Database
+# Cơ sở dữ liệu LibraDesk
 
-Thư mục `database/` chứa script SQL Server cho LibraDesk.
+Thư mục `database/` chứa schema, dữ liệu demo và các script hỗ trợ cho Microsoft SQL Server.
 
-## Thứ Tự Khởi Tạo
+## Yêu cầu
 
-Chạy theo thứ tự sau trên database `QuanLyThuVien`:
+- SQL Server đang hoạt động.
+- Tài khoản có quyền tạo database, bảng, khóa ngoại và dữ liệu.
+- SQL Server Management Studio, Azure Data Studio hoặc công cụ chạy T-SQL tương đương.
 
-```text
-database/scripts/01_full_database.sql
-database/scripts/02_seed_demo_data.sql
-```
+Database mặc định của ứng dụng là `QuanLyThuVien`.
 
-Trong đó:
+## Khởi tạo lần đầu
 
-- `01_full_database.sql`: tạo schema, bảng, ràng buộc và dữ liệu nền cần thiết.
-- `02_seed_demo_data.sql`: tạo dữ liệu demo đầy đủ cho admin, thủ thư, độc giả, sách, mượn trả, nợ, phiếu thu, bình luận và thông báo.
+Chạy đúng thứ tự:
 
-`02_seed_demo_data.sql` cũng có các case demo khoản nợ để kiểm tra màn thu tiền:
+| Thứ tự | Script | Mục đích |
+|---:|---|---|
+| 1 | `scripts/01_full_database.sql` | Tạo database, bảng, ràng buộc và dữ liệu nền |
+| 2 | `scripts/02_seed_demo_data.sql` | Thêm tài khoản và dữ liệu demo |
 
-| Độc giả | Tình huống |
+`01_full_database.sql` tự tạo `QuanLyThuVien` nếu database chưa tồn tại, sau đó chuyển ngữ cảnh sang database này.
+
+> `01_full_database.sql` là script khởi tạo đầy đủ. Không nên chạy lại trên database đã có dữ liệu nếu chưa kiểm tra nội dung và sao lưu.
+
+## Dữ liệu demo
+
+### Tài khoản
+
+| Vai trò | Tên đăng nhập | Mật khẩu |
+|---|---|---|
+| Quản trị viên | `admin` | `123456` |
+| Thủ thư | `thuthu01` | `123456` |
+| Độc giả | `docgia01` | `123456` |
+
+### Trường hợp công nợ
+
+| Độc giả | Dữ liệu kiểm thử |
 |---|---|
 | `DG024` | Nợ trả trễ, chưa thanh toán |
-| `DG025` | Nợ hỏng sách, chưa thanh toán |
-| `DG026` | Nhiều khoản nợ, đã thanh toán một phần |
+| `DG025` | Nợ làm hỏng sách, chưa thanh toán |
+| `DG026` | Có nhiều khoản nợ và đã thanh toán một phần |
 
-## Script Phụ Trợ
+Seed còn chứa sách sẵn có, đang mượn, đặt trước, bị hỏng, bị mất; phiếu mượn, phiếu trả, khoản phạt, phiếu thu, gói thành viên, bình luận và thông báo.
 
-Các script sau dùng để kiểm thử hoặc reset từng nhóm dữ liệu, không bắt buộc chạy khi cài mới:
+## Script hỗ trợ
+
+Các file sau không bắt buộc khi cài mới:
+
+| Script | Công dụng |
+|---|---|
+| `scripts/03_test_queries.sql` | Truy vấn kiểm tra dữ liệu và quan hệ chính |
+| `scripts/04_reader_notification_extra.sql` | Dữ liệu bổ sung cho thông báo độc giả |
+| `scripts/04_reader_portal_extra.sql` | Dữ liệu bổ sung cho cổng độc giả |
+| `scripts/05_reader_membership_extra.sql` | Dữ liệu gói thành viên |
+| `scripts/06_reader_comment_rating_reset.sql` | Reset dữ liệu đánh giá và bình luận |
+| `scripts/07_reader_favorites_reset.sql` | Reset dữ liệu sách yêu thích |
+
+Chỉ chạy script hỗ trợ khi bạn hiểu dữ liệu mà script sẽ thêm, sửa hoặc xóa.
+
+## Cấu hình kết nối của ứng dụng
+
+Backend mặc định dùng connection string:
 
 ```text
-03_test_queries.sql
-04_reader_notification_extra.sql
-04_reader_portal_extra.sql
-05_reader_membership_extra.sql
-06_reader_comment_rating_reset.sql
-07_reader_favorites_reset.sql
+jdbc:sqlserver://localhost:1433;databaseName=QuanLyThuVien;encrypt=true;trustServerCertificate=true
 ```
 
-## Cấu Hình Runtime
+Khi chạy `start-libradesk.bat` lần đầu, hệ thống yêu cầu:
 
-Khi chạy app bằng `start-libradesk.bat`, backend sẽ hỏi cấu hình SQL Server nếu chưa có. Cấu hình được lưu trong:
+- SQL Server host và port, ví dụ `localhost:1433`.
+- Tên database, mặc định `QuanLyThuVien`.
+- SQL username.
+- SQL password.
 
-```text
-%APPDATA%\LibraDesk
-```
+Cấu hình được lưu tại `%APPDATA%\LibraDesk`. Mật khẩu được bảo vệ theo tài khoản Windows hiện tại.
 
-Muốn nhập lại cấu hình database:
+Để nhập lại cấu hình:
 
 ```bat
 scripts\runtime\reset-db-config.bat
 start-libradesk.bat
 ```
 
-## Tài Khoản Demo
+## Kiểm tra sau khi cài
 
-| Vai trò | Tên đăng nhập | Mật khẩu |
-|---|---|---|
-| Admin | `admin` | `123456` |
-| Thủ thư | `thuthu01` | `123456` |
-| Độc giả | `docgia01` | `123456` |
+1. Mở database `QuanLyThuVien`.
+2. Kiểm tra các bảng `TAIKHOAN`, `DOCGIA`, `DAUSACH`, `CUONSACH`, `PHIEUMUON`, `KHOANNO` và `PHIEUTHU`.
+3. Chạy `scripts/03_test_queries.sql`.
+4. Khởi động app và đăng nhập bằng một tài khoản demo.
+5. Kiểm tra health endpoint: `http://localhost:8080/api/health`.
 
-Các độc giả demo nợ dùng chung mật khẩu seed mặc định nếu tài khoản được bật trong dữ liệu demo.
+## Xử lý lỗi
+
+Hướng dẫn chi tiết nằm tại [notes/run-database-guide.md](notes/run-database-guide.md). Các kiểm tra nhanh:
+
+- SQL Server service đã chạy chưa.
+- TCP/IP đã bật chưa.
+- Port trong launcher có đúng không.
+- Database `QuanLyThuVien` có tồn tại không.
+- SQL Authentication có được bật không nếu dùng tài khoản SQL.
+- Firewall có chặn port SQL Server không.
+
+## Tài liệu liên quan
+
+- [Mô tả các bảng chính](notes/table-description.md)
+- [Quy tắc nghiệp vụ](notes/business-rules.md)
+- [Hướng dẫn chạy và xử lý lỗi database](notes/run-database-guide.md)
+- [README tổng quan](../README.md)
