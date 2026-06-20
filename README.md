@@ -1,88 +1,105 @@
 # LibraDesk
 
-LibraDesk là ứng dụng desktop quản lý thư viện, gồm backend Spring Boot, frontend React/Vite/Electron và cơ sở dữ liệu SQL Server. Ứng dụng hỗ trợ quản lý đầu sách, cuốn sách, độc giả, mượn trả, thu tiền phạt, kiểm duyệt bình luận, quy định hệ thống, báo cáo và cài đặt tài khoản.
+LibraDesk là ứng dụng desktop quản lý thư viện trên Windows. Hệ thống gồm:
 
-## Thành viên
+- Backend REST API: Java 21, Spring Boot và Spring Security.
+- Giao diện: React, Vite và Electron.
+- Cơ sở dữ liệu: Microsoft SQL Server.
 
-| Họ tên | MSSV | Vai trò |
-|---|---:|---|
-| Lê Trí Cao | 24520206 | Backend, database, nghiệp vụ |
-| Tô Ngọc Huy | 24520698 | Frontend, Electron, giao diện |
-| Lê Tuấn Dương | 24520359 | Tài liệu, kiểm thử, báo cáo |
+Ứng dụng hỗ trợ ba vai trò: quản trị viên, thủ thư và độc giả. Các chức năng chính gồm quản lý sách, độc giả, mượn trả, công nợ, thu tiền, đặt trước, đánh giá, bình luận, thông báo, quy định và báo cáo.
 
-## Cấu Trúc Project
+## Bắt đầu nhanh
 
-```text
-Library-Management/
-├─ backend/                  # Spring Boot API, cấu hình DB và runner backend
-├─ frontend/                 # React + Vite + Electron desktop app
-├─ database/                 # Script tạo schema, seed demo và truy vấn kiểm thử
-├─ docs/                     # Tài liệu kỹ thuật, API, mapping và Postman collection
-│  ├─ api/
-│  ├─ backend/
-│  └─ frontend/
-├─ scripts/
-│  ├─ build/                 # Script build artifact backend
-│  └─ runtime/               # Script runtime phụ trợ cho app
-├─ release/                  # Artifact đã build để chạy/demo
-└─ start-libradesk.bat       # Điểm chạy chính cho người dùng Windows
-```
+### 1. Chuẩn bị môi trường
 
-Các script runtime/build đã được gom vào `scripts/` để root project gọn hơn. File `start-libradesk.bat` vẫn nằm ở root để có thể chạy app bằng cách double-click như trước.
+Để chạy bản desktop đã đóng gói, máy cần:
 
-## Chạy App
+- Windows 10 hoặc Windows 11.
+- SQL Server đang hoạt động.
+- Java 21 để chạy backend dạng JAR.
 
-Yêu cầu máy có SQL Server và database `QuanLyThuVien`. Nếu chưa có database, chạy lần lượt:
+Để build từ source, cần thêm Node.js/npm và kết nối Internet trong lần cài dependency đầu tiên.
 
-```text
-database/scripts/01_full_database.sql
-database/scripts/02_seed_demo_data.sql
-```
+### 2. Khởi tạo database
 
-Sau đó chạy:
+Mở SQL Server Management Studio hoặc công cụ SQL tương đương, rồi chạy lần lượt:
+
+1. `database/scripts/01_full_database.sql`
+2. `database/scripts/02_seed_demo_data.sql`
+
+Script đầu tiên tự tạo database `QuanLyThuVien` nếu database chưa tồn tại. Hướng dẫn chi tiết nằm tại [database/README_DATABASE.md](database/README_DATABASE.md).
+
+### 3. Mở ứng dụng
+
+Tại thư mục gốc, chạy:
 
 ```bat
 start-libradesk.bat
 ```
 
-Script sẽ tự kiểm tra backend tại `http://localhost:8080/api/health`, khởi động backend khi cần, warm-up backend và mở LibraDesk bằng artifact trong `release/` hoặc fallback sang Electron/Vite nếu phù hợp.
+Trong lần chạy đầu tiên, terminal sẽ yêu cầu host, tên database, tài khoản và mật khẩu SQL Server. Sau khi kết nối thành công, cấu hình được lưu riêng trong `%APPDATA%\LibraDesk` cho tài khoản Windows hiện tại.
 
-Theo mặc định script ưu tiên mở app desktop đã build trong `release/`. Browser fallback chỉ bật khi đặt biến môi trường `LIBRADESK_ALLOW_BROWSER_FALLBACK=1`.
+Launcher thực hiện theo thứ tự:
 
-Nếu cần reset cấu hình database đã lưu:
+1. Kiểm tra backend tại `http://localhost:8080/api/health`.
+2. Khởi động backend nếu cần.
+3. Warm-up backend.
+4. Mở app desktop từ `release/` hoặc Electron local nếu có đủ dependency.
 
-```bat
-scripts\runtime\reset-db-config.bat
-```
-
-Nếu cần chạy backend riêng:
-
-```bat
-scripts\runtime\start-backend.bat
-```
-
-## Tài Khoản Demo
+## Tài khoản demo
 
 | Vai trò | Tên đăng nhập | Mật khẩu |
 |---|---|---|
-| Admin | `admin` | `123456` |
+| Quản trị viên | `admin` | `123456` |
 | Thủ thư | `thuthu01` | `123456` |
 | Độc giả | `docgia01` | `123456` |
 
-Một số mã dữ liệu demo thường dùng:
+Dữ liệu thường dùng khi demo:
 
-| Dữ liệu | Mã |
+| Đối tượng | Mã mẫu |
 |---|---|
 | Nhân viên thủ thư | `NV_TT001` |
-| Độc giả mẫu | `DG001` |
-| Độc giả demo có nợ | `DG024`, `DG025`, `DG026` |
+| Độc giả | `DG001` |
+| Độc giả có nợ | `DG024`, `DG025`, `DG026` |
 | Chi nhánh | `CN_TD` |
 | Đầu sách | `F01` |
 | Phương thức tiền mặt | `PT_TIEN_MAT` |
 
-## Lệnh Phát Triển
+## Build từ source
 
-Từ root project có thể dùng các lệnh npm workspace:
+### Backend
+
+Build và cập nhật JAR trong `release/`:
+
+```bat
+scripts\build\build-backend-aot.bat
+```
+
+Kiểm tra compile nhanh trong lúc phát triển:
+
+```bat
+cd backend
+.\mvnw.cmd -DskipTests compile
+```
+
+### Frontend web
+
+```bat
+cd frontend
+npm ci
+npm run build
+```
+
+### App desktop Electron
+
+```bat
+cd frontend
+npm run dist:win
+```
+
+File portable được tạo tại `release/LibraDesk-1.0.0-portable.exe`.
+
+### Lệnh tiện ích từ thư mục gốc
 
 ```bat
 npm run dev
@@ -91,57 +108,93 @@ npm run electron:dev
 npm start
 ```
 
-Backend:
+`npm start` gọi `start-libradesk.bat`. `npm run dev` chỉ mở Vite để phát triển giao diện, không thay thế launcher của toàn hệ thống.
 
-```bat
-cd backend
-.\mvnw.cmd -DskipTests compile
+## Cấu trúc thư mục
+
+```text
+Library-Management/
+|-- backend/                  Spring Boot API
+|-- frontend/                 React, Vite và Electron
+|-- database/
+|   |-- scripts/              Schema, seed và script kiểm thử
+|   `-- notes/                Ghi chú database và nghiệp vụ
+|-- docs/                     Tài liệu kỹ thuật và kiểm thử
+|-- scripts/
+|   |-- build/                Script build artifact
+|   `-- runtime/              Script khởi động và cấu hình runtime
+|-- release/                  JAR và app desktop đã đóng gói
+|-- package.json              Lệnh npm dùng từ thư mục gốc
+`-- start-libradesk.bat       Điểm khởi động chính trên Windows
 ```
 
-Frontend:
+## Tài liệu nên đọc
+
+| Nhu cầu | Tài liệu |
+|---|---|
+| Cài và chạy database | [database/README_DATABASE.md](database/README_DATABASE.md) |
+| Xử lý lỗi kết nối SQL Server | [database/notes/run-database-guide.md](database/notes/run-database-guide.md) |
+| Phát triển frontend | [frontend/README.md](frontend/README.md) |
+| Script build và runtime | [scripts/README.md](scripts/README.md) |
+| Danh mục tài liệu kỹ thuật | [docs/README.md](docs/README.md) |
+| Kiểm thử API bằng Postman | [docs/api/library-desktop-app.postman_collection.json](docs/api/library-desktop-app.postman_collection.json) |
+
+## Quy ước API
+
+| Nhóm endpoint | Prefix | Quyền truy cập chính |
+|---|---|---|
+| Public và đăng nhập | `/api/public/**`, `/api/auth/**` | Không yêu cầu đăng nhập hoặc tùy endpoint |
+| Độc giả | `/api/reader/**` | Độc giả |
+| Nghiệp vụ thư viện | `/api/staff/**` | Thủ thư và quản trị viên |
+| Quản trị | `/api/admin/**` | Quản trị viên |
+
+Frontend nên gọi API qua các module trong `frontend/src/api/` thay vì gọi `fetch` trực tiếp rải rác trong page.
+
+## Xử lý lỗi thường gặp
+
+### Không kết nối được SQL Server
+
+1. Kiểm tra dịch vụ SQL Server đang chạy.
+2. Với kết nối `localhost:1433`, kiểm tra TCP/IP và port `1433` đã được bật.
+3. Kiểm tra SQL Authentication nếu dùng tài khoản `sa`.
+4. Reset cấu hình đã lưu và chạy lại:
+
+```bat
+scripts\runtime\reset-db-config.bat
+start-libradesk.bat
+```
+
+### Backend không khởi động
+
+Chạy backend riêng để xem lỗi trực tiếp:
+
+```bat
+scripts\runtime\start-backend.bat
+```
+
+Log runtime nằm trong `%APPDATA%\LibraDesk`.
+
+### Thiếu Vite hoặc Electron
 
 ```bat
 cd frontend
-npm install
+npm ci
 npm run build
 ```
 
-Desktop build:
+Sau đó chạy lại `start-libradesk.bat`. Nếu cần đóng gói lại app desktop, chạy `npm run dist:win` trong thư mục `frontend`.
 
-```bat
-cd frontend
-npm run dist:win
-```
+## Thành viên
 
-Build backend artifact:
+| Họ tên | MSSV | Phụ trách chính |
+|---|---:|---|
+| Lê Trí Cao | 24520206 | Backend, database và nghiệp vụ |
+| Tô Ngọc Huy | 24520698 | Frontend, Electron và giao diện |
+| Lê Tuấn Dương | 24520359 | Tài liệu, kiểm thử và báo cáo |
 
-```bat
-scripts\build\build-backend-aot.bat
-```
+## Lưu ý vận hành
 
-## Tài Liệu
-
-- Tổng mục tài liệu: [docs/README.md](docs/README.md)
-- Hợp đồng prefix API: [docs/api-prefix-contract.md](docs/api-prefix-contract.md)
-- Tài liệu backend: [docs/backend/complete-documentation.md](docs/backend/complete-documentation.md)
-- Cấu trúc backend: [docs/backend/structure.md](docs/backend/structure.md)
-- Mapping frontend/API: [docs/frontend/api-mapping.md](docs/frontend/api-mapping.md)
-- Database: [database/README_DATABASE.md](database/README_DATABASE.md)
-- Script vận hành: [scripts/README.md](scripts/README.md)
-- Postman collection: [docs/api/library-desktop-app.postman_collection.json](docs/api/library-desktop-app.postman_collection.json)
-
-## Quy Ước API
-
-- Admin: `/api/admin/**`
-- Staff: `/api/staff/**`
-- Reader: `/api/reader/**`
-- Public: `/api/public/**`
-
-Frontend nên gọi API qua các module theo vai trò trong `frontend/src/api/` để tránh trộn quyền và tránh phá hợp đồng prefix.
-
-## Ghi Chú Vận Hành
-
-- App desktop cần backend chạy ổn trước khi đăng nhập.
-- Cấu hình database runtime được lưu trong `%APPDATA%\LibraDesk`.
-- Log backend/frontend runtime cũng nằm trong `%APPDATA%\LibraDesk`.
-- Không nên đổi vị trí `start-libradesk.bat` vì đây là entrypoint đơn giản cho người dùng cuối.
+- Không đưa mật khẩu database hoặc JWT secret thật lên Git.
+- Không di chuyển `start-libradesk.bat` khỏi thư mục gốc nếu chưa cập nhật các đường dẫn tương ứng.
+- Artifact trong `release/` phải được build lại sau khi thay đổi backend hoặc frontend.
+- Source code và schema hiện tại là nguồn thông tin chính xác nhất nếu tài liệu thiết kế cũ có khác biệt.
