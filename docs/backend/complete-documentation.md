@@ -1,5 +1,7 @@
 # TÀI LIỆU TOÀN DIỆN CẤU TRÚC BACKEND
 
+> **Phạm vi:** Tài liệu snapshot theo lớp, hữu ích để học luồng xử lý nhưng có thể chậm hơn source code sau các lần phát triển. Không sao chép secret hoặc cấu hình mẫu trong tài liệu sang production.
+
 **Dự án**: Hệ thống quản lý thư viện desktop  
 **Framework**: Spring Boot 3.5.14 + Spring Security + JPA/Hibernate  
 **Database**: SQL Server  
