@@ -1,5 +1,7 @@
 # Mô Tả Chi Tiết Cấu Trúc Backend - Hoàn Chỉnh
 
+> **Phạm vi:** Tài liệu tham khảo kiến trúc theo thời điểm biên soạn. Danh sách file có thể không bao gồm controller/service mới. Cấu trúc thật trong `backend/src/main/java` là nguồn chính xác nhất.
+
 **Dự án**: Hệ thống quản lý thư viện desktop app
 **Framework**: Spring Boot 3.5.14  
 **Database**: SQL Server  
