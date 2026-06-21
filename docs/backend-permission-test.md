@@ -1,5 +1,7 @@
 # Backend Permission Test
 
+> **Trạng thái:** Biên bản kiểm thử lịch sử, không phải kết quả của lần build hiện tại. Ngày, branch, port và dữ liệu bên dưới ghi lại đúng môi trường đã chạy khi lập biên bản.
+
 Ngày chạy: 2026-06-09
 
 Branch: `test`
