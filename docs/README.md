@@ -1,30 +1,50 @@
-# Tài Liệu LibraDesk
+# Tài liệu LibraDesk
 
-Thư mục này gom tài liệu kỹ thuật và tài liệu kiểm thử của project.
+Trang này là mục lục tài liệu kỹ thuật. Nếu bạn chỉ muốn cài và chạy ứng dụng, hãy bắt đầu từ [README ở thư mục gốc](../README.md).
 
-## API Và Hợp Đồng Tích Hợp
+## Lộ trình đọc đề xuất
 
-- [api-prefix-contract.md](api-prefix-contract.md): quy ước prefix API theo vai trò.
-- [api/library-desktop-app.postman_collection.json](api/library-desktop-app.postman_collection.json): Postman collection phục vụ kiểm thử API.
+### Người mới tham gia project
 
-## Backend
+1. [README tổng quan](../README.md)
+2. [Hướng dẫn database](../database/README_DATABASE.md)
+3. [Frontend React/Electron](../frontend/README.md)
+4. [Cấu trúc backend](backend/structure.md)
+5. [Mapping màn hình và API](frontend/api-mapping.md)
 
-- [backend/complete-documentation.md](backend/complete-documentation.md): tài liệu tổng hợp backend.
-- [backend/structure.md](backend/structure.md): cấu trúc module backend.
-- [backend-permission-test.md](backend-permission-test.md): ghi chú kiểm thử phân quyền backend.
+### Người kiểm thử
 
-## Frontend
+1. [Postman collection](api/library-desktop-app.postman_collection.json)
+2. [Kiểm thử phân quyền backend](backend-permission-test.md)
+3. [Hợp đồng prefix API](api-prefix-contract.md)
+4. [Kế hoạch nghiệm thu admin](admin-modernization/04-acceptance-tests.md)
 
-- [frontend/api-mapping.md](frontend/api-mapping.md): mapping màn hình frontend với API.
-- [../frontend/README.md](../frontend/README.md): hướng dẫn riêng cho frontend React/Electron.
+## Tài liệu hiện hành
 
-## Database Và Script
+| Chủ đề | File | Nội dung |
+|---|---|---|
+| API theo vai trò | [api-prefix-contract.md](api-prefix-contract.md) | Quy ước `/api/admin`, `/api/staff`, `/api/reader` |
+| Frontend và API | [frontend/api-mapping.md](frontend/api-mapping.md) | Màn hình nào gọi endpoint nào |
+| Phân quyền | [backend-permission-test.md](backend-permission-test.md) | Ma trận quyền và cách kiểm tra |
+| Cấu trúc backend | [backend/structure.md](backend/structure.md) | Các package và luồng xử lý |
+| Backend chi tiết | [backend/complete-documentation.md](backend/complete-documentation.md) | Tài liệu tham khảo theo lớp |
+| Database | [../database/README_DATABASE.md](../database/README_DATABASE.md) | Cài đặt, seed và xử lý lỗi |
+| Script | [../scripts/README.md](../scripts/README.md) | Build, runtime và log |
 
-- [../database/README_DATABASE.md](../database/README_DATABASE.md): hướng dẫn database.
-- [../scripts/README.md](../scripts/README.md): hướng dẫn script runtime/build.
+## Hồ sơ thiết kế admin modernization
 
-## Ghi Chú Cập Nhật
+Thư mục [admin-modernization](admin-modernization/README.md) lưu yêu cầu, quy tắc, roadmap, API đề xuất, acceptance test và gap analysis. Đây là hồ sơ thiết kế theo thời điểm, vì vậy có thể khác một phần so với code hiện tại.
 
-- Root project có `package.json` workspace để gọi nhanh script frontend và `start-libradesk.bat`.
-- Script khởi động ưu tiên artifact desktop trong `release/`; browser fallback cần bật bằng `LIBRADESK_ALLOW_BROWSER_FALLBACK=1`.
-- Dữ liệu seed có thêm các độc giả `DG024`, `DG025`, `DG026` cho demo khoản nợ và thu tiền.
+Khi có xung đột, ưu tiên theo thứ tự:
+
+1. Schema và source code đang chạy.
+2. Hợp đồng API hiện hành.
+3. Tài liệu thiết kế/tham khảo.
+
+## Nguyên tắc cập nhật tài liệu
+
+- Dùng tiếng Việt UTF-8 và thuật ngữ thống nhất: quản trị viên, thủ thư, độc giả.
+- Lệnh phải ghi rõ chạy từ thư mục gốc hay thư mục con.
+- Không ghi mật khẩu thật, connection string thật hoặc token vào Markdown.
+- Khi thay đổi endpoint, cập nhật cả `api-prefix-contract.md` và `frontend/api-mapping.md`.
+- Khi thay đổi schema hoặc seed, cập nhật `database/README_DATABASE.md`.
