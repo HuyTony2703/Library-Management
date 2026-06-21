@@ -1,89 +1,83 @@
-# API Prefix Contract
+# Hợp đồng prefix API
 
-## 1. Mục tiêu
+Tài liệu này xác định ranh giới endpoint theo vai trò. Mục tiêu là tránh gọi sai quyền, tạo endpoint trùng và trộn API giữa các module frontend.
 
-Tài liệu này dùng để chia ranh giới API giữa người 1 và người 2, tránh tạo trùng endpoint, sửa chung file hoặc làm vỡ chức năng của nhau.
+## Quy ước
 
-## 2. Quy ước prefix
+| Prefix | Người dùng | Mục đích |
+|---|---|---|
+| `/api/auth/**` | Người dùng đã/đang đăng nhập tùy endpoint | Đăng nhập, hồ sơ và đổi mật khẩu |
+| `/api/admin/**` | Quản trị viên | Quản trị tài khoản, quy định, báo cáo và chức năng admin-only |
+| `/api/staff/**` | Thủ thư và quản trị viên | Mượn, trả, công nợ và thu tiền |
+| `/api/reader/**` | Độc giả | Cổng độc giả và dữ liệu của chính tài khoản |
+| `/api/options/**` | Người dùng đã đăng nhập | Danh mục dùng cho select/picker |
+| `/api/health`, `/api/warmup` | Runtime | Health check và warm-up |
 
-| Prefix | Người phụ trách | Vai trò sử dụng | Mục đích |
-|---|---|---|---|
-| `/api/admin/**` | Người 1 | QUAN_TRI_VIEN | Quản trị hệ thống |
-| `/api/staff/**` | Người 1 | THU_THU, QUAN_TRI_VIEN | Nghiệp vụ thủ thư |
-| `/api/reader/**` | Người 2 | DOC_GIA | Giao diện độc giả |
-| `/api/public/**` | Cả nhóm | Không cần login hoặc dùng chung | Dữ liệu công khai |
-| `/api/auth/**` | Không tự ý sửa | Tất cả | Đăng nhập, thông tin tài khoản |
-| `/api/options/**` | Không tự ý sửa | Tất cả role đã login | Danh mục dùng chung |
+Một số endpoint nghiệp vụ cũ như `/api/books`, `/api/book-copies`, `/api/readers` và `/api/reports` vẫn được giữ để tương thích với giao diện hiện tại. Không đổi hoặc xóa nếu chưa cập nhật toàn bộ nơi sử dụng.
 
-## 3. Người 1 được tạo API
+## API quản trị viên
 
-### Admin
+Các nhóm chính:
 
-- `GET /api/admin/librarians`
-- `POST /api/admin/librarians`
-- `PUT /api/admin/librarians/{id}`
-- `PATCH /api/admin/librarians/{id}/status`
-- `POST /api/admin/librarians/{id}/reset-password`
+- `/api/admin/librarians`: quản lý tài khoản thủ thư.
+- `/api/admin/rules`: phiên bản quy định hệ thống.
+- `/api/admin/reports`: báo cáo tổng hợp.
+- `/api/admin/comments`: kiểm duyệt bình luận ở phạm vi quản trị.
 
-- `GET /api/admin/rules/current`
-- `GET /api/admin/rules/history`
-- `POST /api/admin/rules`
-- `POST /api/admin/rules/{id}/activate`
+Chỉ vai trò `QUAN_TRI_VIEN` được truy cập `/api/admin/**`.
 
-- `GET /api/admin/reports/overview`
-- `GET /api/admin/reports/debts`
-- `GET /api/admin/reports/current-loans`
-- `GET /api/admin/reports/borrow-by-category`
-- `GET /api/admin/reports/late-returns`
-- `GET /api/admin/reports/payments`
+## API thủ thư
 
-- `GET /api/admin/comments`
-- `PATCH /api/admin/comments/{id}/hide`
-- `PATCH /api/admin/comments/{id}/delete`
-- `PATCH /api/admin/comments/{id}/restore`
+Các nhóm chính:
 
-### Staff
+- `/api/staff/loans`: lập và xem phiếu mượn.
+- `/api/staff/returns`: lập và xem phiếu trả.
+- `/api/staff/readers/{maDocGia}/current-loans`: sách độc giả đang mượn.
+- `/api/staff/readers/{maDocGia}/debts`: công nợ của độc giả.
+- `/api/staff/payments`: lập và xem phiếu thu.
+- `/api/staff/readers/{maDocGia}/payments`: lịch sử phiếu thu.
 
-- `GET /api/staff/loans/{id}`
-- `POST /api/staff/loans`
+Vai trò `THU_THU` và `QUAN_TRI_VIEN` được truy cập `/api/staff/**`.
 
-- `GET /api/staff/returns/{id}`
-- `POST /api/staff/returns`
+## API độc giả
 
-- `GET /api/staff/readers/{id}/debts`
-- `GET /api/staff/readers/{id}/current-loans`
+Các nhóm chính:
 
-- `GET /api/staff/payments/{id}`
-- `POST /api/staff/payments`
-- `GET /api/staff/readers/{id}/payments`
+- `/api/reader/me`: hồ sơ hiện tại.
+- `/api/reader/books`: tra cứu và xem chi tiết đầu sách.
+- `/api/reader/loans`: sách đang mượn, gia hạn và lịch sử gia hạn.
+- `/api/reader/reservations`: đặt trước và hủy đặt trước.
+- `/api/reader/notifications`: danh sách, đánh dấu đọc và xóa thông báo.
+- `/api/reader/membership`: gói hiện tại, danh sách gói, lịch sử và mua/gia hạn.
+- `/api/reader/favorites`: sách yêu thích.
+- `/api/reader/books/{maDauSach}/ratings`: đánh giá đầu sách.
+- `/api/reader/books/{maDauSach}/comments`: bình luận đầu sách.
+- `/api/reader/recommendations`: gợi ý sách.
+- `/api/reader/rules/current`: quy định đang áp dụng.
 
-## 4. Người 2 được tạo API
+Độc giả chỉ được thao tác dữ liệu thuộc tài khoản hiện tại; backend phải lấy danh tính từ token thay vì tin mã độc giả do client tự gửi.
 
-- `GET /api/reader/books`
-- `GET /api/reader/books/{id}`
-- `GET /api/reader/loans`
-- `POST /api/reader/loans/{id}/renew`
-- `GET /api/reader/reservations`
-- `POST /api/reader/reservations`
-- `DELETE /api/reader/reservations/{id}`
-- `GET /api/reader/notifications`
-- `PATCH /api/reader/notifications/{id}/read`
-- `GET /api/reader/membership`
-- `POST /api/reader/membership/purchase`
-- `POST /api/reader/comments`
-- `PUT /api/reader/comments/{id}`
-- `DELETE /api/reader/comments/{id}`
-- `GET /api/reader/favorites`
-- `POST /api/reader/favorites`
-- `DELETE /api/reader/favorites/{id}`
-- `GET /api/reader/recommendations/random`
-- `GET /api/reader/guide`
+## Quy tắc frontend
 
-## 5. Quy tắc không đụng nhau
+| API | Module nên dùng |
+|---|---|
+| Admin | `frontend/src/api/adminApi.js` |
+| Staff | `frontend/src/api/staffApi.js` |
+| Reader | `frontend/src/api/readerApi.js` |
+| Auth | `frontend/src/api/authApi.js` |
+| Dùng chung/legacy | `frontend/src/api/libraryApi.js` |
 
-- Người 1 không tạo hoặc sửa controller `/api/reader/**`.
-- Người 2 không tạo hoặc sửa controller `/api/admin/**`, `/api/staff/**`.
-- Không sửa trực tiếp `libraryApi.js` để thêm API mới.
-- Người 1 dùng `adminApi.js` và `staffApi.js`.
-- Người 2 dùng `readerApi.js`.
-- Không tự ý đổi endpoint cũ nếu chưa báo nhóm.
+- Mọi module dùng `apiClient.js` cho token và xử lý lỗi chung.
+- Không tự nối base URL trong page.
+- Không gọi endpoint admin từ giao diện thủ thư.
+- Khi thêm endpoint mới, cập nhật tài liệu mapping frontend/API.
+
+## Kiểm tra phân quyền tối thiểu
+
+- Không token gọi API protected phải nhận `401`.
+- Đúng token nhưng sai vai trò phải nhận `403`.
+- Admin gọi được API staff.
+- Thủ thư không gọi được API admin-only.
+- Độc giả không gọi được API staff/admin.
+
+Xem kết quả kiểm thử mẫu tại [backend-permission-test.md](backend-permission-test.md).
