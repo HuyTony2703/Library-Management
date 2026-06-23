@@ -48,3 +48,15 @@ Khi có xung đột, ưu tiên theo thứ tự:
 - Không ghi mật khẩu thật, connection string thật hoặc token vào Markdown.
 - Khi thay đổi endpoint, cập nhật cả `api-prefix-contract.md` và `frontend/api-mapping.md`.
 - Khi thay đổi schema hoặc seed, cập nhật `database/README_DATABASE.md`.
+
+## Thông tin tối thiểu của tài liệu
+
+Tài liệu mô tả thiết kế hoặc kết quả kiểm thử nên ghi rõ:
+
+- Phạm vi và đối tượng đọc.
+- Source/schema/commit được dùng để đối chiếu.
+- Trạng thái: hiện hành, đề xuất hay lưu trữ tham khảo.
+- Lệnh hoặc dữ liệu cần để tái hiện kết quả.
+- Các quyết định còn mở và người chịu trách nhiệm xác nhận.
+
+Không dùng tài liệu đề xuất làm bằng chứng tính năng đã hoàn thành; cần đối chiếu code, database và acceptance test.
