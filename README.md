@@ -198,3 +198,12 @@ Sau đó chạy lại `start-libradesk.bat`. Nếu cần đóng gói lại app d
 - Không di chuyển `start-libradesk.bat` khỏi thư mục gốc nếu chưa cập nhật các đường dẫn tương ứng.
 - Artifact trong `release/` phải được build lại sau khi thay đổi backend hoặc frontend.
 - Source code và schema hiện tại là nguồn thông tin chính xác nhất nếu tài liệu thiết kế cũ có khác biệt.
+
+## Checklist trước khi bàn giao
+
+1. Chạy `git status` và xác nhận không có secret, log, `node_modules`, `frontend/dist` hoặc `backend/target` trong thay đổi.
+2. Chạy `npm run build` để kiểm tra frontend.
+3. Chạy `backend\\mvnw.cmd test` để kiểm tra backend khi môi trường database cho phép.
+4. Khởi động bằng `start-libradesk.bat`, đăng nhập đủ ba vai trò và thử ít nhất một luồng đọc dữ liệu.
+5. Nếu source đã thay đổi hành vi runtime, build lại artifact tương ứng trong `release/` và kiểm tra timestamp.
+6. Cập nhật tài liệu API/database liên quan trong cùng đợt thay đổi.
