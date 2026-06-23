@@ -66,3 +66,14 @@ Tài khoản test:
 - `/api/staff/**` cho `THU_THU` và `QUAN_TRI_VIEN`.
 - Endpoint cũ như `/api/reports/**`, `/api/readers/**`, `/api/books/**`, `/api/book-copies/**` được giữ để tránh vỡ app hiện tại.
 - Test locked account chưa chạy vì seed hiện tại không có credential demo cho tài khoản trạng thái `Khóa` hoặc `Ngừng hoạt động`.
+
+## Checklist chạy lại kiểm thử
+
+1. Ghi commit hoặc artifact backend được kiểm tra.
+2. Reset/seed database về trạng thái đã biết.
+3. Xác nhận ba tài khoản demo có đúng role và trạng thái hoạt động.
+4. Lấy token mới cho từng role; không dùng token cũ có thể đã hết hạn.
+5. Chạy đủ nhóm không token, sai role và đúng role.
+6. Lưu status code cùng response body của các case thất bại.
+7. Kiểm tra thêm endpoint mutation để chắc phân quyền không chỉ đúng với `GET`.
+8. Ghi rõ case chưa chạy và nguyên nhân, không đánh dấu pass khi thiếu dữ liệu kiểm thử.
