@@ -81,3 +81,14 @@ Các nhóm chính:
 - Độc giả không gọi được API staff/admin.
 
 Xem kết quả kiểm thử mẫu tại [backend-permission-test.md](backend-permission-test.md).
+
+## Hợp đồng lỗi và response
+
+- `200/201`: thao tác thành công; response dùng DTO ổn định, không trả entity JPA trực tiếp.
+- `400`: request sai định dạng hoặc thiếu dữ liệu bắt buộc.
+- `401`: thiếu token, token hết hạn hoặc token không hợp lệ.
+- `403`: token hợp lệ nhưng vai trò không được phép gọi endpoint.
+- `404`: mã tài nguyên không tồn tại.
+- `409` hoặc lỗi nghiệp vụ tương đương: trạng thái hiện tại không cho phép thao tác, ví dụ sách không sẵn có.
+
+Response lỗi nên có message an toàn cho người dùng và field errors khi validation theo trường. Frontend không được suy luận quyền chỉ từ việc nút có hiển thị hay không; backend luôn là nơi quyết định cuối cùng.
