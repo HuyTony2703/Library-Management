@@ -112,3 +112,14 @@ Không cài Vite global; project đã khai báo Vite trong `devDependencies`.
 ### Build thành công nhưng app hiển thị giao diện cũ
 
 Build lại app portable bằng `npm run dist:win`, sau đó xác nhận timestamp của file trong `release/` đã thay đổi.
+
+## Checklist trước khi build release
+
+1. Chạy `npm ci` để dependency khớp `package-lock.json`.
+2. Chạy `npm run build` và xử lý mọi lỗi import hoặc route.
+3. Kiểm tra đăng nhập và điều hướng của admin, thủ thư, độc giả.
+4. Kiểm tra API base vẫn trỏ tới backend mong muốn; không hard-code URL trong page/component.
+5. Chạy `npm run dist:win` và xác nhận file portable mới nằm trong `../release`.
+6. Mở app bằng `../start-libradesk.bat` để kiểm tra đúng luồng runtime thực tế.
+
+Không commit `node_modules` hoặc `dist`; hai thư mục này luôn phải có thể tái tạo từ source và lockfile.
