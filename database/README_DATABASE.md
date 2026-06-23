@@ -107,3 +107,12 @@ Hướng dẫn chi tiết nằm tại [notes/run-database-guide.md](notes/run-da
 - [Quy tắc nghiệp vụ](notes/business-rules.md)
 - [Hướng dẫn chạy và xử lý lỗi database](notes/run-database-guide.md)
 - [README tổng quan](../README.md)
+
+## Quy tắc thay đổi schema và seed
+
+- Script schema phải có thứ tự thực thi rõ ràng và tránh phụ thuộc trạng thái thủ công ngoài tài liệu.
+- Seed demo nên idempotent: chạy lại không tạo bản ghi trùng hoặc phá dữ liệu đã có.
+- Không đổi/xóa mã demo đang được frontend, test hoặc tài liệu tham chiếu nếu chưa cập nhật đồng bộ.
+- Thay đổi liên quan nhiều bảng phải giữ đúng khóa ngoại và được kiểm tra trong transaction khi triển khai qua backend.
+- Không đặt mật khẩu thật, connection string thật hoặc dữ liệu cá nhân thật trong script SQL.
+- Sau khi sửa, chạy lại truy vấn kiểm tra và thử các luồng mượn, trả, nợ, thu tiền có liên quan.
