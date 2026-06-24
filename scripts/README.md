@@ -102,3 +102,12 @@ npm run dist:win
 ### File portable bị Windows chặn
 
 Thử chạy Electron local sau khi đã cài dependency và build frontend. Nếu máy thuộc tổ chức có Application Control policy, cần nhờ quản trị hệ thống cho phép file thực thi; không nên tắt chính sách bảo mật toàn máy.
+
+## Quy tắc an toàn khi sửa script
+
+- Luôn tính đường dẫn từ vị trí script hoặc root project, không phụ thuộc thư mục terminal hiện tại.
+- Mọi nhánh lỗi phải trả exit code khác `0` và in rõ file/log cần kiểm tra.
+- Không ghi password database ra console hoặc log; password runtime phải tiếp tục dùng DPAPI.
+- Không tự động mở browser trừ khi người dùng bật `LIBRADESK_ALLOW_BROWSER_FALLBACK=1`.
+- Không tự động xóa artifact release; script build chỉ thay artifact sau khi build thành công.
+- Sau khi sửa, kiểm tra cả trường hợp backend đã chạy và trường hợp backend chưa chạy.
