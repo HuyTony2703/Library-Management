@@ -8,7 +8,7 @@ LibraDesk là ứng dụng desktop quản lý thư viện trên Windows. Hệ th
 
 Ứng dụng hỗ trợ ba vai trò: quản trị viên, thủ thư và độc giả. Các chức năng chính gồm quản lý sách, độc giả, mượn trả, công nợ, thu tiền, đặt trước, đánh giá, bình luận, thông báo, quy định và báo cáo.
 
-## Bắt đầu nhanh
+## Bắt đầu chạy
 
 ### 1. Chuẩn bị môi trường
 
