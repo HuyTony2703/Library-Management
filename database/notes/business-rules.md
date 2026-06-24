@@ -107,3 +107,12 @@ Hệ thống lưu lịch sử thông báo, trạng thái gửi email, số lần
 ## 12. Nhật ký hoạt động
 
 Các thao tác quan trọng như tạo/sửa/xóa dữ liệu, mượn trả, thu tiền, đổi quy định, kiểm duyệt và quản lý tài khoản phải ghi nhật ký với người thực hiện, hành động, đối tượng và thời điểm.
+
+## 13. Transaction và tính nhất quán
+
+- Tạo phiếu mượn, chi tiết mượn và đổi trạng thái cuốn sách phải thành công hoặc rollback cùng nhau.
+- Trả sách, tính phạt, tạo khoản nợ và cập nhật trạng thái cuốn sách phải nằm trong một transaction nghiệp vụ.
+- Thu tiền phải tạo phiếu thu, chi tiết phân bổ và cập nhật số tiền đã thanh toán một cách nguyên tử.
+- Không dựa vào dữ liệu gửi từ frontend để quyết định số tiền phạt, quyền sở hữu hoặc trạng thái cuối; backend phải đọc lại dữ liệu hiện hành.
+- Các thao tác lặp do retry cần được bảo vệ bằng mã nghiệp vụ duy nhất hoặc kiểm tra tồn tại để tránh tạo phiếu trùng.
+- Báo cáo chỉ đọc dữ liệu đã commit và không được làm thay đổi trạng thái nghiệp vụ.
