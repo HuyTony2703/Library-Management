@@ -1,6 +1,6 @@
 # LibraDesk
 
-LibraDesk là ứng dụng desktop quản lý thư viện trên Windows. Hệ thống gồm:
+LibraDesk là ứng dụng desktop quản lý thư viện trên Windows. Hệ thống bao gồm:
 
 - Backend REST API: Java 21, Spring Boot và Spring Security.
 - Giao diện: React, Vite và Electron.
