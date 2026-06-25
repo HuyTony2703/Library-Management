@@ -59,7 +59,7 @@ release/LibraDesk-1.0.0-portable.exe
 
 Khi thay đổi backend hoặc frontend, cần build lại artifact tương ứng trước khi phát hành hoặc demo.
 
-## Log và cấu hình
+## Log & cấu hình
 
 Runtime lưu dữ liệu cục bộ tại:
 
