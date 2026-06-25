@@ -1,6 +1,6 @@
 # Frontend LibraDesk
 
-Frontend sử dụng React, Vite và Electron. Cùng một code giao diện được dùng khi phát triển trên trình duyệt và khi đóng gói thành app desktop Windows.
+Frontend sử dụng React, Vite và Electron.
 
 ## Cấu trúc
 
