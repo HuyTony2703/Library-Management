@@ -115,7 +115,7 @@ public class DauSachController {
 }
 ```
 
-**Endpoints**: CRUD operations cho Đầu Sách (Sách)
+**Endpoints**: CRUD operations cho Đầu Sách
 - `GET /api/books` - Lấy tất cả sách
 - `GET /api/books/{maDauSach}` - Lấy 1 sách
 - `POST /api/books` - Tạo mới sách
