@@ -10,8 +10,6 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -34,13 +32,12 @@ public class AuthController {
     }
 
     @PostMapping("/change-password")
-    public Map<String, String> changePassword(
+    public AuthResponse changePassword(
             Authentication authentication,
             @Valid @RequestBody ChangePasswordRequest request
     ) {
         AuthUser user = (AuthUser) authentication.getPrincipal();
-        authService.changePassword(user, request);
-        return Map.of("message", "Đổi mật khẩu thành công");
+        return authService.changePassword(user, request);
     }
 
     @PutMapping("/profile")
