@@ -2,8 +2,10 @@ package com.library.backend.controller;
 
 import com.library.backend.dto.MuonSachRequest;
 import com.library.backend.dto.MuonSachResponse;
+import com.library.backend.security.AuthUser;
 import com.library.backend.service.MuonSachService;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,8 +21,16 @@ public class MuonSachController {
     }
 
     @PostMapping("/loans")
-    public MuonSachResponse create(@Valid @RequestBody MuonSachRequest request) {
-        return muonSachService.create(request);
+    public MuonSachResponse create(
+            Authentication authentication,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @Valid @RequestBody MuonSachRequest request
+    ) {
+        return muonSachService.create(
+                request,
+                (AuthUser) authentication.getPrincipal(),
+                idempotencyKey
+        );
     }
 
     @GetMapping("/loans/{maPhieuMuon}")
