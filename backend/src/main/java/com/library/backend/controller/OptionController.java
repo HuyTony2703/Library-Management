@@ -54,6 +54,17 @@ public class OptionController {
         return queryOptions(sql);
     }
 
+    @GetMapping("/book-statuses")
+    public List<OptionResponse> getBookStatuses() {
+        String sql = """
+                SELECT DISTINCT TrangThai AS value, TrangThai AS label
+                FROM DAUSACH
+                WHERE NULLIF(LTRIM(RTRIM(TrangThai)), '') IS NOT NULL
+                ORDER BY TrangThai
+                """;
+        return queryOptions(sql);
+    }
+
     @GetMapping("/reader-groups")
     public List<OptionResponse> getReaderGroups() {
         String sql = """
@@ -62,6 +73,17 @@ public class OptionController {
                 ORDER BY TenNhomDocGia
                 """;
 
+        return queryOptions(sql);
+    }
+
+    @GetMapping("/reader-profile-statuses")
+    public List<OptionResponse> getReaderProfileStatuses() {
+        String sql = """
+                SELECT value, label
+                FROM (VALUES (1, N'Hoạt động', N'Hoạt động'),
+                             (2, N'Ngừng hoạt động', N'Ngừng hoạt động')) options(sort_order, value, label)
+                ORDER BY sort_order
+                """;
         return queryOptions(sql);
     }
 
