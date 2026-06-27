@@ -2,8 +2,10 @@ package com.library.backend.controller;
 
 import com.library.backend.dto.TraSachRequest;
 import com.library.backend.dto.TraSachResponse;
+import com.library.backend.security.AuthUser;
 import com.library.backend.service.TraSachService;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,8 +19,11 @@ public class TraSachController {
     }
 
     @PostMapping
-    public TraSachResponse create(@Valid @RequestBody TraSachRequest request) {
-        return traSachService.create(request);
+    public TraSachResponse create(
+            Authentication authentication,
+            @Valid @RequestBody TraSachRequest request
+    ) {
+        return traSachService.create(request, (AuthUser) authentication.getPrincipal());
     }
 
     @GetMapping("/{maPhieuTra}")
