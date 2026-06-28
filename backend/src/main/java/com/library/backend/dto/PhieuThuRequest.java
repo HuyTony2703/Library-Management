@@ -11,23 +11,27 @@ import java.util.List;
 
 public class PhieuThuRequest {
 
-    @NotBlank(message = "Mã phiếu thu không được để trống")
-    @Size(max = 20, message = "Mã phiếu thu tối đa 20 ký tự")
+    @Size(max = 20, message = "Ma phieu thu toi da 20 ky tu")
     private String maPhieuThu;
 
-    @NotBlank(message = "Mã độc giả không được để trống")
+    @NotBlank(message = "Ma doc gia khong duoc de trong")
     private String maDocGia;
 
+    @Size(max = 30, message = "Ma nhan vien thu toi da 30 ky tu")
     private String maNhanVienThu;
 
-    @NotBlank(message = "Mã phương thức thanh toán không được để trống")
+    @NotBlank(message = "Ma phuong thuc thanh toan khong duoc de trong")
     private String maPhuongThuc;
 
-    @NotNull(message = "Số tiền thu không được để trống")
-    @DecimalMin(value = "0.01", message = "Số tiền thu phải lớn hơn 0")
+    @NotNull(message = "So tien thu khong duoc de trong")
+    @DecimalMin(value = "0.01", message = "So tien thu phai lon hon 0")
     private BigDecimal soTienThu;
 
     private String maGiaoDichNgoai;
+
+    private String externalTransactionId;
+
+    private BigDecimal cashReceived;
 
     private String ghiChu;
 
@@ -52,6 +56,12 @@ public class PhieuThuRequest {
     public String getMaGiaoDichNgoai() { return maGiaoDichNgoai; }
     public void setMaGiaoDichNgoai(String maGiaoDichNgoai) { this.maGiaoDichNgoai = maGiaoDichNgoai; }
 
+    public String getExternalTransactionId() { return externalTransactionId; }
+    public void setExternalTransactionId(String externalTransactionId) { this.externalTransactionId = externalTransactionId; }
+
+    public BigDecimal getCashReceived() { return cashReceived; }
+    public void setCashReceived(BigDecimal cashReceived) { this.cashReceived = cashReceived; }
+
     public String getGhiChu() { return ghiChu; }
     public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
 
@@ -60,11 +70,11 @@ public class PhieuThuRequest {
 
     public static class ChiTietThuNoRequest {
 
-        @NotBlank(message = "Mã khoản nợ không được để trống")
+        @NotBlank(message = "Ma khoan no khong duoc de trong")
         private String maKhoanNo;
 
-        @NotNull(message = "Số tiền áp dụng không được để trống")
-        @DecimalMin(value = "0.01", message = "Số tiền áp dụng phải lớn hơn 0")
+        @NotNull(message = "So tien ap dung khong duoc de trong")
+        @DecimalMin(value = "0.01", message = "So tien ap dung phai lon hon 0")
         private BigDecimal soTienApDung;
 
         public String getMaKhoanNo() { return maKhoanNo; }
