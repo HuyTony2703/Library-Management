@@ -14,6 +14,7 @@ public class AuthResponse {
     private String email;
     private String soDienThoai;
     private String diaChi;
+    private boolean mustChangePassword;
 
     public AuthResponse(
             String token,
@@ -27,7 +28,8 @@ public class AuthResponse {
             String hoTen,
             String email,
             String soDienThoai,
-            String diaChi
+            String diaChi,
+            boolean mustChangePassword
     ) {
         this.token = token;
         this.tokenType = tokenType;
@@ -41,6 +43,7 @@ public class AuthResponse {
         this.email = email;
         this.soDienThoai = soDienThoai;
         this.diaChi = diaChi;
+        this.mustChangePassword = mustChangePassword;
     }
 
     public String getToken() { return token; }
@@ -55,4 +58,5 @@ public class AuthResponse {
     public String getEmail() { return email; }
     public String getSoDienThoai() { return soDienThoai; }
     public String getDiaChi() { return diaChi; }
+    public boolean isMustChangePassword() { return mustChangePassword; }
 }
