@@ -30,6 +30,12 @@ public class PhieuTra {
     @Column(name = "GhiChu", length = 255)
     private String ghiChu;
 
+    @Column(name = "IdempotencyKey", length = 100)
+    private String idempotencyKey;
+
+    @Column(name = "RequestFingerprint", length = 64)
+    private String requestFingerprint;
+
     public String getMaPhieuTra() { return maPhieuTra; }
     public void setMaPhieuTra(String maPhieuTra) { this.maPhieuTra = maPhieuTra; }
 
@@ -47,4 +53,10 @@ public class PhieuTra {
 
     public String getGhiChu() { return ghiChu; }
     public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
+
+    public String getIdempotencyKey() { return idempotencyKey; }
+    public void setIdempotencyKey(String idempotencyKey) { this.idempotencyKey = idempotencyKey; }
+
+    public String getRequestFingerprint() { return requestFingerprint; }
+    public void setRequestFingerprint(String requestFingerprint) { this.requestFingerprint = requestFingerprint; }
 }
