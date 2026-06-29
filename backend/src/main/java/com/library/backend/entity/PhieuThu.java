@@ -37,11 +37,23 @@ public class PhieuThu {
     @Column(name = "MaGiaoDichNgoai", length = 100)
     private String maGiaoDichNgoai;
 
+    @Column(name = "TienKhachDua", precision = 18, scale = 2)
+    private BigDecimal tienKhachDua;
+
+    @Column(name = "TienThua", precision = 18, scale = 2)
+    private BigDecimal tienThua;
+
     @Column(name = "TrangThai", nullable = false, length = 30)
     private String trangThai;
 
     @Column(name = "GhiChu", length = 255)
     private String ghiChu;
+
+    @Column(name = "IdempotencyKey", length = 100)
+    private String idempotencyKey;
+
+    @Column(name = "RequestFingerprint", length = 64)
+    private String requestFingerprint;
 
     public String getMaPhieuThu() { return maPhieuThu; }
     public void setMaPhieuThu(String maPhieuThu) { this.maPhieuThu = maPhieuThu; }
@@ -67,9 +79,21 @@ public class PhieuThu {
     public String getMaGiaoDichNgoai() { return maGiaoDichNgoai; }
     public void setMaGiaoDichNgoai(String maGiaoDichNgoai) { this.maGiaoDichNgoai = maGiaoDichNgoai; }
 
+    public BigDecimal getTienKhachDua() { return tienKhachDua; }
+    public void setTienKhachDua(BigDecimal tienKhachDua) { this.tienKhachDua = tienKhachDua; }
+
+    public BigDecimal getTienThua() { return tienThua; }
+    public void setTienThua(BigDecimal tienThua) { this.tienThua = tienThua; }
+
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
 
     public String getGhiChu() { return ghiChu; }
     public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
+
+    public String getIdempotencyKey() { return idempotencyKey; }
+    public void setIdempotencyKey(String idempotencyKey) { this.idempotencyKey = idempotencyKey; }
+
+    public String getRequestFingerprint() { return requestFingerprint; }
+    public void setRequestFingerprint(String requestFingerprint) { this.requestFingerprint = requestFingerprint; }
 }
