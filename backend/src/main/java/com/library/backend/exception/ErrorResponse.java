@@ -12,6 +12,7 @@ public class ErrorResponse {
     private final String path;
     private final LocalDateTime timestamp;
     private final Map<String, String> fieldErrors;
+    private final Map<String, Object> details;
 
     public ErrorResponse(
             String message,
@@ -26,6 +27,7 @@ public class ErrorResponse {
         this.path = path;
         this.timestamp = LocalDateTime.now();
         this.fieldErrors = null;
+        this.details = null;
     }
 
     public ErrorResponse(
@@ -42,6 +44,25 @@ public class ErrorResponse {
         this.path = path;
         this.timestamp = LocalDateTime.now();
         this.fieldErrors = fieldErrors;
+        this.details = null;
+    }
+
+    public ErrorResponse(
+            String message,
+            String errorCode,
+            int status,
+            String path,
+            Map<String, String> fieldErrors,
+            Map<String, Object> details
+    ) {
+        this.success = false;
+        this.message = message;
+        this.errorCode = errorCode;
+        this.status = status;
+        this.path = path;
+        this.timestamp = LocalDateTime.now();
+        this.fieldErrors = fieldErrors;
+        this.details = details;
     }
 
     public boolean isSuccess() {
@@ -71,4 +92,6 @@ public class ErrorResponse {
     public Map<String, String> getFieldErrors() {
         return fieldErrors;
     }
+
+    public Map<String, Object> getDetails() { return details; }
 }
