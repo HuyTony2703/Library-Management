@@ -24,6 +24,22 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(CatalogValidationException.class)
+    public ResponseEntity<ErrorResponse> handleCatalogValidationException(
+            CatalogValidationException ex,
+            HttpServletRequest request
+    ) {
+        ErrorResponse response = new ErrorResponse(
+                ex.getMessage(),
+                ex.getErrorCode(),
+                ex.getStatus().value(),
+                request.getRequestURI(),
+                ex.getFieldErrors(),
+                ex.getDetails()
+        );
+        return ResponseEntity.status(ex.getStatus()).body(response);
+    }
+
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(
             BusinessException ex,
