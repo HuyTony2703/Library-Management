@@ -36,6 +36,15 @@ public class TaiKhoan {
     @Column(name = "LanDangNhapCuoi")
     private LocalDateTime lanDangNhapCuoi;
 
+    @Column(name = "MustChangePassword", nullable = false)
+    private boolean mustChangePassword;
+
+    @Column(name = "PasswordChangedAt")
+    private LocalDateTime passwordChangedAt;
+
+    @Column(name = "TokenVersion", nullable = false)
+    private long tokenVersion;
+
     public String getMaTaiKhoan() { return maTaiKhoan; }
     public void setMaTaiKhoan(String maTaiKhoan) { this.maTaiKhoan = maTaiKhoan; }
 
@@ -59,4 +68,10 @@ public class TaiKhoan {
 
     public LocalDateTime getLanDangNhapCuoi() { return lanDangNhapCuoi; }
     public void setLanDangNhapCuoi(LocalDateTime lanDangNhapCuoi) { this.lanDangNhapCuoi = lanDangNhapCuoi; }
+    public boolean isMustChangePassword() { return mustChangePassword; }
+    public void setMustChangePassword(boolean mustChangePassword) { this.mustChangePassword = mustChangePassword; }
+    public LocalDateTime getPasswordChangedAt() { return passwordChangedAt; }
+    public void setPasswordChangedAt(LocalDateTime passwordChangedAt) { this.passwordChangedAt = passwordChangedAt; }
+    public long getTokenVersion() { return tokenVersion; }
+    public void setTokenVersion(long tokenVersion) { this.tokenVersion = tokenVersion; }
 }
