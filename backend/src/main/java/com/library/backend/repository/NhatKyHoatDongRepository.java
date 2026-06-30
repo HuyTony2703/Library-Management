@@ -8,4 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface NhatKyHoatDongRepository extends JpaRepository<NhatKyHoatDong, Long> {
 
     Page<NhatKyHoatDong> findAllByOrderByThoiGianDesc(Pageable pageable);
+
+    Page<NhatKyHoatDong> findByDoiTuongTacDongAndMaDoiTuongTacDongOrderByThoiGianDesc(
+            String doiTuongTacDong,
+            String maDoiTuongTacDong,
+            Pageable pageable
+    );
 }
