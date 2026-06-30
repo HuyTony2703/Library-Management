@@ -9,6 +9,8 @@ public class AuthUser {
     private final String maDocGia;
     private final String maNhanVien;
     private final String hoTen;
+    private final long tokenVersion;
+    private final boolean mustChangePassword;
 
     public AuthUser(
             String maTaiKhoan,
@@ -19,6 +21,14 @@ public class AuthUser {
             String maNhanVien,
             String hoTen
     ) {
+        this(maTaiKhoan, tenDangNhap, maVaiTro, tenVaiTro, maDocGia, maNhanVien, hoTen, 0, false);
+    }
+
+    public AuthUser(
+            String maTaiKhoan, String tenDangNhap, String maVaiTro, String tenVaiTro,
+            String maDocGia, String maNhanVien, String hoTen,
+            long tokenVersion, boolean mustChangePassword
+    ) {
         this.maTaiKhoan = maTaiKhoan;
         this.tenDangNhap = tenDangNhap;
         this.maVaiTro = maVaiTro;
@@ -26,6 +36,8 @@ public class AuthUser {
         this.maDocGia = maDocGia;
         this.maNhanVien = maNhanVien;
         this.hoTen = hoTen;
+        this.tokenVersion = tokenVersion;
+        this.mustChangePassword = mustChangePassword;
     }
 
     public String getMaTaiKhoan() { return maTaiKhoan; }
@@ -35,6 +47,8 @@ public class AuthUser {
     public String getMaDocGia() { return maDocGia; }
     public String getMaNhanVien() { return maNhanVien; }
     public String getHoTen() { return hoTen; }
+    public long getTokenVersion() { return tokenVersion; }
+    public boolean isMustChangePassword() { return mustChangePassword; }
 
     public String getRoleAuthority() {
         return RoleConstants.toAuthority(tenVaiTro);
