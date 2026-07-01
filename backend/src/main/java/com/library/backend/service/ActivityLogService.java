@@ -67,6 +67,23 @@ public class ActivityLogService {
         }
     }
 
+    @Transactional
+    public void logAsAccount(
+            String maTaiKhoan,
+            String hanhDong,
+            String doiTuongTacDong,
+            String maDoiTuongTacDong,
+            String moTaChiTiet
+    ) {
+        saveLog(
+                maTaiKhoan,
+                hanhDong,
+                doiTuongTacDong,
+                maDoiTuongTacDong,
+                moTaChiTiet
+        );
+    }
+
     public List<NhatKyHoatDongResponse> getLatestLogs(int limit) {
         int safeLimit = Math.max(1, Math.min(limit, 200));
 
