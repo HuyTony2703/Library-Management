@@ -17,9 +17,14 @@ import java.util.List;
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
+    private final AuthenticatedPrincipalService authenticatedPrincipalService;
 
-    public TokenAuthenticationFilter(TokenService tokenService) {
+    public TokenAuthenticationFilter(
+            TokenService tokenService,
+            AuthenticatedPrincipalService authenticatedPrincipalService
+    ) {
         this.tokenService = tokenService;
+        this.authenticatedPrincipalService = authenticatedPrincipalService;
     }
 
     @Override
@@ -34,7 +39,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             String token = authorization.substring(7);
 
             try {
-                AuthUser user = tokenService.parseToken(token);
+                AuthUser tokenUser = tokenService.parseToken(token);
+                AuthUser user = authenticatedPrincipalService.refresh(tokenUser);
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
@@ -44,11 +50,24 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                         );
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                if (user.isMustChangePassword() && !isForceChangeAllowed(request)) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"errorCode\":\"PASSWORD_CHANGE_REQUIRED\",\"message\":\"Bạn phải đổi mật khẩu trước khi tiếp tục\"}");
+                    return;
+                }
             } catch (RuntimeException ex) {
                 SecurityContextHolder.clearContext();
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isForceChangeAllowed(HttpServletRequest request) {
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
+        String path = request.getRequestURI();
+        return "/api/auth/me".equals(path) || "/api/auth/change-password".equals(path);
     }
 }
