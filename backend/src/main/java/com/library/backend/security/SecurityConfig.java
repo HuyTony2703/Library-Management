@@ -16,7 +16,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.io.IOException;
 import java.util.List;
 
 @Configuration
@@ -24,11 +23,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
-    private final TokenService tokenService;
 
-    public SecurityConfig(TokenAuthenticationFilter tokenAuthenticationFilter, TokenService tokenService) {
+    public SecurityConfig(TokenAuthenticationFilter tokenAuthenticationFilter) {
         this.tokenAuthenticationFilter = tokenAuthenticationFilter;
-        this.tokenService = tokenService;
     }
 
     @Bean
@@ -38,7 +35,9 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((request, response, authException) -> sendUnauthorizedOrForbidden(request.getHeader("Authorization"), response))
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                        )
                         .accessDeniedHandler((request, response, accessDeniedException) ->
                                 response.sendError(HttpServletResponse.SC_FORBIDDEN)
                         )
@@ -166,17 +165,4 @@ public class SecurityConfig {
         return source;
     }
 
-    private void sendUnauthorizedOrForbidden(String authorization, HttpServletResponse response) throws IOException {
-        if (authorization != null && authorization.startsWith("Bearer ")) {
-            try {
-                tokenService.parseToken(authorization.substring(7));
-                response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return;
-            } catch (RuntimeException ignored) {
-                // Invalid or expired tokens remain authentication failures.
-            }
-        }
-
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-    }
 }
