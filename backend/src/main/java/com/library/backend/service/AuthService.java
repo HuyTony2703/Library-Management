@@ -13,6 +13,7 @@ import com.library.backend.repository.NhanVienRepository;
 import com.library.backend.repository.TaiKhoanRepository;
 import com.library.backend.repository.VaiTroRepository;
 import com.library.backend.security.AuthUser;
+import com.library.backend.security.AuthenticatedPrincipalService;
 import com.library.backend.security.TokenService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,6 +32,7 @@ public class AuthService {
     private final NhanVienRepository nhanVienRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final AuthenticatedPrincipalService authenticatedPrincipalService;
     private final ActivityLogService activityLogService;
     private final JdbcTemplate jdbcTemplate;
 
@@ -41,6 +43,7 @@ public class AuthService {
             NhanVienRepository nhanVienRepository,
             PasswordEncoder passwordEncoder,
             TokenService tokenService,
+            AuthenticatedPrincipalService authenticatedPrincipalService,
             ActivityLogService activityLogService,
             JdbcTemplate jdbcTemplate
     ) {
@@ -50,6 +53,7 @@ public class AuthService {
         this.nhanVienRepository = nhanVienRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
+        this.authenticatedPrincipalService = authenticatedPrincipalService;
         this.activityLogService = activityLogService;
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -63,6 +67,10 @@ public class AuthService {
             throw new RuntimeException("Tài khoản không ở trạng thái hoạt động");
         }
 
+        if (taiKhoanRepository.hasActiveReaderLoginLock(taiKhoan.getMaTaiKhoan())) {
+            throw new RuntimeException("Tài khoản đang bị khóa đăng nhập");
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), taiKhoan.getMatKhauHash())) {
             throw new RuntimeException("Tên đăng nhập/email hoặc mật khẩu không đúng");
         }
@@ -70,7 +78,7 @@ public class AuthService {
         VaiTro vaiTro = vaiTroRepository.findById(taiKhoan.getMaVaiTro())
                 .orElseThrow(() -> new RuntimeException("Vai trò tài khoản không tồn tại"));
 
-        AuthUser user = buildAuthUser(taiKhoan, vaiTro);
+        AuthUser user = authenticatedPrincipalService.refresh(buildAuthUser(taiKhoan, vaiTro));
         String token = tokenService.generateToken(user);
 
         taiKhoan.setLanDangNhapCuoi(LocalDateTime.now());
@@ -91,7 +99,8 @@ public class AuthService {
         return toResponse(null, enrichDisplayName(user));
     }
 
-    public void changePassword(AuthUser user, ChangePasswordRequest request) {
+    @Transactional
+    public AuthResponse changePassword(AuthUser user, ChangePasswordRequest request) {
         TaiKhoan taiKhoan = taiKhoanRepository.findById(user.getMaTaiKhoan())
                 .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại"));
 
@@ -103,22 +112,19 @@ public class AuthService {
             throw new RuntimeException("Mật khẩu mới phải khác mật khẩu hiện tại");
         }
 
-        String newPasswordHash = passwordEncoder.encode(request.getNewPassword());
+        taiKhoan.setMatKhauHash(passwordEncoder.encode(request.getNewPassword()));
+        taiKhoan.setMustChangePassword(false);
+        taiKhoan.setPasswordChangedAt(LocalDateTime.now());
+        taiKhoan.setTokenVersion(taiKhoan.getTokenVersion() + 1);
+        taiKhoanRepository.save(taiKhoan);
 
-        try {
-            int updated = jdbcTemplate.update(
-                    "UPDATE TAIKHOAN SET MatKhauHash = ? WHERE MaTaiKhoan = ?",
-                    newPasswordHash,
-                    taiKhoan.getMaTaiKhoan()
-            );
+        activityLogService.logAsAccountSafe(taiKhoan.getMaTaiKhoan(), "Đổi mật khẩu", "TAIKHOAN",
+                taiKhoan.getMaTaiKhoan(), "Tài khoản đổi mật khẩu và thu hồi các phiên cũ");
 
-            if (updated == 0) {
-                throw new RuntimeException("Tài khoản không tồn tại");
-            }
-        } catch (DataAccessException ex) {
-            throw new RuntimeException("Không lưu được mật khẩu mới. Vui lòng kiểm tra cấu hình database", ex);
-        }
-
+        VaiTro role = vaiTroRepository.findById(taiKhoan.getMaVaiTro())
+                .orElseThrow(() -> new RuntimeException("Vai trò tài khoản không tồn tại"));
+        AuthUser refreshed = authenticatedPrincipalService.refresh(buildAuthUser(taiKhoan, role));
+        return toResponse(tokenService.generateToken(refreshed), refreshed);
     }
 
     @Transactional
@@ -174,8 +180,10 @@ public class AuthService {
                 "Tài khoản " + taiKhoan.getTenDangNhap() + " cập nhật thông tin cá nhân"
         );
 
-        AuthUser refreshed = buildAuthUser(taiKhoan, vaiTroRepository.findById(taiKhoan.getMaVaiTro())
-                .orElseThrow(() -> new RuntimeException("Vai trò tài khoản không tồn tại")));
+        AuthUser refreshed = authenticatedPrincipalService.refresh(
+                buildAuthUser(taiKhoan, vaiTroRepository.findById(taiKhoan.getMaVaiTro())
+                        .orElseThrow(() -> new RuntimeException("Vai trò tài khoản không tồn tại")))
+        );
 
         return toResponse(null, refreshed);
     }
@@ -200,7 +208,9 @@ public class AuthService {
                 vaiTro.getTenVaiTro(),
                 maDocGia,
                 maNhanVien,
-                hoTen
+                hoTen,
+                taiKhoan.getTokenVersion(),
+                taiKhoan.isMustChangePassword()
         );
     }
 
@@ -219,7 +229,8 @@ public class AuthService {
                 profile.hoTen() != null ? profile.hoTen() : user.getHoTen(),
                 profile.email(),
                 profile.soDienThoai(),
-                profile.diaChi()
+                profile.diaChi(),
+                user.isMustChangePassword()
         );
     }
 
@@ -275,7 +286,9 @@ public class AuthService {
                 user.getTenVaiTro(),
                 user.getMaDocGia(),
                 user.getMaNhanVien(),
-                hoTen
+                hoTen,
+                user.getTokenVersion(),
+                user.isMustChangePassword()
         );
     }
 
