@@ -2,9 +2,11 @@ package com.library.backend.service;
 
 import com.library.backend.dto.DocGiaRequest;
 import com.library.backend.dto.DocGiaResponse;
+import com.library.backend.dto.ReaderProfileUpdateRequest;
 import com.library.backend.entity.DocGia;
 import com.library.backend.entity.LichSuGoiThanhVien;
 import com.library.backend.entity.TaiKhoan;
+import com.library.backend.exception.BusinessException;
 import com.library.backend.repository.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,7 +22,6 @@ import java.util.List;
 public class DocGiaService {
 
     private static final String VAI_TRO_DOC_GIA = "VT_DOC_GIA";
-    private static final String GOI_MAC_DINH = "GOI_THUONG";
     private static final String TRANG_THAI_GOI_DANG_DUNG = "Đang sử dụng";
 
     private final DocGiaRepository docGiaRepository;
@@ -50,10 +51,7 @@ public class DocGiaService {
     }
 
     public List<DocGiaResponse> getAll() {
-        return docGiaRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        throw new BusinessException("Danh sach doc gia khong phan trang da bi vo hieu hoa; hay dung endpoint page");
     }
 
     public DocGiaResponse getById(String maDocGia) {
@@ -90,10 +88,9 @@ public class DocGiaService {
         }
 
         String maGoi = request.getMaGoiThanhVien() == null || request.getMaGoiThanhVien().isBlank()
-                ? GOI_MAC_DINH
-                : request.getMaGoiThanhVien();
+                ? null : request.getMaGoiThanhVien().trim();
 
-        if (!goiThanhVienRepository.existsById(maGoi)) {
+        if (maGoi != null && !goiThanhVienRepository.existsById(maGoi)) {
             throw new RuntimeException("Gói thành viên không tồn tại");
         }
 
@@ -120,6 +117,9 @@ public class DocGiaService {
         taiKhoan.setMaVaiTro(VAI_TRO_DOC_GIA);
         taiKhoan.setTrangThai("Hoạt động");
         taiKhoan.setNgayTao(LocalDateTime.now());
+        taiKhoan.setPasswordChangedAt(LocalDateTime.now());
+        taiKhoan.setTokenVersion(0);
+        taiKhoan.setMustChangePassword(false);
         taiKhoanRepository.save(taiKhoan);
 
         DocGia docGia = new DocGia();
@@ -137,19 +137,19 @@ public class DocGiaService {
 
         DocGia savedDocGia = docGiaRepository.save(docGia);
 
-        int thoiHanGoiTheoNgay = getThoiHanGoiTheoNgay(maGoi, request.getMaNhomDocGia());
-
-        LichSuGoiThanhVien lichSuGoi = new LichSuGoiThanhVien();
-        lichSuGoi.setMaLichSuGoi("LSG_" + request.getMaDocGia());
-        lichSuGoi.setMaDocGia(request.getMaDocGia());
-        lichSuGoi.setMaGoiThanhVien(maGoi);
-        lichSuGoi.setMaPhieuThu(null);
-        lichSuGoi.setNgayBatDau(ngayLapThe);
-        lichSuGoi.setNgayKetThuc(ngayLapThe.plusDays(thoiHanGoiTheoNgay));
-        lichSuGoi.setTrangThai("Đang sử dụng");
-        lichSuGoi.setGhiChu("Gói tạo mặc định khi lập độc giả");
-
-        lichSuGoiThanhVienRepository.save(lichSuGoi);
+        if (maGoi != null) {
+            int thoiHanGoiTheoNgay = getThoiHanGoiTheoNgay(maGoi, request.getMaNhomDocGia());
+            LichSuGoiThanhVien lichSuGoi = new LichSuGoiThanhVien();
+            lichSuGoi.setMaLichSuGoi("LSG_" + request.getMaDocGia());
+            lichSuGoi.setMaDocGia(request.getMaDocGia());
+            lichSuGoi.setMaGoiThanhVien(maGoi);
+            lichSuGoi.setMaPhieuThu(null);
+            lichSuGoi.setNgayBatDau(ngayLapThe);
+            lichSuGoi.setNgayKetThuc(ngayLapThe.plusDays(thoiHanGoiTheoNgay));
+            lichSuGoi.setTrangThai(TRANG_THAI_GOI_DANG_DUNG);
+            lichSuGoi.setGhiChu("Gói được chọn khi lập độc giả");
+            lichSuGoiThanhVienRepository.save(lichSuGoi);
+        }
 
         return toResponse(savedDocGia);
     }
@@ -192,6 +192,20 @@ public class DocGiaService {
     }
 
     @Transactional
+    public DocGiaResponse updateProfile(String maDocGia, ReaderProfileUpdateRequest request) {
+        DocGia docGia = docGiaRepository.findById(maDocGia)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy độc giả"));
+        if (!nhomDocGiaRepository.existsById(request.maNhomDocGia()))
+            throw new RuntimeException("Nhóm độc giả không tồn tại");
+        if (docGiaRepository.existsByEmailAndMaDocGiaNot(request.email(), maDocGia))
+            throw new RuntimeException("Email độc giả đã tồn tại");
+        docGia.setMaNhomDocGia(request.maNhomDocGia()); docGia.setHoTen(request.hoTen());
+        docGia.setNgaySinh(request.ngaySinh()); docGia.setDiaChi(request.diaChi());
+        docGia.setEmail(request.email()); docGia.setSoDienThoai(request.soDienThoai());
+        return toResponse(docGiaRepository.save(docGia));
+    }
+
+    @Transactional
     public DocGiaResponse updateMembershipPlan(String maDocGia, String maGoiThanhVien) {
         DocGia docGia = docGiaRepository.findById(maDocGia)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy độc giả"));
@@ -231,6 +245,9 @@ public class DocGiaService {
 
     @Transactional
     public void hardDelete(String maDocGia) {
+        if (System.currentTimeMillis() >= 0) {
+            throw new BusinessException("Legacy hard delete doc gia da bi vo hieu hoa; hay dung lifecycle endpoint co preflight");
+        }
         DocGia docGia = docGiaRepository.findById(maDocGia)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy độc giả"));
         String maTaiKhoan = docGia.getMaTaiKhoan();
