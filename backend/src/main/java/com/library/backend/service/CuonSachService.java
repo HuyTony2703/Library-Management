@@ -5,7 +5,10 @@ import com.library.backend.dto.CuonSachResponse;
 import com.library.backend.entity.CuonSach;
 import com.library.backend.entity.DauSach;
 import com.library.backend.entity.TrangThaiCuonSach;
+import com.library.backend.exception.BusinessException;
+import com.library.backend.exception.CatalogValidationException;
 import com.library.backend.repository.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,10 +42,7 @@ public class CuonSachService {
     }
 
     public List<CuonSachResponse> getAll() {
-        return cuonSachRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        throw new BusinessException("Danh sach cuon sach khong phan trang da bi vo hieu hoa; hay dung endpoint page");
     }
 
     public CuonSachResponse getById(String maCuonSach) {
@@ -61,13 +61,7 @@ public class CuonSachService {
         validateForeignKeys(request);
         validateUniqueCode(request, null);
 
-        String maTrangThai = hasText(request.getMaTrangThai())
-                ? request.getMaTrangThai()
-                : TT_SANCO;
-
-        if (!trangThaiCuonSachRepository.existsById(maTrangThai)) {
-            throw new RuntimeException("Trạng thái cuốn sách không tồn tại");
-        }
+        String maTrangThai = TT_SANCO;
 
         CuonSach cuonSach = new CuonSach();
         cuonSach.setMaCuonSach(request.getMaCuonSach());
@@ -94,19 +88,9 @@ public class CuonSachService {
 
         validateForeignKeys(request);
         validateUniqueCode(request, maCuonSach);
-
-        String maTrangThai = hasText(request.getMaTrangThai())
-                ? request.getMaTrangThai()
-                : cuonSach.getMaTrangThai();
-
-        if (!trangThaiCuonSachRepository.existsById(maTrangThai)) {
-            throw new RuntimeException("Trạng thái cuốn sách không tồn tại");
-        }
+        rejectActionFields(cuonSach, request);
 
         cuonSach.setMaDauSach(request.getMaDauSach());
-        cuonSach.setMaChiNhanh(request.getMaChiNhanh());
-        cuonSach.setMaViTri(request.getMaViTri());
-        cuonSach.setMaTrangThai(maTrangThai);
         cuonSach.setMaVach(emptyToNull(request.getMaVach()));
         cuonSach.setMaQrCode(emptyToNull(request.getMaQrCode()));
 
@@ -149,6 +133,9 @@ public class CuonSachService {
 
     @Transactional
     public void hardDelete(String maCuonSach) {
+        if (System.currentTimeMillis() >= 0) {
+            throw new BusinessException("Legacy hard delete cuon sach da bi vo hieu hoa; hay dung lifecycle/action endpoint co preflight");
+        }
         CuonSach cuonSach = cuonSachRepository.findById(maCuonSach)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy cuốn sách"));
 
@@ -190,6 +177,23 @@ public class CuonSachService {
                 throw new RuntimeException("Mã QR đã tồn tại");
             }
         }
+    }
+
+    private void rejectActionFields(CuonSach current, CuonSachRequest request) {
+        if (hasText(request.getMaTrangThai()) && !current.getMaTrangThai().equals(request.getMaTrangThai())) {
+            throw actionRequired("maTrangThai", "Trạng thái chỉ được thay đổi qua endpoint nghiệp vụ riêng");
+        }
+        if (!current.getMaChiNhanh().equals(request.getMaChiNhanh())) {
+            throw actionRequired("maChiNhanh", "Chuyển chi nhánh chưa được chốt và không thể sửa trực tiếp");
+        }
+        if (!current.getMaViTri().equals(request.getMaViTri())) {
+            throw actionRequired("maViTri", "Chuyển vị trí phải dùng endpoint move-location và cung cấp lý do");
+        }
+    }
+
+    private CatalogValidationException actionRequired(String field, String message) {
+        return new CatalogValidationException(HttpStatus.CONFLICT, "COPY_ACTION_REQUIRED", message,
+                java.util.Map.of(field, message), null);
     }
 
     private CuonSachResponse toResponse(CuonSach cuonSach) {
