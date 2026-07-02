@@ -144,6 +144,8 @@ public class AdminLibrarianService {
                 NHAN_VIEN_DANG_LAM
         );
 
+        syncDefaultBranchAssignment(request.getMaNhanVien(), request.getMaChiNhanh());
+
         activityLogService.logSafe(
                 "Thêm thủ thư",
                 "NHANVIEN",
@@ -184,6 +186,8 @@ public class AdminLibrarianService {
                 emptyToNull(request.getDiaChi()),
                 maNhanVien
         );
+
+        syncDefaultBranchAssignment(maNhanVien, request.getMaChiNhanh());
 
         activityLogService.logSafe(
                 "Cập nhật thủ thư",
@@ -290,6 +294,13 @@ public class AdminLibrarianService {
     public void hardDelete(String maNhanVien) {
         AdminLibrarianResponse current = getById(maNhanVien);
 
+        if (staffBranchTableExists()) {
+            jdbcTemplate.update(
+                    "DELETE FROM NHANVIEN_CHINHANH WHERE MaNhanVien = ?",
+                    maNhanVien
+            );
+        }
+
         jdbcTemplate.update("DELETE FROM NHANVIEN WHERE MaNhanVien = ?", maNhanVien);
         jdbcTemplate.update("DELETE FROM TAIKHOAN WHERE MaTaiKhoan = ?", current.getMaTaiKhoan());
 
@@ -381,6 +392,74 @@ public class AdminLibrarianService {
         if (!isBlank(maChiNhanh) && !exists("CHINHANH", "MaChiNhanh", maChiNhanh)) {
             throw new ResourceNotFoundException("Chi nhánh không tồn tại");
         }
+    }
+
+    private void syncDefaultBranchAssignment(String maNhanVien, String maChiNhanh) {
+        if (!staffBranchTableExists()) {
+            return;
+        }
+
+        jdbcTemplate.update(
+                """
+                UPDATE NHANVIEN_CHINHANH
+                SET LaMacDinh = 0
+                WHERE MaNhanVien = ?
+                  AND LaMacDinh = 1
+                """,
+                maNhanVien
+        );
+
+        if (isBlank(maChiNhanh)) {
+            return;
+        }
+
+        jdbcTemplate.update(
+                """
+                MERGE NHANVIEN_CHINHANH AS target
+                USING (SELECT ? AS MaNhanVien, ? AS MaChiNhanh) AS source
+                ON target.MaNhanVien = source.MaNhanVien
+                   AND target.MaChiNhanh = source.MaChiNhanh
+                WHEN MATCHED THEN
+                    UPDATE SET
+                        LaMacDinh = 1,
+                        NgayBatDau = CASE
+                            WHEN target.NgayBatDau > CAST(SYSDATETIME() AS DATE)
+                            THEN CAST(SYSDATETIME() AS DATE)
+                            ELSE target.NgayBatDau
+                        END,
+                        NgayKetThuc = NULL,
+                        TrangThai = N'Hoạt động'
+                WHEN NOT MATCHED THEN
+                    INSERT
+                    (
+                        MaNhanVien,
+                        MaChiNhanh,
+                        LaMacDinh,
+                        NgayBatDau,
+                        NgayKetThuc,
+                        TrangThai
+                    )
+                    VALUES
+                    (
+                        source.MaNhanVien,
+                        source.MaChiNhanh,
+                        1,
+                        CAST(SYSDATETIME() AS DATE),
+                        NULL,
+                        N'Hoạt động'
+                    );
+                """,
+                maNhanVien,
+                maChiNhanh
+        );
+    }
+
+    private boolean staffBranchTableExists() {
+        Integer result = jdbcTemplate.queryForObject(
+                "SELECT CASE WHEN OBJECT_ID('dbo.NHANVIEN_CHINHANH', 'U') IS NULL THEN 0 ELSE 1 END",
+                Integer.class
+        );
+        return result != null && result == 1;
     }
 
     private boolean exists(String tableName, String idColumn, String value) {
