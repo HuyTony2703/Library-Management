@@ -335,8 +335,16 @@ public class ReaderReservationService {
     }
 
     private void validateBasicReferences(String maDauSach, String maChiNhanh) {
-        if (!exists("DAUSACH", "MaDauSach", maDauSach)) {
+        List<String> bookStatuses = jdbcTemplate.query(
+                "SELECT TrangThai FROM DAUSACH WHERE MaDauSach = ?",
+                (rs, rowNum) -> rs.getString("TrangThai"),
+                maDauSach
+        );
+        if (bookStatuses.isEmpty()) {
             throw new ResourceNotFoundException("Đầu sách không tồn tại");
+        }
+        if (!"Hoạt động".equals(bookStatuses.get(0))) {
+            throw new BusinessException("Đầu sách đang ngừng hiển thị, không thể tạo đặt trước mới");
         }
 
         if (!exists("CHINHANH", "MaChiNhanh", maChiNhanh)) {
