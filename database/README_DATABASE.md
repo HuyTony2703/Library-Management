@@ -18,6 +18,13 @@ Chạy đúng thứ tự:
 |---:|---|---|
 | 1 | `scripts/01_full_database.sql` | Tạo database, bảng, ràng buộc và dữ liệu nền |
 | 2 | `scripts/02_seed_demo_data.sql` | Thêm tài khoản và dữ liệu demo |
+| 8 | `scripts/08_admin_modernization_staff_context.sql` | Tạo quan hệ nhiều chi nhánh cho nhân viên và backfill chi nhánh hiện tại làm mặc định |
+| 9 | `scripts/09_admin_modernization_payment_integrity.sql` | Bổ sung metadata idempotency cho phiếu thu, index khóa nợ ổn định và unique phiếu thu + khoản nợ |
+| 10 | `scripts/10_admin_modernization_copy_list_indexes.sql` | Bổ sung index cho danh sách cuốn sách phân trang theo chi nhánh, trạng thái, ngày nhập và vị trí |
+| 11 | `scripts/11_admin_modernization_copy_actions.sql` | Tạo lịch sử chuyển trạng thái và vị trí cuốn sách, lưu actor, lý do và before-after |
+| 12 | `scripts/12_admin_modernization_reader_list_indexes.sql` | Bổ sung index cho phân trang, lọc, sắp xếp độc giả và lịch sử gói |
+| 13 | `scripts/13_admin_modernization_reader_state.sql` | Tách borrowing/login lock và lifecycle event, backfill khóa legacy |
+| 14 | `scripts/14_admin_modernization_reader_password_reset.sql` | Bổ sung trường phục vụ revoke token, force-change, audit và rate-limit reset mật khẩu độc giả |
 
 `01_full_database.sql` tự tạo `QuanLyThuVien` nếu database chưa tồn tại, sau đó chuyển ngữ cảnh sang database này.
 
