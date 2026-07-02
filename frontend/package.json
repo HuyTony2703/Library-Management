@@ -4,10 +4,12 @@
   "description": "Desktop app quản lý thư viện",
   "author": "Nhom 1",
   "private": true,
+  "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "lint": "eslint .",
     "preview": "vite preview",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && cross-env ELECTRON_START_URL=http://localhost:5173 electron .\"",
     "electron:preview": "npm run build && electron .",
@@ -58,13 +60,17 @@
       "uninstallDisplayName": "LibraDesk"
     }
   },
-  "dependencies": {},
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@vitejs/plugin-react": "latest",
     "concurrently": "^10.0.3",
     "cross-env": "^10.1.0",
     "electron": "^42.3.2",
     "electron-builder": "^26.8.1",
+    "eslint": "^10.5.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "globals": "^17.6.0",
     "lucide-react": "^1.17.0",
     "react": "latest",
     "react-dom": "latest",
@@ -74,4 +80,3 @@
     "wait-on": "^9.0.10"
   }
 }
-
