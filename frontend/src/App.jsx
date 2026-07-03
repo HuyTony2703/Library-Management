@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import { useAuth } from "./context/AuthContext";
 import { adminRoutes } from "./routes/adminRoutes";
@@ -18,6 +18,7 @@ import SettingsPage from "./pages/SettingsPage";
 
 function ProtectedRoute({ children }) {
     const { user, loadingUser } = useAuth();
+    const location = useLocation();
 
     if (loadingUser) {
         return <div className="boot-screen">Đang khởi động LibraDesk...</div>;
@@ -29,6 +30,10 @@ function ProtectedRoute({ children }) {
 
     if (isReaderUser(user)) {
         return <Navigate to="/reader" replace />;
+    }
+
+    if (user.mustChangePassword && location.pathname !== "/settings") {
+        return <Navigate to="/settings#security" replace />;
     }
 
     return children;
