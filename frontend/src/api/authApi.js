@@ -21,6 +21,9 @@ export function changePasswordApi(payload) {
     return apiFetch("/api/auth/change-password", {
         method: "POST",
         body: JSON.stringify(payload)
+    }).then((data) => {
+        if (data?.token) setToken(data.token);
+        return data;
     });
 }
 
