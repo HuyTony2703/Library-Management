@@ -64,13 +64,14 @@ export default function AccountSettingsContent() {
     }, [preferences]);
 
     useEffect(() => {
-        if (location.hash !== "#profile") {
+        if (location.hash !== "#profile" && location.hash !== "#security") {
             return;
         }
 
-        setActiveSettingsCategory("profile");
+        const category = location.hash === "#security" ? "security" : "profile";
+        setActiveSettingsCategory(category);
         window.requestAnimationFrame(() => {
-            document.getElementById("settings-profile")?.scrollIntoView({
+            document.getElementById(category === "security" ? "settings-password" : "settings-profile")?.scrollIntoView({
                 behavior: "smooth",
                 block: "start"
             });
@@ -113,8 +114,8 @@ export default function AccountSettingsContent() {
             return;
         }
 
-        if (passwordForm.newPassword.length < 6) {
-            toast.error("Mật khẩu mới phải có ít nhất 6 ký tự");
+        if (passwordForm.newPassword.length < 8) {
+            toast.error("Mật khẩu mới phải có ít nhất 8 ký tự");
             return;
         }
 
@@ -130,6 +131,7 @@ export default function AccountSettingsContent() {
                 currentPassword: passwordForm.currentPassword,
                 newPassword: passwordForm.newPassword
             });
+            await refreshUser();
 
             setPasswordForm({
                 currentPassword: "",
@@ -350,7 +352,7 @@ export default function AccountSettingsContent() {
                 </div>
 
                 <div className="settings-column settings-column-right">
-                    <form className={`panel settings-section settings-password-section${activeSettingsCategory === "security" ? " is-active" : ""}`} onSubmit={submitPassword}>
+                    <form id="settings-password" className={`panel settings-section settings-password-section${activeSettingsCategory === "security" ? " is-active" : ""}`} onSubmit={submitPassword}>
                         <div className="settings-section-title">
                             <KeyRound size={22} />
                             <div>
