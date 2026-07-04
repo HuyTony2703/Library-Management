@@ -74,19 +74,23 @@ function Wait-BackendHealth {
 }
 
 function Get-AppLaunchCandidates {
-    $candidates = @()
+    $candidatePaths = @()
 
     if (Test-Path -Path $appExe) {
-        $candidates += $appExe
+        $candidatePaths += $appExe
     }
 
     foreach ($fallback in $appExeFallbacks) {
         if (Test-Path -Path $fallback) {
-            $candidates += $fallback
+            $candidatePaths += $fallback
         }
     }
 
-    return $candidates | Select-Object -Unique
+    return $candidatePaths |
+        Select-Object -Unique |
+        ForEach-Object { Get-Item -LiteralPath $_ } |
+        Sort-Object LastWriteTime -Descending |
+        ForEach-Object { $_.FullName }
 }
 
 function Test-ElectronFallback {
