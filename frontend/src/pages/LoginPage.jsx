@@ -10,8 +10,8 @@ export default function LoginPage() {
     const { login } = useAuth();
     const toast = useToast();
 
-    const [usernameOrEmail, setUsernameOrEmail] = useState("thuthu01");
-    const [password, setPassword] = useState("123456");
+    const [usernameOrEmail, setUsernameOrEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
 
     async function handleSubmit(e) {
@@ -22,7 +22,9 @@ export default function LoginPage() {
             const data = await login(usernameOrEmail, password);
             toast.success("Đăng nhập thành công");
 
-            navigate(isReaderUser(data) ? "/reader" : "/");
+            navigate(data.mustChangePassword
+                ? (isReaderUser(data) ? "/reader/settings#security" : "/settings#security")
+                : (isReaderUser(data) ? "/reader" : "/"));
         } catch (err) {
             toast.error(err.message || "Đăng nhập thất bại");
         } finally {
@@ -43,7 +45,7 @@ export default function LoginPage() {
                 <div className="hero-panel">
                     <div>
                         <b>Demo nhanh</b>
-                        <span>Thủ thư: thuthu01 / 123456</span>
+                        <span>Đăng nhập bằng tài khoản đã được cấp</span>
                     </div>
                     <Library size={42} />
                 </div>
@@ -66,7 +68,7 @@ export default function LoginPage() {
                     <input
                         value={usernameOrEmail}
                         onChange={(e) => setUsernameOrEmail(e.target.value)}
-                        placeholder="thuthu01"
+                        placeholder="Tên đăng nhập hoặc email"
                     />
                 </div>
 
@@ -77,7 +79,7 @@ export default function LoginPage() {
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="123456"
+                        placeholder="Mật khẩu"
                     />
                 </div>
 
