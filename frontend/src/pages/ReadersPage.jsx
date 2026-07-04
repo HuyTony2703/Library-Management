@@ -1,491 +1,263 @@
-import { EyeOff, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Download } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { libraryApi } from "../api/libraryApi";
 import DataTable from "../components/DataTable";
-import InlineActionMenu from "../components/InlineActionMenu";
 import PageHeader from "../components/PageHeader";
-import PasswordInput from "../components/PasswordInput";
-import ResultModal from "../components/ResultModal";
+import ReaderDetailDrawer from "../components/ReaderDetailDrawer";
 import StatusBadge from "../components/StatusBadge";
-import { useActionDialog } from "../components/ActionDialogProvider";
 import { useToast } from "../components/ToastProvider";
-import { formatDate } from "../utils/displayUtils";
-
-const FALLBACK_READER_GROUPS = [
-    { value: "NHOM_HOCSINH", label: "Học sinh" },
-    { value: "NHOM_SINHVIEN", label: "Sinh viên" },
-    { value: "NHOM_GIAOVIEN", label: "Giáo viên" },
-    { value: "NHOM_KHAC", label: "Khác" }
-];
-
-const FALLBACK_MEMBERSHIP_PLANS = [
-    { value: "GOI_THUONG", label: "Gói thường" },
-    { value: "GOI_VIP", label: "Gói VIP" },
-    { value: "GOI_PREMIUM", label: "Gói Premium" }
-];
+import { formatDate, formatMoney } from "../utils/displayUtils";
+import { downloadCsvExport, resolveExportResult } from "../utils/exportUtils";
 
 export default function ReadersPage() {
     const toast = useToast();
-    const actionDialog = useActionDialog();
     const [searchParams, setSearchParams] = useSearchParams();
+    const requestSequence = useRef(0);
     const [data, setData] = useState([]);
-    const [readerGroups, setReaderGroups] = useState(FALLBACK_READER_GROUPS);
-    const [membershipPlans, setMembershipPlans] = useState(FALLBACK_MEMBERSHIP_PLANS);
-    const [loading, setLoading] = useState(false);
-    const [search, setSearch] = useState(searchParams.get("search") || "");
-    const [form, setForm] = useState(() => buildDefaultForm());
-    const [showModal, setShowModal] = useState(false);
-    const [editingReader, setEditingReader] = useState(null);
+    const [pageInfo, setPageInfo] = useState({ totalItems: 0, totalPages: 0 });
+    const [tableLoading, setTableLoading] = useState(false);
+    const [tableError, setTableError] = useState("");
+    const [reloadVersion, setReloadVersion] = useState(0);
+    const [groupOptions, setGroupOptions] = useState([]);
+    const [planOptions, setPlanOptions] = useState([]);
+    const [profileStatusOptions, setProfileStatusOptions] = useState([]);
+    const [filterLoading, setFilterLoading] = useState(true);
+    const [filterError, setFilterError] = useState("");
+    const [filterRetryKey, setFilterRetryKey] = useState(0);
+    const [drawerReaderId, setDrawerReaderId] = useState(null);
     const [selectedIds, setSelectedIds] = useState([]);
+    const [exportLoading, setExportLoading] = useState(false);
 
-    async function load() {
-        try {
-            setData(await libraryApi.readers());
-        } catch (err) {
-            toast.error(err.message || "Không tải được danh sách độc giả");
-        }
-    }
+    const urlSearch = searchParams.get("search") || "";
+    const [searchDraft, setSearchDraft] = useState({ urlValue: urlSearch, value: urlSearch });
+    const search = searchDraft.urlValue === urlSearch ? searchDraft.value : urlSearch;
+    const page = positiveInteger(searchParams.get("page"), 1);
+    const pageSize = readPageSize(searchParams.get("pageSize"));
+    const sort = readSort(searchParams.get("sort"));
+    const groupId = searchParams.get("groupIds") || "";
+    const planId = searchParams.get("planIds") || "";
+    const profileStatus = searchParams.get("profileStatuses") || "";
+    const cardStatus = searchParams.get("cardStatus") || "";
+    const membershipStatus = searchParams.get("membershipStatus") || "";
+    const cardExpiryFrom = searchParams.get("cardExpiryFrom") || "";
+    const cardExpiryTo = searchParams.get("cardExpiryTo") || "";
+    const membershipExpiryFrom = searchParams.get("membershipExpiryFrom") || "";
+    const membershipExpiryTo = searchParams.get("membershipExpiryTo") || "";
+    const locked = searchParams.get("locked") === "true";
+    const preset = searchParams.get("preset") || "";
+
+    const updateUrl = useCallback((changes, replace = false) => {
+        setSearchParams((current) => {
+            const next = new URLSearchParams(current);
+            Object.entries(changes).forEach(([key, value]) => {
+                if (value === null || value === undefined || value === "" || value === false) next.delete(key);
+                else next.set(key, String(value));
+            });
+            return next;
+        }, { replace });
+    }, [setSearchParams]);
 
     useEffect(() => {
-        load();
-        libraryApi.readerGroups()
-            .then((options) => setReaderGroups(options?.length ? options : FALLBACK_READER_GROUPS))
-            .catch(() => setReaderGroups(FALLBACK_READER_GROUPS));
-        libraryApi.membershipPlans()
-            .then((options) => setMembershipPlans(options?.length ? options : FALLBACK_MEMBERSHIP_PLANS))
-            .catch(() => setMembershipPlans(FALLBACK_MEMBERSHIP_PLANS));
-    }, []);
+        const controller = new AbortController();
+        const sequence = ++requestSequence.current;
+        // Each URL query owns its loading/error lifecycle.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setTableLoading(true);
+        setTableError("");
+        libraryApi.readersPage({
+            page,
+            pageSize,
+            search: urlSearch,
+            sort: `${sort.field},${sort.direction}`,
+            groupIds: groupId ? [groupId] : [],
+            planIds: planId ? [planId] : [],
+            profileStatuses: profileStatus ? [profileStatus] : [],
+            cardStatus,
+            membershipStatus,
+            cardExpiryFrom,
+            cardExpiryTo,
+            membershipExpiryFrom,
+            membershipExpiryTo,
+            locked: locked || null
+        }, { signal: controller.signal }).then((response) => {
+            if (sequence !== requestSequence.current) return;
+            setData(Array.isArray(response.items) ? response.items : []);
+            setPageInfo({ totalItems: Number(response.totalItems) || 0, totalPages: Number(response.totalPages) || 0 });
+            if (response.totalPages > 0 && page > response.totalPages) updateUrl({ page: response.totalPages });
+        }).catch((error) => {
+            if (error.name !== "AbortError" && sequence === requestSequence.current) setTableError(error.message || "Không tải được danh sách độc giả");
+        }).finally(() => {
+            if (sequence === requestSequence.current) setTableLoading(false);
+        });
+        return () => controller.abort();
+    }, [page, pageSize, urlSearch, sort.field, sort.direction, groupId, planId, profileStatus, cardStatus, membershipStatus, cardExpiryFrom, cardExpiryTo, membershipExpiryFrom, membershipExpiryTo, locked, reloadVersion, updateUrl]);
+
+    useEffect(() => {
+        let active = true;
+        Promise.all([libraryApi.readerGroups(), libraryApi.membershipPlans(), libraryApi.readerProfileStatuses()])
+            .then(([groups, plans, statuses]) => {
+                if (!active) return;
+                setGroupOptions(Array.isArray(groups) ? groups : []);
+                setPlanOptions(Array.isArray(plans) ? plans : []);
+                setProfileStatusOptions(Array.isArray(statuses) ? statuses : []);
+                setFilterError("");
+            }).catch((error) => {
+                if (active) setFilterError(error.message || "Không tải được dữ liệu bộ lọc");
+            }).finally(() => {
+                if (active) setFilterLoading(false);
+            });
+        return () => { active = false; };
+    }, [filterRetryKey]);
 
     useEffect(() => {
         const timer = window.setTimeout(() => {
-            setSearchParams(search.trim() ? { search: search.trim() } : {}, { replace: true });
+            const normalized = search.trim();
+            if (normalized !== urlSearch) updateUrl({ search: normalized || null, page: 1 }, true);
         }, 250);
-
         return () => window.clearTimeout(timer);
-    }, [search, setSearchParams]);
+    }, [search, urlSearch, updateUrl]);
 
-    const filteredData = useMemo(() => {
-        const keyword = search.trim().toLowerCase();
-
-        if (!keyword) {
-            return data;
-        }
-
-        return data.filter((row) =>
-            [
-                row.maDocGia,
-                row.maTaiKhoan,
-                row.tenDangNhap,
-                row.maNhomDocGia,
-                row.hoTen,
-                row.email,
-                row.soDienThoai,
-                row.diaChi,
-                row.trangThai,
-                row.maGoiThanhVien
-            ]
-                .filter((value) => value !== null && value !== undefined)
-                .some((value) => String(value).toLowerCase().includes(keyword))
-        );
-    }, [data, search]);
-
-    const membershipPlanLabelById = useMemo(() => {
-        return Object.fromEntries(membershipPlans.map((option) => [option.value, option.label]));
-    }, [membershipPlans]);
-
-    useEffect(() => {
-        setSelectedIds((prev) => prev.filter((id) => data.some((row) => row.maDocGia === id)));
-    }, [data]);
-
-    function updateField(field, value) {
-        setForm((prev) => ({ ...prev, [field]: value }));
+    function changeFilter(name, value, extra = {}) {
+        updateUrl({ [name]: value || null, preset: null, page: 1, ...extra });
     }
 
-    function toggleSelected(id) {
-        setSelectedIds((prev) => prev.includes(id)
-            ? prev.filter((value) => value !== id)
-            : [...prev, id]);
+    function clearFilters() {
+        setSearchDraft({ urlValue: "", value: "" });
+        updateUrl({ search: null, groupIds: null, planIds: null, profileStatuses: null, cardStatus: null,
+            membershipStatus: null, cardExpiryFrom: null, cardExpiryTo: null, membershipExpiryFrom: null,
+            membershipExpiryTo: null, locked: null, preset: null, page: 1 });
     }
 
-    function selectAllVisible() {
-        setSelectedIds(filteredData.map((row) => row.maDocGia));
-    }
-
-    function clearSelected() {
-        setSelectedIds([]);
-    }
-
-    function openCreateModal() {
-        setEditingReader(null);
-        setForm(buildDefaultForm());
-        setShowModal(true);
-    }
-
-    function openEditModal(row) {
-        setEditingReader(row);
-        setForm({
-            maDocGia: row.maDocGia || "",
-            maTaiKhoan: row.maTaiKhoan || "",
-            tenDangNhap: row.tenDangNhap || "",
-            matKhau: "123456",
-            maNhomDocGia: row.maNhomDocGia || "NHOM_SINHVIEN",
-            maGoiThanhVien: row.maGoiThanhVien || "GOI_THUONG",
-            hoTen: row.hoTen || "",
-            ngaySinh: row.ngaySinh || "2000-01-01",
-            diaChi: row.diaChi || "",
-            email: row.email || "",
-            soDienThoai: row.soDienThoai || "",
-            ngayLapThe: row.ngayLapThe || new Date().toISOString().slice(0, 10)
+    function applyPreset(value) {
+        updateUrl({
+            cardStatus: value === "card-expiring" ? "EXPIRING" : value === "card-expired" ? "EXPIRED" : null,
+            membershipStatus: value === "membership-expiring" ? "EXPIRING" : value === "membership-expired" ? "EXPIRED" : null,
+            locked: value === "locked" ? true : null,
+            cardExpiryFrom: null,
+            cardExpiryTo: null,
+            membershipExpiryFrom: null,
+            membershipExpiryTo: null,
+            preset: value,
+            page: 1
         });
-        setShowModal(true);
     }
 
-    function closeModal() {
-        setShowModal(false);
-        setEditingReader(null);
-        setForm(buildDefaultForm());
+    function retryFilters() {
+        setFilterError("");
+        setFilterLoading(true);
+        setFilterRetryKey((value) => value + 1);
     }
 
-    function buildPayload() {
+    function currentExportFilters() {
         return {
-            maDocGia: form.maDocGia,
-            maTaiKhoan: form.maTaiKhoan,
-            tenDangNhap: form.tenDangNhap,
-            matKhau: form.matKhau,
-            maNhomDocGia: form.maNhomDocGia,
-            maGoiThanhVien: form.maGoiThanhVien || null,
-            hoTen: form.hoTen,
-            ngaySinh: form.ngaySinh,
-            diaChi: form.diaChi,
-            email: form.email,
-            soDienThoai: form.soDienThoai,
-            ngayLapThe: form.ngayLapThe || null
+            page,
+            pageSize,
+            search: urlSearch,
+            sort: `${sort.field},${sort.direction}`,
+            groupIds: groupId ? [groupId] : [],
+            planIds: planId ? [planId] : [],
+            profileStatuses: profileStatus ? [profileStatus] : [],
+            accountStatuses: [],
+            cardStatus,
+            membershipStatus,
+            cardExpiryFrom,
+            cardExpiryTo,
+            membershipExpiryFrom,
+            membershipExpiryTo,
+            locked: locked || null
         };
     }
 
-    async function saveReader(event) {
-        event.preventDefault();
-        setLoading(true);
-
-        try {
-            const payload = buildPayload();
-
-            if (editingReader) {
-                const membershipChanged = (editingReader.maGoiThanhVien || "") !== (payload.maGoiThanhVien || "");
-                const profileChanged = hasProfileChanged(editingReader, payload);
-
-                if (profileChanged) {
-                    await libraryApi.updateReader(editingReader.maDocGia, payload);
-                }
-
-                if (membershipChanged) {
-                    await libraryApi.updateReaderMembership(editingReader.maDocGia, {
-                        maGoiThanhVien: payload.maGoiThanhVien
-                    });
-                }
-            } else {
-                await libraryApi.createReader(payload);
-            }
-
-            toast.success(editingReader ? "Cập nhật độc giả và gói thành viên thành công" : "Thêm độc giả thành công");
-            closeModal();
-            await load();
-        } catch (err) {
-            toast.error(err.message || "Lưu độc giả thất bại");
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function hideReader(maDocGia) {
-        const confirmed = await actionDialog.confirm({
-            title: `Ẩn độc giả ${maDocGia}`,
-            message: "Độc giả sẽ ngừng hoạt động nhưng dữ liệu vẫn được giữ lại.",
-            confirmLabel: "Ẩn"
-        });
-
-        if (!confirmed) return;
-
-        setLoading(true);
-        try {
-            await libraryApi.deleteReader(maDocGia, "soft");
-            toast.success("Đã ẩn độc giả");
-            await load();
-        } catch (err) {
-            toast.error(err.message || "Ẩn độc giả thất bại");
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function hardDeleteReader(maDocGia) {
-        const confirmed = await actionDialog.confirm({
-            title: `Xóa độc giả ${maDocGia}`,
-            message: "Thao tác này sẽ xóa vĩnh viễn nếu dữ liệu chưa có liên kết nghiệp vụ.",
-            confirmLabel: "Xóa",
-            danger: true
-        });
-
-        if (!confirmed) return;
-
-        setLoading(true);
-        try {
-            await libraryApi.deleteReader(maDocGia, "hard");
-            toast.success("Đã xóa độc giả");
-            setSelectedIds((prev) => prev.filter((id) => id !== maDocGia));
-            await load();
-        } catch (err) {
-            toast.error(err.message || "Xóa độc giả thất bại");
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function restoreReader(maDocGia) {
-        const confirmed = await actionDialog.confirm({
-            title: `Khôi phục độc giả ${maDocGia}`,
-            message: "Độc giả sẽ được đưa về trạng thái hoạt động.",
-            confirmLabel: "Khôi phục"
-        });
-
-        if (!confirmed) return;
-
-        setLoading(true);
-        try {
-            await libraryApi.restoreReader(maDocGia);
-            toast.success("Đã khôi phục độc giả");
-            await load();
-        } catch (err) {
-            toast.error(err.message || "Khôi phục độc giả thất bại");
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function deleteSelectedReaders() {
-        if (selectedIds.length === 0) {
-            toast.error("Vui lòng chọn ít nhất một độc giả");
+    async function exportReaders(scope) {
+        if (exportLoading) return;
+        if (scope === "SELECTED" && selectedIds.length === 0) {
+            toast.error("Chưa chọn độc giả để export");
             return;
         }
-
-        const mode = await actionDialog.chooseDeleteMode(`${selectedIds.length} độc giả đã chọn`);
-
-        if (!mode) return;
-
-        setLoading(true);
+        setExportLoading(true);
         try {
-            for (const id of selectedIds) {
-                await libraryApi.deleteReader(id, mode);
-            }
-
-            toast.success(mode === "hard" ? "Đã xóa các độc giả đã chọn" : "Đã ngừng hoạt động các độc giả đã chọn");
-            setSelectedIds([]);
-            await load();
-        } catch (err) {
-            toast.error(err.message || "Xóa các độc giả đã chọn thất bại");
+            const result = await libraryApi.exportReaders({
+                scope,
+                ids: scope === "SELECTED" ? selectedIds : [],
+                filters: currentExportFilters(),
+                excludedIds: []
+            });
+            const ready = await resolveExportResult(result, () => toast.info("Tập dữ liệu lớn, đang tạo file export"));
+            downloadCsvExport(ready);
+            toast.success(`Đã export ${Number(ready.totalRows || 0).toLocaleString("vi-VN")} dòng`);
+        } catch (error) {
+            toast.error(error.message || "Export độc giả thất bại");
         } finally {
-            setLoading(false);
+            setExportLoading(false);
         }
     }
 
-    return (
-        <div>
-            <PageHeader
-                eyebrow="Members"
-                title="Quản lý độc giả"
-                description="Thông tin độc giả, email, số điện thoại, hạn thẻ và trạng thái."
-            />
+    return <div>
+        <PageHeader eyebrow="Members" title="Quản lý độc giả" description="Tra cứu hồ sơ, hiệu lực thẻ, gói thành viên và nghĩa vụ hiện tại." />
 
-            <div className="panel search-panel">
-                <input
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    placeholder="Tìm theo mã, tên, email, số điện thoại, nhóm độc giả..."
-                />
-            </div>
-
-            {showModal && (
-                <ResultModal title={editingReader ? "Sửa thông tin độc giả" : "Thêm độc giả"} onClose={closeModal} className="form-modal-card">
-                    <form className="form-panel modal-form" onSubmit={saveReader}>
-                        <div className="form-grid-3">
-                            <div className="form-row">
-                                <label>Mã độc giả</label>
-                                <input value={form.maDocGia} onChange={(e) => updateField("maDocGia", e.target.value)} disabled={Boolean(editingReader)} />
-                            </div>
-                            <div className="form-row">
-                                <label>Mã tài khoản</label>
-                                <input value={form.maTaiKhoan} onChange={(e) => updateField("maTaiKhoan", e.target.value)} disabled={Boolean(editingReader)} />
-                            </div>
-                            <div className="form-row">
-                                <label>Tên đăng nhập</label>
-                                <input value={form.tenDangNhap} onChange={(e) => updateField("tenDangNhap", e.target.value)} disabled={Boolean(editingReader)} />
-                            </div>
-                        </div>
-
-                        <div className="form-grid-3">
-                            <div className="form-row">
-                                <label>Mật khẩu</label>
-                                <PasswordInput value={form.matKhau} onChange={(e) => updateField("matKhau", e.target.value)} disabled={Boolean(editingReader)} />
-                            </div>
-                            <div className="form-row">
-                                <label>Nhóm độc giả</label>
-                                <select value={form.maNhomDocGia} onChange={(e) => updateField("maNhomDocGia", e.target.value)}>
-                                    {readerGroups.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="form-row">
-                                <label>Gói thành viên</label>
-                                <select value={form.maGoiThanhVien} onChange={(e) => updateField("maGoiThanhVien", e.target.value)}>
-                                    {membershipPlans.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="form-grid-3">
-                            <div className="form-row">
-                                <label>Họ tên</label>
-                                <input value={form.hoTen} onChange={(e) => updateField("hoTen", e.target.value)} />
-                            </div>
-                            <div className="form-row">
-                                <label>Ngày sinh</label>
-                                <input type="date" value={form.ngaySinh} onChange={(e) => updateField("ngaySinh", e.target.value)} />
-                            </div>
-                            <div className="form-row">
-                                <label>Ngày lập thẻ</label>
-                                <input type="date" value={form.ngayLapThe} onChange={(e) => updateField("ngayLapThe", e.target.value)} disabled={Boolean(editingReader)} />
-                            </div>
-                        </div>
-
-                        <div className="form-grid-3">
-                            <div className="form-row">
-                                <label>Email</label>
-                                <input value={form.email} onChange={(e) => updateField("email", e.target.value)} />
-                            </div>
-                            <div className="form-row">
-                                <label>Số điện thoại</label>
-                                <input value={form.soDienThoai} onChange={(e) => updateField("soDienThoai", e.target.value)} />
-                            </div>
-                            <div className="form-row">
-                                <label>Địa chỉ</label>
-                                <input value={form.diaChi} onChange={(e) => updateField("diaChi", e.target.value)} />
-                            </div>
-                        </div>
-
-                        <button className="primary-button" disabled={loading}>
-                            {editingReader ? "Lưu thông tin" : "Thêm độc giả"}
-                        </button>
-                    </form>
-                </ResultModal>
-            )}
-
-            <div className="list-toolbar">
-                <button className="primary-button" type="button" onClick={openCreateModal}>
-                    <Plus size={17} />
-                    Thêm độc giả
-                </button>
-
-                <div className="selection-toolbar">
-                    <button className="ghost-button" type="button" onClick={selectAllVisible}>
-                        Chọn tất cả
-                    </button>
-                    <button className="soft-button" type="button" onClick={clearSelected}>
-                        Bỏ chọn tất cả
-                    </button>
-                    <button className="soft-button danger-button" type="button" onClick={deleteSelectedReaders} disabled={selectedIds.length === 0 || loading}>
-                        <Trash2 size={15} />
-                        Xóa
-                    </button>
-                </div>
-            </div>
-
-            <DataTable
-                data={filteredData}
-                rowClassName={(row) => selectedIds.includes(row.maDocGia) ? "selected-row" : ""}
-                columns={[
-                    {
-                        key: "select",
-                        title: "",
-                        className: "selection-count-cell",
-                        width: "76px",
-                        render: (row) => (
-                            <input
-                                className="table-checkbox"
-                                type="checkbox"
-                                checked={selectedIds.includes(row.maDocGia)}
-                                onChange={() => toggleSelected(row.maDocGia)}
-                            />
-                        )
-                    },
-                    { key: "maDocGia", title: "Mã ĐG" },
-                    { key: "hoTen", title: "Họ tên" },
-                    { key: "email", title: "Email" },
-                    { key: "soDienThoai", title: "SĐT" },
-                    {
-                        key: "maGoiThanhVien",
-                        title: "Gói",
-                        render: (row) => membershipPlanLabelById[row.maGoiThanhVien] || row.maGoiThanhVien || "Chưa có"
-                    },
-                    { key: "ngayHetHanGoi", title: "Hạn gói", render: (row) => formatDate(row.ngayHetHanGoi) },
-                    { key: "ngayHetHanThe", title: "Hạn thẻ", render: (row) => formatDate(row.ngayHetHanThe) },
-                    { key: "trangThai", title: "Trạng thái", render: (row) => <StatusBadge value={row.trangThai} /> },
-                    {
-                        key: "actions",
-                        title: "Thao tác",
-                        width: "120px",
-                        render: (row) => (
-                            <InlineActionMenu
-                                label={`Mở thao tác cho độc giả ${row.maDocGia}`}
-                                disabled={loading}
-                                actions={[
-                                    { key: "edit", label: "Sửa thông tin", icon: Pencil, onClick: () => openEditModal(row) },
-                                    { key: "hide", label: "Ẩn", icon: EyeOff, onClick: () => hideReader(row.maDocGia), disabled: row.trangThai === "Ngừng hoạt động" },
-                                    { key: "restore", label: "Khôi phục", icon: RotateCcw, onClick: () => restoreReader(row.maDocGia), disabled: row.trangThai === "Hoạt động" },
-                                    { key: "delete", label: "Xóa", icon: Trash2, danger: true, onClick: () => hardDeleteReader(row.maDocGia) }
-                                ]}
-                            />
-                        )
-                    }
-                ]}
-            />
+        <div className="reader-presets" aria-label="Bộ lọc nhanh độc giả">
+            <Preset active={preset === "card-expiring"} onClick={() => applyPreset("card-expiring")}>Thẻ sắp hết hạn</Preset>
+            <Preset active={preset === "membership-expiring"} onClick={() => applyPreset("membership-expiring")}>Gói sắp hết hạn</Preset>
+            <Preset active={preset === "card-expired"} onClick={() => applyPreset("card-expired")}>Thẻ đã hết hạn</Preset>
+            <Preset active={preset === "membership-expired"} onClick={() => applyPreset("membership-expired")}>Gói đã hết hạn</Preset>
+            <Preset active={preset === "locked"} onClick={() => applyPreset("locked")}>Đang khóa</Preset>
         </div>
-    );
+
+        <div className="panel reader-filter-panel">
+            <Filter label="Tìm kiếm" wide><input value={search} onChange={(event) => setSearchDraft({ urlValue: urlSearch, value: event.target.value })} placeholder="Mã, họ tên, email, số điện thoại hoặc tên đăng nhập" /></Filter>
+            <Filter label="Nhóm độc giả"><select value={groupId} onChange={(event) => changeFilter("groupIds", event.target.value)} disabled={filterLoading}><option value="">Tất cả nhóm</option>{groupOptions.map(option)}</select></Filter>
+            <Filter label="Gói thành viên"><select value={planId} onChange={(event) => changeFilter("planIds", event.target.value)} disabled={filterLoading}><option value="">Tất cả gói</option>{planOptions.map(option)}</select></Filter>
+            <Filter label="Trạng thái hồ sơ"><select value={profileStatus} onChange={(event) => changeFilter("profileStatuses", event.target.value)} disabled={filterLoading}><option value="">Tất cả trạng thái</option>{profileStatusOptions.map(option)}</select></Filter>
+            <Filter label="Hạn thẻ từ"><input type="date" value={cardExpiryFrom} onChange={(event) => changeFilter("cardExpiryFrom", event.target.value)} /></Filter>
+            <Filter label="Hạn thẻ đến"><input type="date" value={cardExpiryTo} onChange={(event) => changeFilter("cardExpiryTo", event.target.value)} /></Filter>
+            <Filter label="Hạn gói từ"><input type="date" value={membershipExpiryFrom} onChange={(event) => changeFilter("membershipExpiryFrom", event.target.value)} /></Filter>
+            <Filter label="Hạn gói đến"><input type="date" value={membershipExpiryTo} onChange={(event) => changeFilter("membershipExpiryTo", event.target.value)} /></Filter>
+            <button className="ghost-button reader-clear-filters" type="button" onClick={clearFilters}>Xóa bộ lọc</button>
+            {filterError && <div className="reader-filter-error" role="alert"><span>{filterError}</span><button className="soft-button" type="button" onClick={retryFilters}>Thử lại</button></div>}
+        </div>
+
+        <div className="list-toolbar">
+            <div className="selection-toolbar">
+                <button className="soft-button" type="button" onClick={() => exportReaders("SELECTED")} disabled={!selectedIds.length || exportLoading}><Download size={15} /> Export đã chọn</button>
+                <button className="soft-button" type="button" onClick={() => exportReaders("PAGE")} disabled={!data.length || exportLoading}><Download size={15} /> Export trang này</button>
+                <button className="soft-button" type="button" onClick={() => exportReaders("ALL_MATCHING")} disabled={pageInfo.totalItems === 0 || exportLoading}><Download size={15} /> Export tất cả kết quả</button>
+            </div>
+        </div>
+
+        <DataTable mode="server" data={data} rowKey="readerId" loading={tableLoading} error={tableError}
+            onRetry={() => setReloadVersion((value) => value + 1)} emptyText="Không có độc giả phù hợp"
+            onRowClick={(row) => setDrawerReaderId(row.readerId)}
+            pagination={{ page, pageSize, totalItems: pageInfo.totalItems, totalPages: pageInfo.totalPages,
+                onPageChange: (next) => updateUrl({ page: next }), onPageSizeChange: (next) => updateUrl({ pageSize: next, page: 1 }) }}
+            sort={sort} onSortChange={(next) => updateUrl({ sort: next ? `${next.field},${next.direction}` : null, page: 1 })}
+            selectable
+            selectedRowKeys={selectedIds}
+            onSelectionChange={setSelectedIds}
+            columns={readerColumns()} />
+
+        {drawerReaderId && <ReaderDetailDrawer key={drawerReaderId} readerId={drawerReaderId} onClose={() => setDrawerReaderId(null)} onUpdated={() => setReloadVersion((value) => value + 1)} />}
+    </div>;
 }
 
-function buildDefaultForm() {
-    const suffix = Date.now().toString().slice(-6);
-
-    return {
-        maDocGia: `DG_MOI_${suffix}`,
-        maTaiKhoan: `TK_DG_MOI_${suffix}`,
-        tenDangNhap: `docgia_moi_${suffix}`,
-        matKhau: "123456",
-        maNhomDocGia: "NHOM_SINHVIEN",
-        maGoiThanhVien: "GOI_THUONG",
-        hoTen: "Độc giả mới 1",
-        ngaySinh: "2000-01-01",
-        diaChi: "TP.HCM",
-        email: `docgia_moi_${suffix}@library.vn`,
-        soDienThoai: "0922222999",
-        ngayLapThe: new Date().toISOString().slice(0, 10)
-    };
-}
-
-function hasProfileChanged(reader, payload) {
+function readerColumns() {
     return [
-        "maNhomDocGia",
-        "hoTen",
-        "ngaySinh",
-        "diaChi",
-        "email",
-        "soDienThoai"
-    ].some((field) => (reader[field] || "") !== (payload[field] || ""));
+        { key: "fullName", title: "Họ tên", width: "300px", minWidth: "260px", wrap: true, align: "left", sortable: true, sortKey: "fullName", render: (row) => <span className="reader-name-cell"><strong>{row.fullName}</strong><span>{row.readerId}</span></span> },
+        { key: "group", title: "Nhóm", width: "170px", render: (row) => <Secondary primary={row.groupName} secondary={row.groupId} /> },
+        { key: "plan", title: "Gói", width: "190px", render: (row) => <Secondary primary={row.planName || "Chưa có gói"} secondary={statusLabel(row.membershipStatus)} /> },
+        { key: "cardIssued", title: "Ngày lập thẻ", width: "140px", sortable: true, sortKey: "cardIssued", render: (row) => formatDate(row.cardIssuedAt) },
+        { key: "cardExpiry", title: "Hạn thẻ", width: "165px", sortable: true, sortKey: "cardExpiry", render: (row) => <Secondary primary={formatDate(row.cardExpiresAt)} secondary={statusLabel(row.cardStatus)} /> },
+        { key: "membershipExpiry", title: "Hạn gói", width: "165px", sortable: true, sortKey: "membershipExpiry", render: (row) => <Secondary primary={formatDate(row.membershipExpiresAt) || "—"} secondary={statusLabel(row.membershipStatus)} /> },
+        { key: "profileStatus", title: "Hồ sơ", width: "150px", render: (row) => <StatusBadge value={row.profileStatus} /> },
+        { key: "summary", title: "Đang mượn / Nợ", width: "180px", render: (row) => <Secondary primary={`${row.currentLoans} cuốn`} secondary={formatMoney(row.outstandingDebt)} /> }
+    ];
 }
+
+function Filter({ label, children, wide = false }) { return <div className={`reader-filter-field${wide ? " is-wide" : ""}`}><label>{label}</label>{children}</div>; }
+function Preset({ active, onClick, children }) { return <button className={`soft-button${active ? " is-active" : ""}`} type="button" onClick={onClick}>{children}</button>; }
+function Secondary({ primary, secondary }) { return <span className="reader-secondary-cell"><strong>{primary || "—"}</strong>{secondary && <span>{secondary}</span>}</span>; }
+function option(item) { return <option key={item.value} value={item.value}>{item.label}</option>; }
+function positiveInteger(value, fallback) { const parsed = Number.parseInt(value, 10); return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback; }
+function readPageSize(value) { const parsed = Number.parseInt(value, 10); return [20, 50, 100].includes(parsed) ? parsed : 20; }
+function readSort(value) { const [field = "fullName", direction = "asc"] = String(value || "").split(","); return ["fullName", "cardIssued", "cardExpiry", "membershipExpiry"].includes(field) && ["asc", "desc"].includes(direction) ? { field, direction } : { field: "fullName", direction: "asc" }; }
+function statusLabel(value) { return ({ VALID: "Còn hạn", EXPIRING: "Sắp hết hạn", EXPIRED: "Đã hết hạn", NONE: "Chưa có gói" })[value] || value; }
