@@ -11,6 +11,7 @@ set "BACKEND_JAR=%ROOT%\release\backend-0.0.1-SNAPSHOT.jar"
 set "BACKEND_EXE=%ROOT%\release\backend.exe"
 set "APP_EXE=%ROOT%\release\LibraDesk-1.0.0-portable.exe"
 set "APP_EXE_FALLBACK=%ROOT%\release\win-ia32-unpacked\LibraDesk.exe"
+set "APP_EXE_X64_FALLBACK=%ROOT%\release\win-unpacked\LibraDesk.exe"
 set "ELECTRON_CMD=%ROOT%\frontend\node_modules\.bin\electron.cmd"
 set "ELECTRON_EXE=%ROOT%\frontend\node_modules\electron\dist\electron.exe"
 set "VITE_CMD=%ROOT%\frontend\node_modules\.bin\vite.cmd"
@@ -45,6 +46,7 @@ if errorlevel 1 set "NPM_CMD=npm"
 
 if exist "%APP_EXE%" set "HAS_APP_RELEASE=1"
 if exist "%APP_EXE_FALLBACK%" set "HAS_APP_RELEASE=1"
+if exist "%APP_EXE_X64_FALLBACK%" set "HAS_APP_RELEASE=1"
 
 if "%HAS_APP_RELEASE%"=="0" if not exist "%VITE_CMD%" if exist "%ROOT%\frontend\package-lock.json" (
     echo [INFO] Frontend dependencies chua co. Dang cai dat bang npm ci...
@@ -86,10 +88,12 @@ if "%HAS_APP_RELEASE%"=="0" if not exist "%FRONTEND_DIST%" if exist "%VITE_CMD%"
 )
 
 if not exist "%APP_EXE%" if not exist "%APP_EXE_FALLBACK%" if not exist "%ELECTRON_CMD%" if not exist "%VITE_CMD%" (
+    if exist "%APP_EXE_X64_FALLBACK%" goto :skip_app_missing_error
     echo [ERROR] Khong tim thay ung dung LibraDesk da build.
     echo Can co mot trong cac file:
     echo %APP_EXE%
     echo %APP_EXE_FALLBACK%
+    echo %APP_EXE_X64_FALLBACK%
     echo %ELECTRON_CMD%
     echo %VITE_CMD%
     echo.
@@ -100,8 +104,10 @@ if not exist "%APP_EXE%" if not exist "%APP_EXE_FALLBACK%" if not exist "%ELECTR
     pause
     exit /b 1
 )
+:skip_app_missing_error
 
 if not exist "%APP_EXE%" if not exist "%APP_EXE_FALLBACK%" if not exist "%FRONTEND_DIST%" (
+    if exist "%APP_EXE_X64_FALLBACK%" goto :skip_dist_missing_error
     echo [ERROR] Khong tim thay frontend dist de chay Electron local:
     echo %FRONTEND_DIST%
     echo.
@@ -112,6 +118,7 @@ if not exist "%APP_EXE%" if not exist "%APP_EXE_FALLBACK%" if not exist "%FRONTE
     pause
     exit /b 1
 )
+:skip_dist_missing_error
 
 if not exist "%POWERSHELL_EXE%" (
     set "POWERSHELL_EXE=powershell"
