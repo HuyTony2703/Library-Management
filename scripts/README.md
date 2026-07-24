@@ -1,6 +1,6 @@
 # Script build và runtime
 
-Người dùng bình thường không cần chạy trực tiếp phần lớn file trong thư mục này. Điểm khởi động chính của toàn hệ thống là `start-libradesk.bat` tại thư mục gốc.
+Người dùng không cần chạy trực tiếp phần lớn file trong thư mục này. Điểm khởi động chính của toàn hệ thống là `start-libradesk.bat` tại thư mục gốc.
 
 ## Runtime
 
