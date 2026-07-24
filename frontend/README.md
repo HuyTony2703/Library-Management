@@ -1,6 +1,6 @@
 # Frontend LibraDesk
 
-Frontend sử dụng React, Vite và Electron.
+Frontend đang sử dụng React, Vite và Electron.
 
 ## Cấu trúc
 
