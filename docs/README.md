@@ -1,6 +1,6 @@
 # Tài liệu LibraDesk
 
-Trang này là mục lục tài liệu kỹ thuật. Nếu bạn chỉ muốn cài và chạy ứng dụng, hãy bắt đầu từ [README ở thư mục gốc](../README.md).
+Trang này là mục lục tài liệu kỹ thuật. Nếu bạn chỉ muốn cài và chạy ứng dụng, hãy bắt đầu từ [README của thư mục gốc](../README.md).
 
 ## Lộ trình đọc đề xuất
 
