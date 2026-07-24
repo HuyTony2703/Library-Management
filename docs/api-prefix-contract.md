@@ -1,6 +1,6 @@
 # Hợp đồng prefix API
 
-Tài liệu này xác định ranh giới endpoint theo vai trò. Mục tiêu là tránh gọi sai quyền, tạo endpoint trùng và trộn API giữa các module frontend.
+Tài liệu này xác định ranh giới endpoint dựa vào vai trò. Mục tiêu là tránh gọi sai quyền, tạo endpoint trùng và trộn API giữa các module frontend.
 
 ## Quy ước
 
