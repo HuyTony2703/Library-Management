@@ -6,7 +6,7 @@ LibraDesk là ứng dụng desktop quản lý thư viện trên Windows. Hệ th
 - Giao diện: React, Vite và Electron.
 - Cơ sở dữ liệu: Microsoft SQL Server.
 
-Ứng dụng hỗ trợ ba vai trò: quản trị viên, thủ thư và độc giả. Các chức năng chính gồm quản lý sách, độc giả, mượn trả, công nợ, thu tiền, đặt trước, đánh giá, bình luận, thông báo, quy định và báo cáo.
+Ứng dụng hỗ trợ ba vai trò chính: quản trị viên, thủ thư và độc giả. Các chức năng chính gồm quản lý sách, độc giả, mượn trả, công nợ, thu tiền, đặt trước, đánh giá, bình luận, thông báo, quy định và báo cáo.
 
 ## Bắt đầu chạy
 
