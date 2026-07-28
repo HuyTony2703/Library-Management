@@ -29,7 +29,7 @@ Mở SQL Server Management Studio hoặc công cụ SQL tương đương, rồi 
 
 Script đầu tiên tự tạo database `QuanLyThuVien` nếu database chưa tồn tại. Hướng dẫn chi tiết nằm tại [database/README_DATABASE.md](database/README_DATABASE.md).
 
-### 3. Mở ứng dụng
+### 3. Hãy mở ứng dụng
 
 Tại thư mục gốc, chạy:
 
