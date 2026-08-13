@@ -1,0 +1,529 @@
+/* ============================================================
+   LibraDesk Role Themes
+   Phân biệt trải nghiệm theo vai trò người dùng:
+   - Admin  : Trung tâm điều hành (tối, sang, chỉn chu)
+   - Staff  : Workstation tác nghiệp (sáng, nhanh, dễ thao tác)
+   - Reader : Không gian đọc sách (ấm, thân thiện, dễ chịu)
+   ============================================================ */
+
+/* ---------- Nền tảng: role classes đặt trên shell ---------- */
+.role-admin,
+.role-staff,
+.role-reader {
+  /* các biến chung vẫn tham chiếu --primary --primary-2 từ root */
+}
+
+/* ============================================================
+   ADMIN — "Trung tâm điều hành"
+   Sidebar tối than chì + accent indigo/violet, điểm nhấn vàng kim
+   ============================================================ */
+.role-admin .sidebar {
+  background: linear-gradient(180deg, #111827 0%, #0b1220 100%);
+  border-right: 1px solid rgba(99, 102, 241, 0.18);
+}
+
+.role-admin .brand-icon {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  box-shadow: 0 14px 30px rgba(99, 102, 241, 0.4);
+}
+
+.role-admin .nav-group > span {
+  color: #9ca3af;
+}
+
+.role-admin .nav-menu a:hover,
+.role-admin .nav-menu a.active {
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.22), rgba(99, 102, 241, 0.08));
+  color: #fff;
+  box-shadow: inset 3px 0 0 #818cf8;
+}
+
+.role-admin .sidebar-user {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(129, 140, 248, 0.22);
+}
+
+.role-admin .stat-icon,
+.role-admin .settings-card-icon,
+.role-admin .guide-card-icon {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
+.role-admin .sidebar-logo-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  color: #1f2937;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+/* ============================================================
+   STAFF — "Workstation tác nghiệp"
+   Sidebar xanh dương đậm sáng dễ nhận, accent azure/teal
+   ============================================================ */
+.role-staff .sidebar {
+  background: linear-gradient(180deg, #0c4a6e 0%, #082f49 100%);
+  border-right: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.role-staff .brand-icon {
+  background: linear-gradient(135deg, #0ea5e9, #14b8a6);
+  box-shadow: 0 14px 30px rgba(14, 165, 233, 0.4);
+}
+
+.role-staff .nav-group > span {
+  color: #7dd3fc;
+}
+
+.role-staff .nav-menu a:hover,
+.role-staff .nav-menu a.active {
+  background: rgba(14, 165, 233, 0.2);
+  color: #fff;
+  box-shadow: inset 3px 0 0 #38bdf8;
+}
+
+.role-staff .sidebar-user {
+  background: rgba(14, 165, 233, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.24);
+}
+
+.role-staff .stat-icon,
+.role-staff .settings-card-icon,
+.role-staff .guide-card-icon {
+  background: linear-gradient(135deg, #0ea5e9, #14b8a6);
+}
+
+/* ============================================================
+   READER — "Không gian đọc sách"
+   Sidebar ấm áp (nâu/vàng mật ong), accent xanh lá cây dịu
+   ============================================================ */
+.role-reader .reader-sidebar {
+  background: linear-gradient(180deg, #3f2d20 0%, #2b1c12 100%);
+  border-right: 1px solid rgba(251, 191, 36, 0.18);
+}
+
+.role-reader .reader-brand-icon {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  box-shadow: 0 14px 30px rgba(217, 119, 6, 0.35);
+}
+
+.role-reader .reader-brand p {
+  color: #d6b27a;
+}
+
+.role-reader .reader-nav-group > span {
+  color: #d6b27a;
+}
+
+.role-reader .reader-nav a:hover,
+.role-reader .reader-nav a.active {
+  background: rgba(251, 191, 36, 0.14);
+  color: #fff;
+  box-shadow: inset 3px 0 0 #fbbf24;
+}
+
+.role-reader .reader-account {
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.role-reader .reader-avatar {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  color: #fff;
+}
+
+/* ---------- Dark mode: giữ theme reader nhất quán với admin/staff ----------
+   reader.css có các override riêng cho data-theme=dark (specificity 0,3,0)
+   sẽ đè theme này (0,2,0). Các selector dưới đây có specificity cao hơn nên
+   theme màu ấm của reader được giữ nguyên trong cả hai chế độ sáng/tối. */
+:root[data-theme="dark"] .role-reader .reader-shell .reader-sidebar {
+  background: linear-gradient(180deg, #3f2d20 0%, #2b1c12 100%);
+  border-right: 1px solid rgba(251, 191, 36, 0.18);
+}
+
+:root[data-theme="dark"] .role-reader .reader-shell .reader-brand-icon {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  box-shadow: 0 14px 30px rgba(217, 119, 6, 0.35);
+}
+
+:root[data-theme="dark"] .role-reader .reader-shell .reader-brand p,
+:root[data-theme="dark"] .role-reader .reader-shell .reader-nav-group > span {
+  color: #d6b27a;
+}
+
+:root[data-theme="dark"] .role-reader .reader-shell .reader-nav a {
+  color: #e7d9c3;
+}
+
+:root[data-theme="dark"] .role-reader .reader-shell .reader-nav a:hover,
+:root[data-theme="dark"] .role-reader .reader-shell .reader-nav a.active {
+  background: rgba(251, 191, 36, 0.14);
+  color: #fff;
+  box-shadow: inset 3px 0 0 #fbbf24;
+}
+
+:root[data-theme="dark"] .role-reader .reader-shell .reader-account {
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+:root[data-theme="dark"] .role-reader .reader-shell .reader-avatar {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  color: #fff;
+}
+
+/* ---------- Topbar dùng chung cho staff/admin ---------- */
+.app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  height: 64px;
+  padding: 0 26px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  margin: 0 -26px 18px;
+  min-width: 0;
+}
+
+.app-topbar-title {
+  margin-right: auto;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.app-topbar-title strong {
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.app-topbar-title span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.app-topbar .role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.role-chip.role-chip-admin {
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.16);
+  border: 1px solid rgba(129, 140, 248, 0.3);
+}
+
+.role-chip.role-chip-staff {
+  color: #7dd3fc;
+  background: rgba(14, 165, 233, 0.16);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.topbar-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(220, 38, 38, 0.22);
+  border-radius: 13px;
+  color: var(--bad);
+  background: rgba(220, 38, 38, 0.08);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.topbar-logout:hover {
+  background: rgba(220, 38, 38, 0.14);
+}
+
+/* ---------- Trang chủ thủ thư: shortcut nghiệp vụ ---------- */
+.staff-shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.staff-shortcut {
+  display: grid;
+  gap: 12px;
+  padding: 22px;
+  border-radius: 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.staff-shortcut::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 4px;
+  background: linear-gradient(90deg, #0ea5e9, #14b8a6);
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+.staff-shortcut:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.14);
+}
+
+.staff-shortcut:hover::after {
+  opacity: 1;
+}
+
+.staff-shortcut-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0ea5e9, #14b8a6);
+  color: white;
+  box-shadow: 0 12px 24px rgba(14, 165, 233, 0.28);
+}
+
+.staff-shortcut b {
+  font-size: 18px;
+}
+
+.staff-shortcut span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.staff-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.staff-quick-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.staff-quick-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 900;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.staff-quick-action:hover {
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+.staff-quick-action svg {
+  color: #0ea5e9;
+}
+
+.staff-overdue-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  background: rgba(220, 38, 38, 0.05);
+  margin-bottom: 8px;
+}
+
+.staff-overdue-item b {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.staff-overdue-item span {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.staff-empty-note {
+  padding: 18px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  color: var(--muted);
+  font-weight: 800;
+  text-align: center;
+}
+
+/* ---------- Trang chủ Admin: KPI + hoạt động ---------- */
+.admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.admin-kpi {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.admin-kpi-icon {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  box-shadow: 0 12px 26px rgba(99, 102, 241, 0.3);
+}
+
+.admin-kpi-label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-kpi-value {
+  font-size: 26px;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+}
+
+.admin-kpi-hint {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-recent-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.035);
+}
+
+.admin-recent-item b {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+
+.admin-recent-item span {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ---------- Login: nút đăng nhập nhanh ---------- */
+.login-quick-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+
+.login-quick-button {
+  display: grid;
+  gap: 3px;
+  padding: 11px 8px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text);
+  text-align: center;
+  font-weight: 900;
+  transition: transform 0.14s ease, border-color 0.14s ease;
+}
+
+.login-quick-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(37, 99, 235, 0.4);
+}
+
+.login-quick-button small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  margin: 2px 0;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+@media (max-width: 820px) {
+  .app-topbar {
+    margin: 0 0 14px;
+  }
+
+  .staff-shortcut-grid,
+  .admin-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .staff-action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .login-quick-row {
+    grid-template-columns: 1fr;
+  }
+}
