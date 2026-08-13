@@ -4184,3 +4184,77 @@ body[data-density="compact"] .settings-card {
     page-break-inside: avoid;
   }
 }
+
+/* ---------- BookCover: bìa sách tự sinh khi chưa có ảnh thật ---------- */
+.book-cover-generated {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  text-align: center;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.book-cover-generated::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 78% 12%, rgba(255, 255, 255, 0.28), transparent 34%),
+    radial-gradient(circle at 12% 88%, rgba(0, 0, 0, 0.18), transparent 40%);
+  pointer-events: none;
+}
+
+.book-cover-generated > * {
+  position: relative;
+}
+
+.book-cover-generated-badge {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.book-cover-generated-initials {
+  font-size: 36px;
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.28);
+}
+
+.book-cover-generated-title {
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.3;
+  max-height: 2.6em;
+  overflow: hidden;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+
+.book-cover-generated-author {
+  font-size: 11px;
+  font-weight: 650;
+  opacity: 0.85;
+  max-height: 1.4em;
+  overflow: hidden;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.book-overview .book-cover-generated {
+  width: 120px;
+  height: 164px;
+  border-radius: 12px;
+}
