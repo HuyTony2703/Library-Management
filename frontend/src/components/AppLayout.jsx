@@ -19,6 +19,7 @@ import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { isReaderUser } from "../utils/authRole";
 import { isAdmin } from "../utils/roleUtils";
+import "../styles/role-theme.css";
 
 const staffMenuGroups = [
     {
@@ -131,7 +132,7 @@ export default function AppLayout() {
     }
 
     return (
-        <div className="app-shell">
+        <div className={`app-shell ${adminUser ? "role-admin" : "role-staff"}`}>
             <aside className="sidebar">
                 <div className="brand">
                     <div className="brand-icon">
