@@ -1,5 +1,6 @@
-import { BookOpen, CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import BookCover from "../BookCover";
 import FavoriteButton from "./FavoriteButton";
 
 function formatMoney(value) {
@@ -15,13 +16,7 @@ export default function ReaderBookCard({ book, initialFavorite = null, onFavorit
     return (
         <article className="reader-book-card">
             <div className="reader-book-cover">
-                {book.anhBia ? (
-                    <img src={book.anhBia} alt={book.tenDauSach} />
-                ) : (
-                    <div className="reader-book-cover-placeholder">
-                        <BookOpen size={34} />
-                    </div>
-                )}
+                <BookCover src={book.anhBia} title={book.tenDauSach} author={author} />
             </div>
 
             <div className="reader-book-body">
