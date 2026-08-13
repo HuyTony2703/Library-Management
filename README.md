@@ -22,12 +22,19 @@ LibraDesk là một desktop app quản lý thư viện trên Windows. Hệ thố
 
 ### 2. Khởi tạo database
 
-Mở SQL Server Management Studio hoặc công cụ SQL tương đương, rồi chạy lần lượt:
+Mở SQL Server Management Studio hoặc công cụ SQL tương đương, rồi chạy lần lượt toàn bộ script trong `database/scripts/` theo thứ tự số thứ tự từ `01` đến `19`:
 
 1. `database/scripts/01_full_database.sql`
 2. `database/scripts/02_seed_demo_data.sql`
+3. `database/scripts/03_test_queries.sql` đến `database/scripts/19_admin_modernization_payment_reversal.sql`
 
-Script đầu tiên tự tạo database `QuanLyThuVien` nếu database chưa tồn tại. Hướng dẫn chi tiết nằm tại [database/README_DATABASE.md](database/README_DATABASE.md).
+Script đầu tiên tự tạo database `QuanLyThuVien` nếu database chưa tồn tại. Hướng dẫn chi tiết và thứ tự chính xác nằm tại [database/README_DATABASE.md](database/README_DATABASE.md).
+
+> **Lưu ý:** nếu chạy script bằng `sqlcmd` từ dòng lệnh, phải thêm `-f 65001` để giữ đúng ký tự tiếng Việt (tránh lỗi mojibake trong dữ liệu), ví dụ:
+>
+> ```bat
+> sqlcmd -S localhost -U sa -P "mat-khau" -f 65001 -i "database\scripts\16_admin_modernization_return_assessment.sql"
+> ```
 
 ### 3. Hãy mở ứng dụng
 
@@ -74,6 +81,8 @@ Build và cập nhật JAR trong `release/`:
 ```bat
 scripts\build\build-backend-aot.bat
 ```
+
+Script trên chạy `mvnw.cmd -DskipTests package` và sao chép JAR sang `release/`. Launcher `backend\run-backend.ps1` tự phát hiện JAR có AOT hay JIT để chạy đúng chế độ.
 
 Kiểm tra compile nhanh trong lúc phát triển:
 
