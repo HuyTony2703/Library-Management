@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
 import { useToast } from "../ToastProvider";
+import BookCover from "../BookCover";
 import FavoriteButton from "./FavoriteButton";
 
 const recommendationTypes = [
@@ -281,11 +282,11 @@ export default function RandomBookSection({ limit = 12 }) {
                                 onClick={() => navigate(`/reader/books/${book.maDauSach}`)}
                             >
                                 <div className="recommendation-cover">
-                                    {book.anhBia ? (
-                                        <img src={book.anhBia} alt={book.tenDauSach} />
-                                    ) : (
-                                        <BookOpen size={32} />
-                                    )}
+                                    <BookCover
+                                        src={book.anhBia}
+                                        title={book.tenDauSach}
+                                        author={book.tenTacGia || book.tacGia}
+                                    />
                                 </div>
 
                                 <div className="recommendation-content">
