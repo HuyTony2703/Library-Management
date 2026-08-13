@@ -14,6 +14,7 @@ import {
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import NotificationBell from "../../components/reader/NotificationBell";
 import { useAuth } from "../../context/AuthContext";
+import "../../styles/role-theme.css";
 import "./reader.css";
 
 const menuGroups = [
@@ -63,7 +64,7 @@ export default function ReaderLayout() {
     }
 
     return (
-        <div className="reader-shell">
+        <div className="reader-shell role-reader">
             <aside className="reader-sidebar">
                 <div className="reader-brand">
                     <div className="reader-brand-icon">
