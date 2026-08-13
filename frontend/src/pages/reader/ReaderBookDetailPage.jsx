@@ -6,6 +6,7 @@ import FavoriteButton from "../../components/reader/FavoriteButton";
 import ReaderBookComments from "../../components/reader/ReaderBookComments";
 import ReaderBookCopyList from "../../components/reader/ReaderBookCopyList";
 import ReaderBookRating from "../../components/reader/ReaderBookRating";
+import BookCover from "../../components/BookCover";
 import ReservationButton from "../../components/reader/ReservationButton";
 
 function formatMoney(value) {
@@ -78,13 +79,7 @@ export default function ReaderBookDetailPage() {
 
             <div className="reader-book-detail">
                 <div className="reader-book-detail-cover">
-                    {book.anhBia ? (
-                        <img src={book.anhBia} alt={book.tenDauSach} />
-                    ) : (
-                        <div className="reader-book-detail-placeholder">
-                            {book.tenDauSach?.slice(0, 1) || "S"}
-                        </div>
-                    )}
+                    <BookCover src={book.anhBia} title={book.tenDauSach} author={book.tenTacGia} />
                 </div>
 
                 <div className="reader-book-detail-info">
