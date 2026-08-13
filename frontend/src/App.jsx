@@ -5,6 +5,7 @@ import { adminRoutes } from "./routes/adminRoutes";
 import { readerRoutes } from "./routes/readerRoutes";
 import { staffRoutes } from "./routes/staffRoutes";
 import { isReaderUser } from "./utils/authRole";
+import { normalizeRole } from "./utils/roleUtils";
 
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -16,7 +17,7 @@ import ReturnsPage from "./pages/ReturnsPage";
 import PaymentsPage from "./pages/PaymentsPage";
 import SettingsPage from "./pages/SettingsPage";
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, allowedRoles = [] }) {
     const { user, loadingUser } = useAuth();
     const location = useLocation();
 
@@ -30,6 +31,10 @@ function ProtectedRoute({ children }) {
 
     if (isReaderUser(user)) {
         return <Navigate to="/reader" replace />;
+    }
+
+    if (allowedRoles.length > 0 && !allowedRoles.includes(normalizeRole(user))) {
+        return <Navigate to="/" replace />;
     }
 
     if (user.mustChangePassword && location.pathname !== "/settings") {
@@ -63,10 +68,10 @@ export default function App() {
                 <Route path="/reports" element={<Navigate to="/" replace />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 {staffRoutes.map((route) => (
-                    <Route key={route.path} path={route.path} element={route.element} />
+                    <Route key={route.path} path={route.path} element={<ProtectedRoute allowedRoles={["ADMIN", "STAFF"]}>{route.element}</ProtectedRoute>} />
                 ))}
                 {adminRoutes.map((route) => (
-                    <Route key={route.path} path={route.path} element={route.element} />
+                    <Route key={route.path} path={route.path} element={<ProtectedRoute allowedRoles={["ADMIN"]}>{route.element}</ProtectedRoute>} />
                 ))}
             </Route>
         </Routes>
