@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import BookCover from "../BookCover";
 
 function formatDateTime(value) {
     if (!value) {
@@ -59,11 +60,7 @@ export default function ReaderLoanCard({ loan, onRenew, renewing = false }) {
     return (
         <article className="reader-loan-card">
             <div className="reader-loan-cover">
-                {loan.anhBia ? (
-                    <img src={loan.anhBia} alt={loan.tenDauSach} />
-                ) : (
-                    <div>{loan.tenDauSach?.slice(0, 1) || "S"}</div>
-                )}
+                <BookCover src={loan.anhBia} title={loan.tenDauSach} author={loan.tenTacGia} />
             </div>
 
             <div className="reader-loan-body">
