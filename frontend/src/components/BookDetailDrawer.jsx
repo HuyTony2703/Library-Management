@@ -1,6 +1,7 @@
 import { EyeOff, Pencil, RotateCcw, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { libraryApi } from "../api/libraryApi";
+import BookCover from "./BookCover";
 import StatusBadge from "./StatusBadge";
 import { formatMoney } from "../utils/displayUtils";
 
@@ -90,7 +91,7 @@ function Overview({ book }) {
     if (!book) return <DrawerState text="Không tìm thấy thông tin đầu sách" />;
     return (
         <div className="book-overview">
-            {book.anhBia && <img src={book.anhBia} alt={`Bìa ${book.tenDauSach}`} />}
+            <BookCover src={book.anhBia} title={book.tenDauSach} author={book.tenTacGia} />
             <div className="book-overview-grid">
                 <Info label="Trạng thái"><StatusBadge value={book.trangThai} /></Info>
                 <Info label="ISBN" value={book.isbn || "—"} />
