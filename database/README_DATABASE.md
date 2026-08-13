@@ -25,8 +25,23 @@ Chạy đúng thứ tự:
 | 12 | `scripts/12_admin_modernization_reader_list_indexes.sql` | Bổ sung index cho phân trang, lọc, sắp xếp độc giả và lịch sử gói |
 | 13 | `scripts/13_admin_modernization_reader_state.sql` | Tách borrowing/login lock và lifecycle event, backfill khóa legacy |
 | 14 | `scripts/14_admin_modernization_reader_password_reset.sql` | Bổ sung trường phục vụ revoke token, force-change, audit và rate-limit reset mật khẩu độc giả |
+| 15 | `scripts/15_admin_modernization_loan_integrity.sql` | Bổ sung ràng buộc toàn vẹn phiếu mượn/chi tiết mượn và index truy vấn |
+| 16 | `scripts/16_admin_modernization_return_assessment.sql` | Tạo bảng quy định phạt hư hỏng/mất, mức độ hư hỏng và loại hư hỏng |
+| 17 | `scripts/17_admin_modernization_return_integrity.sql` | Bổ sung ràng buộc toàn vẹn phiếu trả/chi tiết trả và quy trình trả sách |
+| 18 | `scripts/18_admin_modernization_payment_receipt_completion.sql` | Bổ sung đơn vị tiền tệ và hoàn tất phiếu thu |
+| 19 | `scripts/19_admin_modernization_payment_reversal.sql` | Bổ sung hủy/hồi phiếu thu |
 
 `01_full_database.sql` tự tạo `QuanLyThuVien` nếu database chưa tồn tại, sau đó chuyển ngữ cảnh sang database này.
+
+> Chạy đủ các script từ `01` đến `19` theo đúng thứ tự để ứng dụng có đầy đủ tính năng.
+
+> **Lưu ý mã hóa (UTF-8):** các script chứa ký tự tiếng Việt. Khi chạy bằng `sqlcmd`, phải chỉ định trang mã UTF-8 để tránh làm hỏng dữ liệu tiếng Việt:
+>
+> ```bat
+> sqlcmd -S localhost -d QuanLyThuVien -U sa -P "mat-khau" -f 65001 -i "database\scripts\16_admin_modernization_return_assessment.sql"
+> ```
+>
+> Không pipe nội dung script qua `sqlcmd` (ví dụ `type file.sql | sqlcmd ...`) vì ký tự tiếng Việt sẽ bị méo.
 
 > `01_full_database.sql` là script khởi tạo đầy đủ. Không nên chạy lại trên database đã có dữ liệu nếu chưa kiểm tra nội dung và sao lưu.
 
