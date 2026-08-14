@@ -122,7 +122,7 @@
 
 .role-reader .reader-nav a:hover,
 .role-reader .reader-nav a.active {
-  background: rgba(251, 191, 36, 0.14);
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.26), rgba(251, 191, 36, 0.09));
   color: #fff;
   box-shadow: inset 3px 0 0 #fbbf24;
 }
@@ -162,7 +162,7 @@
 
 :root[data-theme="dark"] .role-reader .reader-shell .reader-nav a:hover,
 :root[data-theme="dark"] .role-reader .reader-shell .reader-nav a.active {
-  background: rgba(251, 191, 36, 0.14);
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.26), rgba(251, 191, 36, 0.09));
   color: #fff;
   box-shadow: inset 3px 0 0 #fbbf24;
 }
