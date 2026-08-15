@@ -75,7 +75,7 @@ public class TraSachRequest {
 
         private String moTaHuHong;
 
-        @DecimalMin(value = "0.0", message = "Tiá»n pháº¡t Ä‘iá»u chá»‰nh khĂ´ng Ä‘Æ°á»£c Ă¢m")
+        @DecimalMin(value = "0.0", message = "Tiền phạt điều chỉnh không được âm")
         private BigDecimal tienPhatHongMatDieuChinh;
 
         private String lyDoDieuChinhTienPhat;
