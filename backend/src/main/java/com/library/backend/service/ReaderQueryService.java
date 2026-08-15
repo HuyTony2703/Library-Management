@@ -42,8 +42,8 @@ public class ReaderQueryService {
 
     @Transactional(readOnly = true)
     public List<String> getMatchingIds(ReaderListQuery query, List<String> excludedIds, Integer maxRows) {
-        validateRange(query.cardExpiryFrom(), query.cardExpiryTo(), "háº¡n tháº»");
-        validateRange(query.membershipExpiryFrom(), query.membershipExpiryTo(), "háº¡n gĂ³i");
+        validateRange(query.cardExpiryFrom(), query.cardExpiryTo(), "hạn thẻ");
+        validateRange(query.membershipExpiryFrom(), query.membershipExpiryTo(), "hạn gói");
         return repository.findMatchingIds(query, LocalDate.now(LIBRARY_ZONE), excludedIds, maxRows);
     }
 
