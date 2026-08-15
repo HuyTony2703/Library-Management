@@ -16,6 +16,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.io.IOException;
 import java.util.List;
 
 @Configuration
@@ -36,15 +37,16 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) ->
-                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                                writeJsonError(response, HttpServletResponse.SC_UNAUTHORIZED, "UNAUTHORIZED")
                         )
                         .accessDeniedHandler((request, response, accessDeniedException) ->
-                                response.sendError(HttpServletResponse.SC_FORBIDDEN)
+                                writeJsonError(response, HttpServletResponse.SC_FORBIDDEN, "FORBIDDEN")
                         )
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
 
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/health").permitAll()
                         .requestMatchers("/api/warmup").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
@@ -162,6 +164,19 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/api/**", configuration);
 
         return source;
+    }
+
+    private void writeJsonError(HttpServletResponse response, int status, String errorCode) throws IOException {
+        String message = status == HttpServletResponse.SC_UNAUTHORIZED
+                ? "Bạn cần đăng nhập để thực hiện thao tác này"
+                : "Bạn không có quyền thực hiện thao tác này";
+        String json = "{\"success\":false,\"message\":\"" + message
+                + "\",\"errorCode\":\"" + errorCode
+                + "\",\"status\":" + status + "}";
+
+        response.setStatus(status);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write(json);
     }
 
 }
