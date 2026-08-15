@@ -39,8 +39,8 @@ public class MuonSachService {
     private static final String TT_SANCO = "TT_SANCO";
     private static final String TT_DANGDATTRUOC = "TT_DANGDATTRUOC";
     private static final String TT_DANGMUON = "TT_DANGMUON";
-    private static final String LOAN_STATUS_BORROWING = "Äang mÆ°á»£n";
-    private static final String READER_STATUS_ACTIVE = "Hoáº¡t Ä‘á»™ng";
+    private static final String LOAN_STATUS_BORROWING = "Đang mượn";
+    private static final String READER_STATUS_ACTIVE = "Hoạt động";
     private static final DateTimeFormatter LOAN_ID_TIME_FORMAT =
             DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
@@ -241,7 +241,7 @@ public class MuonSachService {
                 INNER JOIN CHITIETPHIEUMUON ctm
                     ON pm.MaPhieuMuon = ctm.MaPhieuMuon
                 WHERE pm.MaDocGia = ?
-                  AND ctm.TrangThai IN (N'Dang muon', N'Äang mÆ°á»£n')
+                  AND ctm.TrangThai = N'Đang mượn'
                 ORDER BY ctm.HanTra ASC
                 """;
 
@@ -338,7 +338,7 @@ public class MuonSachService {
                 SELECT CAST(COALESCE(SUM(SoTienConLai), 0) AS DECIMAL(18,2))
                 FROM KHOANNO
                 WHERE MaDocGia = ?
-                  AND TrangThai <> N'ÄĂ£ thanh toĂ¡n'
+                  AND TrangThai <> N'Đã thanh toán'
                 """,
                 BigDecimal.class,
                 docGia.getMaDocGia()
@@ -355,7 +355,7 @@ public class MuonSachService {
                 INNER JOIN CHITIETPHIEUMUON ctm
                     ON pm.MaPhieuMuon = ctm.MaPhieuMuon
                 WHERE pm.MaDocGia = ?
-                  AND ctm.TrangThai IN (N'Dang muon', N'Äang mÆ°á»£n')
+                  AND ctm.TrangThai = N'Đang mượn'
                   AND ctm.HanTra < ?
                 """,
                 Integer.class,
@@ -396,7 +396,7 @@ public class MuonSachService {
                 FROM PHIEUDATTRUOC WITH (UPDLOCK, ROWLOCK)
                 WHERE MaCuonSachDuocGiu = ?
                   AND MaDocGia = ?
-                  AND TrangThai = N'ÄĂ£ giá»¯ chá»—'
+                  AND TrangThai = N'Đã giữ chỗ'
                   AND (NgayHetHanGiuCho IS NULL OR NgayHetHanGiuCho >= ?)
                 """,
                 Integer.class,
@@ -411,14 +411,14 @@ public class MuonSachService {
         jdbcTemplate.update(
                 """
                 UPDATE PHIEUDATTRUOC
-                SET TrangThai = N'ÄĂ£ mÆ°á»£n',
+                SET TrangThai = N'Đã mượn',
                     GhiChu = CONCAT(COALESCE(GhiChu, N''), N' | Chuyen thanh phieu muon ', ?)
                 WHERE MaPhieuDatTruoc IN (
                     SELECT MaPhieuDatTruoc
                     FROM PHIEUDATTRUOC WITH (UPDLOCK, ROWLOCK)
                     WHERE MaCuonSachDuocGiu = ?
                       AND MaDocGia = ?
-                      AND TrangThai = N'ÄĂ£ giá»¯ chá»—'
+                      AND TrangThai = N'Đã giữ chỗ'
                       AND (NgayHetHanGiuCho IS NULL OR NgayHetHanGiuCho >= SYSDATETIME())
                 )
                 """,
@@ -433,7 +433,7 @@ public class MuonSachService {
                 """
                 SELECT TOP 1 MaPhienBan
                 FROM PHIENBANQUYDINH
-                WHERE TrangThai = N'Äang Ă¡p dá»¥ng'
+                WHERE TrangThai = N'Đang áp dụng'
                 ORDER BY NgayApDung DESC
                 """,
                 (rs, rowNum) -> rs.getString("MaPhienBan")
@@ -451,7 +451,7 @@ public class MuonSachService {
                 SELECT TOP 1 MaGoiThanhVien
                 FROM LICHSUGOITHANHVIEN
                 WHERE MaDocGia = ?
-                  AND TrangThai = N'Äang sá»­ dá»¥ng'
+                  AND TrangThai = N'Đang sử dụng'
                   AND NgayBatDau <= ?
                   AND NgayKetThuc >= ?
                 ORDER BY NgayBatDau DESC
@@ -476,7 +476,7 @@ public class MuonSachService {
                 INNER JOIN CHITIETPHIEUMUON ctm
                     ON pm.MaPhieuMuon = ctm.MaPhieuMuon
                 WHERE pm.MaDocGia = ?
-                  AND ctm.TrangThai IN (N'Dang muon', N'Äang mÆ°á»£n')
+                  AND ctm.TrangThai = N'Đang mượn'
                 """,
                 Integer.class,
                 maDocGia
