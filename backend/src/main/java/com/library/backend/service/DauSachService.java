@@ -78,7 +78,7 @@ public class DauSachService {
 
     public List<String> getMatchingIds(DauSachListQuery query, List<String> excludedIds, Integer maxRows) {
         if (query.yearFrom() != null && query.yearTo() != null && query.yearFrom() > query.yearTo()) {
-            throw new IllegalArgumentException("yearFrom khĂ´ng Ä‘Æ°á»£c lá»›n hÆ¡n yearTo");
+            throw new IllegalArgumentException("yearFrom không được lớn hơn yearTo");
         }
         return dauSachPageRepository.findMatchingIds(query, excludedIds, maxRows);
     }
@@ -340,9 +340,8 @@ public class DauSachService {
         ).stream().findFirst().orElse(null);
         Map<String, Long> copySummary = jdbcTemplate.queryForMap("""
                 SELECT COUNT(*) AS total,
-                       SUM(CASE WHEN tt.TenTrangThai = N'Sẵn có' THEN 1 ELSE 0 END) AS available
+                       SUM(CASE WHEN cs.MaTrangThai = 'TT_SANCO' THEN 1 ELSE 0 END) AS available
                 FROM CUONSACH cs
-                INNER JOIN TRANGTHAICUONSACH tt ON tt.MaTrangThai = cs.MaTrangThai
                 WHERE cs.MaDauSach = ?
                 """, dauSach.getMaDauSach()).entrySet().stream()
                 .collect(java.util.stream.Collectors.toMap(
