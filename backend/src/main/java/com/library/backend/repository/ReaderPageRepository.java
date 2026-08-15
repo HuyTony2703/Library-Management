@@ -297,7 +297,7 @@ public class ReaderPageRepository {
                 SELECT dg.MaDocGia, dg.HoTen, dg.MaNhomDocGia, ndg.TenNhomDocGia,
                        dg.TrangThai AS TrangThaiHoSo, dg.NgayLapThe, dg.NgayHetHanThe,
                        gm.MaGoiThanhVien, gm.TenGoi, gm.NgayKetThuc,
-                       CASE WHEN login_lock.DangKhoaDangNhap = 1 THEN N'KhĂ³a Ä‘Äƒng nháº­p' ELSE tk.TrangThai END AS TrangThaiTaiKhoan,
+                       CASE WHEN login_lock.DangKhoaDangNhap = 1 THEN N'Khóa đăng nhập' ELSE tk.TrangThai END AS TrangThaiTaiKhoan,
                        COALESCE(loan_summary.SoSachDangMuon, 0) AS SoSachDangMuon,
                        COALESCE(debt_summary.TongNo, 0) AS TongNo
                 """ + LIST_FROM + """
