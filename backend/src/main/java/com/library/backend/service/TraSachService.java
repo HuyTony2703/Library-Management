@@ -54,10 +54,10 @@ public class TraSachService {
     private static final String TT_HONG = "TT_HONG";
     private static final String TT_MAT = "TT_MAT";
     private static final String TT_DANGDATTRUOC = "TT_DANGDATTRUOC";
-    private static final String CONDITION_NORMAL = "BĂ¬nh thÆ°á»ng";
-    private static final String CONDITION_DAMAGED = "Há»ng";
-    private static final String CONDITION_LOST = "Máº¥t";
-    private static final String STATUS_BORROWING = "Äang mÆ°á»£n";
+    private static final String CONDITION_NORMAL = "Bình thường";
+    private static final String CONDITION_DAMAGED = "Hỏng";
+    private static final String CONDITION_LOST = "Mất";
+    private static final String STATUS_BORROWING = "Đang mượn";
     private static final String DAMAGE_SEVERITY_FULL = "FULL";
     private static final DateTimeFormatter RETURN_ID_TIME_FORMAT =
             DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -87,7 +87,7 @@ public class TraSachService {
             INNER JOIN CUONSACH cs ON cs.MaCuonSach = ctm.MaCuonSach
             INNER JOIN DAUSACH ds ON ds.MaDauSach = cs.MaDauSach
             INNER JOIN CHINHANH cn ON cn.MaChiNhanh = pm.MaChiNhanh
-            WHERE ctm.TrangThai IN (N'Ă„Âang mĂ†Â°Ă¡Â»Â£n', N'Äang mÆ°á»£n', N'Dang muon')
+            WHERE ctm.TrangThai = N'Đang mượn'
               AND NOT EXISTS (
                   SELECT 1
                   FROM CHITIETPHIEUTRA ctpt
@@ -186,19 +186,19 @@ public class TraSachService {
 
         if (hasText(request.getMaNhanVienNhan())
                 && !request.getMaNhanVienNhan().equals(authenticatedStaffId)) {
-            throw new AccessDeniedException("MĂ£ nhĂ¢n viĂªn nháº­n khĂ´ng khá»›p tĂ i khoáº£n Ä‘Äƒng nháº­p");
+            throw new AccessDeniedException("Mã nhân viên nhận không khớp tài khoản đăng nhập");
         }
 
         if (phieuTraRepository.existsById(request.getMaPhieuTra())) {
-            throw new BusinessException("MĂ£ phiáº¿u tráº£ Ä‘Ă£ tá»“n táº¡i");
+            throw new BusinessException("Mã phiếu trả đã tồn tại");
         }
 
         if (!existsById("DOCGIA", "MaDocGia", request.getMaDocGia())) {
-            throw new ResourceNotFoundException("Äá»™c giáº£ khĂ´ng tá»“n táº¡i");
+            throw new ResourceNotFoundException("Độc giả không tồn tại");
         }
 
         if (!existsById("CHINHANH", "MaChiNhanh", request.getMaChiNhanh())) {
-            throw new ResourceNotFoundException("Chi nhĂ¡nh khĂ´ng tá»“n táº¡i");
+            throw new ResourceNotFoundException("Chi nhánh không tồn tại");
         }
 
         LocalDateTime ngayTra = LocalDateTime.now();
@@ -221,9 +221,9 @@ public class TraSachService {
             TraSachRequest.ChiTietTraRequest item = request.getChiTiet().get(i);
             ChiTietPhieuMuon chiTietMuon = lockedDetails.get(item.getMaChiTietMuon());
             PhieuMuon phieuMuon = phieuMuonRepository.findById(chiTietMuon.getMaPhieuMuon())
-                    .orElseThrow(() -> new ResourceNotFoundException("KhĂ´ng tĂ¬m tháº¥y phiáº¿u mÆ°á»£n"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu mượn"));
             CuonSach cuonSach = cuonSachRepository.findById(chiTietMuon.getMaCuonSach())
-                    .orElseThrow(() -> new ResourceNotFoundException("KhĂ´ng tĂ¬m tháº¥y cuá»‘n sĂ¡ch"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cuốn sách"));
             ReturnAssessment assessment = assessReturnItem(item, chiTietMuon, phieuMuon, ngayTra, authenticatedUser);
 
             String maChiTietTra = buildMaChiTietTra(request.getMaPhieuTra(), i + 1);
@@ -241,13 +241,13 @@ public class TraSachService {
             chiTietMuon.setNgayTraThucTe(ngayTra);
             ReturnCondition condition = normalizeCondition(item.getTinhTrangKhiTra());
             if (condition == ReturnCondition.NORMAL) {
-                chiTietMuon.setTrangThai("ÄĂ£ tráº£");
+                chiTietMuon.setTrangThai("Đã trả");
                 cuonSach.setMaTrangThai(resolveAvailableOrHeldStatus(cuonSach, request.getMaChiNhanh(), ngayTra));
             } else if (condition == ReturnCondition.DAMAGED) {
-                chiTietMuon.setTrangThai("Há»ng");
+                chiTietMuon.setTrangThai("Hỏng");
                 cuonSach.setMaTrangThai(TT_HONG);
             } else {
-                chiTietMuon.setTrangThai("Máº¥t");
+                chiTietMuon.setTrangThai("Mất");
                 cuonSach.setMaTrangThai(TT_MAT);
             }
 
@@ -261,7 +261,7 @@ public class TraSachService {
                         "NO_TRA_TRE",
                         maChiTietTra,
                         assessment.tienPhatTre(),
-                        "Tráº£ trá»… " + assessment.soNgayTre() + " ngĂ y cho cuá»‘n " + chiTietMuon.getMaCuonSach(),
+                        "Trả trễ " + assessment.soNgayTre() + " ngày cho cuốn " + chiTietMuon.getMaCuonSach(),
                         ngayTra
                 );
             }
@@ -274,7 +274,7 @@ public class TraSachService {
                         loaiNo,
                         maChiTietTra,
                         assessment.finalDamageFine(),
-                        "Pháº¡t do sĂ¡ch " + item.getTinhTrangKhiTra().toLowerCase() + ": " + chiTietMuon.getMaCuonSach(),
+                        "Phạt do sách " + item.getTinhTrangKhiTra().toLowerCase() + ": " + chiTietMuon.getMaCuonSach(),
                         ngayTra
                 );
             }
@@ -304,13 +304,13 @@ public class TraSachService {
 
         activityLogService.logAsAccountSafe(
                 authenticatedUser.getMaTaiKhoan(),
-                "Táº¡o phiáº¿u tráº£",
+                "Tạo phiếu trả",
                 "PHIEUTRA",
                 request.getMaPhieuTra(),
-                "NhĂ¢n viĂªn " + authenticatedStaffId
-                        + " nháº­n sĂ¡ch tá»« Ä‘á»™c giáº£ " + request.getMaDocGia()
-                        + " táº¡i chi nhĂ¡nh " + request.getMaChiNhanh()
-                        + " tráº£ sĂ¡ch. Chi tiáº¿t: "
+                "Nhân viên " + authenticatedStaffId
+                        + " nhận sách từ độc giả " + request.getMaDocGia()
+                        + " tại chi nhánh " + request.getMaChiNhanh()
+                        + " trả sách. Chi tiết: "
                         + chiTietTraText
         );
 
@@ -323,11 +323,11 @@ public class TraSachService {
         validateDistinctReturnItems(request);
 
         if (!existsById("DOCGIA", "MaDocGia", request.getMaDocGia())) {
-            throw new ResourceNotFoundException("Äá»™c giáº£ khĂ´ng tá»“n táº¡i");
+            throw new ResourceNotFoundException("Độc giả không tồn tại");
         }
 
         if (!existsById("CHINHANH", "MaChiNhanh", request.getMaChiNhanh())) {
-            throw new ResourceNotFoundException("Chi nhĂ¡nh khĂ´ng tá»“n táº¡i");
+            throw new ResourceNotFoundException("Chi nhánh không tồn tại");
         }
 
         LocalDateTime previewedAt = LocalDateTime.now();
@@ -338,26 +338,26 @@ public class TraSachService {
         for (TraSachRequest.ChiTietTraRequest item : request.getChiTiet()) {
             ChiTietPhieuMuon chiTietMuon = chiTietPhieuMuonRepository.findById(item.getMaChiTietMuon())
                     .orElseThrow(() -> new ResourceNotFoundException(
-                            "KhĂ´ng tĂ¬m tháº¥y chi tiáº¿t mÆ°á»£n: " + item.getMaChiTietMuon()
+                            "Không tìm thấy chi tiết mượn: " + item.getMaChiTietMuon()
                     ));
 
             if (chiTietPhieuTraRepository.existsByMaChiTietMuon(item.getMaChiTietMuon())) {
-                throw new BusinessException("Chi tiáº¿t mÆ°á»£n Ä‘Ă£ Ä‘Æ°á»£c tráº£: " + item.getMaChiTietMuon());
+                throw new BusinessException("Chi tiết mượn đã được trả: " + item.getMaChiTietMuon());
             }
 
             if (!isBorrowingStatus(chiTietMuon.getTrangThai())) {
-                throw new BusinessException("Chi tiáº¿t mÆ°á»£n khĂ´ng á»Ÿ tráº¡ng thĂ¡i Äang mÆ°á»£n");
+                throw new BusinessException("Chi tiết mượn không ở trạng thái Đang mượn");
             }
 
             PhieuMuon phieuMuon = phieuMuonRepository.findById(chiTietMuon.getMaPhieuMuon())
-                    .orElseThrow(() -> new ResourceNotFoundException("KhĂ´ng tĂ¬m tháº¥y phiáº¿u mÆ°á»£n"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu mượn"));
 
             if (!request.getMaDocGia().equals(phieuMuon.getMaDocGia())) {
-                throw new BusinessException("Chi tiáº¿t mÆ°á»£n khĂ´ng thuá»™c Ä‘á»™c giáº£ nĂ y");
+                throw new BusinessException("Chi tiết mượn không thuộc độc giả này");
             }
 
             if (!request.getMaChiNhanh().equals(phieuMuon.getMaChiNhanh())) {
-                throw new BusinessException("KhĂ´ng Ä‘Æ°á»£c tráº£ sĂ¡ch khĂ¡c chi nhĂ¡nh mÆ°á»£n");
+                throw new BusinessException("Không được trả sách khác chi nhánh mượn");
             }
 
             ReturnAssessment assessment = assessReturnItem(item, chiTietMuon, phieuMuon, previewedAt, authenticatedUser);
@@ -409,26 +409,26 @@ public class TraSachService {
         detailIds.stream().sorted().forEach(detailId -> {
             ChiTietPhieuMuon detail = chiTietPhieuMuonRepository.findByIdForUpdate(detailId)
                     .orElseThrow(() -> new ResourceNotFoundException(
-                            "KhĂ´ng tĂ¬m tháº¥y chi tiáº¿t mÆ°á»£n: " + detailId
+                            "Không tìm thấy chi tiết mượn: " + detailId
                     ));
 
             if (chiTietPhieuTraRepository.existsByMaChiTietMuon(detailId)) {
-                throw new BusinessException("Chi tiáº¿t mÆ°á»£n Ä‘Ă£ Ä‘Æ°á»£c tráº£: " + detailId);
+                throw new BusinessException("Chi tiết mượn đã được trả: " + detailId);
             }
 
             if (!isBorrowingStatus(detail.getTrangThai())) {
-                throw new BusinessException("Chi tiáº¿t mÆ°á»£n khĂ´ng á»Ÿ tráº¡ng thĂ¡i Äang mÆ°á»£n");
+                throw new BusinessException("Chi tiết mượn không ở trạng thái Đang mượn");
             }
 
             PhieuMuon loan = phieuMuonRepository.findById(detail.getMaPhieuMuon())
-                    .orElseThrow(() -> new ResourceNotFoundException("KhĂ´ng tĂ¬m tháº¥y phiáº¿u mÆ°á»£n"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu mượn"));
 
             if (!request.getMaDocGia().equals(loan.getMaDocGia())) {
-                throw new BusinessException("Chi tiáº¿t mÆ°á»£n khĂ´ng thuá»™c Ä‘á»™c giáº£ nĂ y");
+                throw new BusinessException("Chi tiết mượn không thuộc độc giả này");
             }
 
             if (!request.getMaChiNhanh().equals(loan.getMaChiNhanh())) {
-                throw new BusinessException("KhĂ´ng Ä‘Æ°á»£c tráº£ sĂ¡ch khĂ¡c chi nhĂ¡nh mÆ°á»£n");
+                throw new BusinessException("Không được trả sách khác chi nhánh mượn");
             }
 
             lockedDetails.put(detailId, detail);
@@ -483,7 +483,7 @@ public class TraSachService {
         for (TraSachRequest.ChiTietTraRequest item : request.getChiTiet()) {
             if (!detailIds.add(item.getMaChiTietMuon())) {
                 throw new BusinessException(
-                        "Chi tiáº¿t mÆ°á»£n bá»‹ trĂ¹ng trong phiáº¿u tráº£: " + item.getMaChiTietMuon()
+                        "Chi tiết mượn bị trùng trong phiếu trả: " + item.getMaChiTietMuon()
                 );
             }
         }
@@ -601,7 +601,7 @@ public class TraSachService {
 
     public TraSachResponse getById(String maPhieuTra) {
         PhieuTra phieuTra = phieuTraRepository.findById(maPhieuTra)
-                .orElseThrow(() -> new ResourceNotFoundException("KhĂ´ng tĂ¬m tháº¥y phiáº¿u tráº£"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu trả"));
 
         List<TraSachResponse.ChiTietTraResponse> chiTiet = chiTietPhieuTraRepository
                 .findByMaPhieuTra(maPhieuTra)
@@ -767,10 +767,10 @@ public class TraSachService {
         String adjustmentReason = item.getLyDoDieuChinhTienPhat();
         if (adjusted) {
             if (!RoleConstants.ADMIN.equals(authenticatedUser.getTenVaiTro())) {
-                throw new AccessDeniedException("Chá»‰ quáº£n trá»‹ viĂªn Ä‘Æ°á»£c Ä‘iá»u chá»‰nh tiá»n pháº¡t há»ng/máº¥t");
+                throw new AccessDeniedException("Chỉ quản trị viên được điều chỉnh tiền phạt hỏng/mất");
             }
             if (!hasText(adjustmentReason)) {
-                throw new BusinessException("Äiá»u chá»‰nh tiá»n pháº¡t pháº£i cĂ³ lĂ½ do");
+                throw new BusinessException("Điều chỉnh tiền phạt phải có lý do");
             }
             finalDamageFine = requestedAdjustment;
         }
@@ -796,12 +796,12 @@ public class TraSachService {
         }
 
         if (condition == ReturnCondition.DAMAGED && (item.getLoaiHuHong() == null || item.getLoaiHuHong().isEmpty())) {
-            throw new BusinessException("SĂ¡ch há»ng pháº£i cĂ³ loáº¡i hÆ° há»ng");
+            throw new BusinessException("Sách hỏng phải có loại hư hỏng");
         }
 
         String severity = condition == ReturnCondition.LOST ? DAMAGE_SEVERITY_FULL : item.getMucDoHuHong();
         if (!hasText(severity)) {
-            throw new BusinessException("SĂ¡ch há»ng pháº£i cĂ³ má»©c Ä‘á»™ hÆ° há»ng");
+            throw new BusinessException("Sách hỏng phải có mức độ hư hỏng");
         }
 
         DamageFineRule rule = getDamageFineRule(condition.databaseValue(), severity.trim().toUpperCase());
@@ -824,7 +824,7 @@ public class TraSachService {
                 FROM QUYDINH_PHAT_HONGMAT
                 WHERE TinhTrang = ?
                   AND MucDo = ?
-                  AND TrangThai = N'Äang Ă¡p dá»¥ng'
+                  AND TrangThai = N'Đang áp dụng'
                 ORDER BY MaQuyDinhPhat ASC
                 """,
                 (rs, rowNum) -> new DamageFineRule(
@@ -837,7 +837,7 @@ public class TraSachService {
         );
 
         if (result.isEmpty()) {
-            throw new BusinessException("KhĂ´ng tĂ¬m tháº¥y quy Ä‘á»‹nh pháº¡t há»ng/máº¥t cho tĂ¬nh tráº¡ng " + condition);
+            throw new BusinessException("Không tìm thấy quy định phạt hỏng/mất cho tình trạng " + condition);
         }
 
         return result.get(0);
@@ -860,7 +860,7 @@ public class TraSachService {
         );
 
         if (result.isEmpty()) {
-            throw new ResourceNotFoundException("KhĂ´ng tĂ¬m tháº¥y trá»‹ giĂ¡ cuá»‘n sĂ¡ch");
+            throw new ResourceNotFoundException("Không tìm thấy trị giá cuốn sách");
         }
 
         return result.get(0);
@@ -874,14 +874,13 @@ public class TraSachService {
                 WHERE MaDauSach = ?
                   AND MaChiNhanh = ?
                   AND MaCuonSachDuocGiu IS NULL
-                  AND TrangThai IN (?, ?)
+                  AND TrangThai = ?
                 ORDER BY NgayDat ASC, MaPhieuDatTruoc ASC
                 """,
                 (rs, rowNum) -> rs.getString("MaPhieuDatTruoc"),
                 cuonSach.getMaDauSach(),
                 branchId,
-                "\u0110ang ch\u1edd",
-                "Dang cho"
+                "\u0110ang ch\u1edd"
         );
 
         if (reservationIds.isEmpty()) {
@@ -912,12 +911,11 @@ public class TraSachService {
                 SELECT TOP 1 ts.SoNgayGiuDatTruoc
                 FROM PHIENBANQUYDINH pb
                 INNER JOIN THAMSOQUYDINH ts ON pb.MaPhienBan = ts.MaPhienBan
-                WHERE pb.TrangThai IN (?, ?)
+                WHERE pb.TrangThai = ?
                 ORDER BY pb.NgayApDung DESC
                 """,
                 (rs, rowNum) -> rs.getInt("SoNgayGiuDatTruoc"),
-                "\u0110ang \u00e1p d\u1ee5ng",
-                "Dang ap dung"
+                "\u0110ang \u00e1p d\u1ee5ng"
         );
 
         if (result.isEmpty()) {
@@ -982,13 +980,13 @@ public class TraSachService {
 
         activityLogService.logAsAccountSafe(
                 authenticatedUser.getMaTaiKhoan(),
-                "Äiá»u chá»‰nh tiá»n pháº¡t tráº£ sĂ¡ch",
+                "Điều chỉnh tiền phạt trả sách",
                 "PHIEUTRA_DIEUCHINH_PHAT",
                 "DCP_" + returnDetailId,
-                "Äiá»u chá»‰nh tiá»n pháº¡t cho " + loanDetailId
-                        + " tá»« " + suggestedFine
-                        + " thĂ nh " + finalFine
-                        + ". LĂ½ do: " + reason
+                "Điều chỉnh tiền phạt cho " + loanDetailId
+                        + " từ " + suggestedFine
+                        + " thành " + finalFine
+                        + ". Lý do: " + reason
         );
     }
 
@@ -1002,7 +1000,7 @@ public class TraSachService {
             LocalDateTime ngayPhatSinh
     ) {
         if (khoanNoRepository.existsById(maKhoanNo)) {
-            throw new BusinessException("MĂ£ khoáº£n ná»£ Ä‘Ă£ tá»“n táº¡i: " + maKhoanNo);
+            throw new BusinessException("Mã khoản nợ đã tồn tại: " + maKhoanNo);
         }
 
         KhoanNo khoanNo = new KhoanNo();
@@ -1014,7 +1012,7 @@ public class TraSachService {
         khoanNo.setSoTienDaThanhToan(BigDecimal.ZERO);
         khoanNo.setNgayPhatSinh(ngayPhatSinh);
         khoanNo.setLyDo(lyDo);
-        khoanNo.setTrangThai("ChÆ°a thanh toĂ¡n");
+        khoanNo.setTrangThai("Chưa thanh toán");
 
         khoanNoRepository.save(khoanNo);
     }
@@ -1031,7 +1029,7 @@ public class TraSachService {
         );
 
         if (result.isEmpty()) {
-            throw new BusinessException("KhĂ´ng tĂ¬m tháº¥y má»©c pháº¡t trá»… cho phiĂªn báº£n quy Ä‘á»‹nh " + maPhienBan);
+            throw new BusinessException("Không tìm thấy mức phạt trễ cho phiên bản quy định " + maPhienBan);
         }
 
         return result.get(0);
@@ -1043,17 +1041,15 @@ public class TraSachService {
                 SELECT COUNT(*)
                 FROM CHITIETPHIEUMUON
                 WHERE MaPhieuMuon = ?
-                  AND TrangThai IN (?, ?, ?)
+                  AND TrangThai = ?
                 """,
                 Integer.class,
                 phieuMuon.getMaPhieuMuon(),
-                "Äang mÆ°á»£n",
-                "\u0110ang m\u01b0\u1ee3n",
-                "Dang muon"
+                STATUS_BORROWING
         );
 
         if (soSachConDangMuon != null && soSachConDangMuon == 0) {
-            phieuMuon.setTrangThai("ÄĂ£ tráº£ háº¿t");
+            phieuMuon.setTrangThai("Đã trả hết");
             phieuMuonRepository.save(phieuMuon);
         }
     }
@@ -1062,7 +1058,7 @@ public class TraSachService {
         String maChiTietTra = "CTT_" + maPhieuTra + "_" + String.format("%02d", index);
 
         if (maChiTietTra.length() > 30) {
-            throw new BusinessException("MĂ£ chi tiáº¿t tráº£ vÆ°á»£t quĂ¡ 30 kĂ½ tá»±");
+            throw new BusinessException("Mã chi tiết trả vượt quá 30 ký tự");
         }
 
         return maChiTietTra;
@@ -1087,36 +1083,28 @@ public class TraSachService {
             return false;
         }
         String normalized = status.trim().toLowerCase(Locale.ROOT);
-        return normalized.equals("đang mượn")
-                || normalized.equals("dang muon")
-                || normalized.equals(STATUS_BORROWING.toLowerCase(Locale.ROOT))
-                || (normalized.contains("ang") && normalized.contains("m"));
+        return normalized.equals(STATUS_BORROWING.toLowerCase(Locale.ROOT))
+                || normalized.equals("dang muon");
     }
 
     private ReturnCondition normalizeCondition(String condition) {
         if (!hasText(condition)) {
-            throw new BusinessException("TĂ¬nh tráº¡ng khi tráº£ chá»‰ Ä‘Æ°á»£c lĂ  BĂ¬nh thÆ°á»ng, Há»ng hoáº·c Máº¥t");
+            throw new BusinessException("Tình trạng khi trả chỉ được là Bình thường, Hỏng hoặc Mất");
         }
         String normalized = condition.trim().toLowerCase(Locale.ROOT);
         if (normalized.equals(CONDITION_NORMAL.toLowerCase(Locale.ROOT))
-                || normalized.equals("bình thường")
-                || normalized.equals("binh thuong")
-                || normalized.contains("b") && normalized.contains("nh") && normalized.contains("th")) {
+                || normalized.equals("binh thuong")) {
             return ReturnCondition.NORMAL;
         }
         if (normalized.equals(CONDITION_DAMAGED.toLowerCase(Locale.ROOT))
-                || normalized.equals("hỏng")
-                || normalized.equals("hong")
-                || normalized.contains("h") && normalized.contains("ng")) {
+                || normalized.equals("hong")) {
             return ReturnCondition.DAMAGED;
         }
         if (normalized.equals(CONDITION_LOST.toLowerCase(Locale.ROOT))
-                || normalized.equals("mất")
-                || normalized.equals("mat")
-                || normalized.contains("m") && normalized.contains("t")) {
+                || normalized.equals("mat")) {
             return ReturnCondition.LOST;
         }
-        throw new BusinessException("TĂ¬nh tráº¡ng khi tráº£ chá»‰ Ä‘Æ°á»£c lĂ  BĂ¬nh thÆ°á»ng, Há»ng hoáº·c Máº¥t");
+        throw new BusinessException("Tình trạng khi trả chỉ được là Bình thường, Hỏng hoặc Mất");
     }
 
     private record ReturnAssessment(
