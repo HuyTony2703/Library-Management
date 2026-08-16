@@ -33,7 +33,6 @@ frontend/.env.*
 backend/src/main/resources/application.properties
 backend/local-db.bat
 !backend/src/main/resources/application-example.properties
-!backend/local-db.example.bat
 
 # IDE / editor
 .idea/
