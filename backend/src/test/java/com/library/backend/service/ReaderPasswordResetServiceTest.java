@@ -56,7 +56,7 @@ class ReaderPasswordResetServiceTest {
     @Test
     void rejectsLibrarianWithoutStaffProfileBeforeReadingTarget() {
         AuthUser librarianWithoutStaff = new AuthUser("TK_LIB", "staff", "VT", RoleConstants.LIBRARIAN,
-                null, null, "Thá»§ thÆ°");
+                null, null, "Thủ thư");
 
         assertThatThrownBy(() -> service.reset("DG001", request("reader@example.com", LocalDate.of(2000, 1, 2)),
                 librarianWithoutStaff))
