@@ -1,50 +1,58 @@
 # LibraDesk
 
-LibraDesk là một desktop app quản lý thư viện trên Windows. Hệ thống bao gồm:
+Ứng dụng desktop quản lý thư viện chạy trên Windows với ba vai trò: **quản trị viên**, **thủ thư** và **độc giả**.
 
-- Backend REST API: Java 21, Spring Boot và Spring Security.
-- Giao diện: React, Vite và Electron.
-- Cơ sở dữ liệu: Microsoft SQL Server.
+## Tính năng chính
 
-Ứng dụng hỗ trợ ba vai trò chính: quản trị viên, thủ thư và độc giả. Các chức năng chính gồm quản lý sách, độc giả, mượn trả, công nợ, thu tiền, đặt trước, đánh giá, bình luận, thông báo, quy định và báo cáo.
+- Quản lý đầu sách, bản vật lý, tác giả, thể loại, nhà xuất bản và chi nhánh.
+- Quản lý độc giả, gói thành viên, thẻ, công nợ và thu tiền.
+- Quy trình mượn – trả sách, đặt trước, gia hạn, đánh giá và bình luận.
+- Thông báo, quy định thư viện và báo cáo thống kê.
+- Phân quyền theo vai trò ở cả frontend lẫn backend.
 
-## Bắt đầu chạy
+## Công nghệ
 
-### 1. Chuẩn bị môi trường
+| Thành phần | Công nghệ |
+|---|---|
+| Frontend | React, Vite, Electron |
+| Backend | Java 21, Spring Boot, Spring Security |
+| Cơ sở dữ liệu | Microsoft SQL Server |
 
-Để chạy bản desktop đã đóng gói, máy cần:
+## Yêu cầu hệ thống
 
 - Windows 10 hoặc Windows 11.
 - SQL Server đang hoạt động.
 - Java 21 để chạy backend dạng JAR.
 
-Để build từ source, cần thêm Node.js/npm và kết nối Internet trong lần cài dependency đầu tiên.
+Để build từ source cần thêm Node.js/npm và kết nối Internet trong lần cài dependency đầu tiên.
 
-### 2. Khởi tạo database
+## Cài đặt
 
-Mở SQL Server Management Studio hoặc công cụ SQL tương đương, rồi chạy lần lượt toàn bộ script trong `database/scripts/` theo thứ tự số thứ tự từ `01` đến `19`:
+### 1. Khởi tạo database
+
+Mở SQL Server Management Studio hoặc công cụ SQL tương đương, chạy lần lượt các script trong `database/scripts/` theo thứ tự số từ `01` đến `19`:
 
 1. `database/scripts/01_full_database.sql`
 2. `database/scripts/02_seed_demo_data.sql`
 3. `database/scripts/03_test_queries.sql` đến `database/scripts/19_admin_modernization_payment_reversal.sql`
 
-Script đầu tiên tự tạo database `QuanLyThuVien` nếu database chưa tồn tại. Hướng dẫn chi tiết và thứ tự chính xác nằm tại [database/README_DATABASE.md](database/README_DATABASE.md).
+Script đầu tiên tự tạo database `QuanLyThuVien` nếu chưa tồn tại. Hướng dẫn chi tiết tại [database/README_DATABASE.md](database/README_DATABASE.md).
 
-> **Lưu ý:** nếu chạy script bằng `sqlcmd` từ dòng lệnh, phải thêm `-f 65001` để giữ đúng ký tự tiếng Việt (tránh lỗi mojibake trong dữ liệu), ví dụ:
+> **Lưu ý:** khi chạy bằng `sqlcmd` từ dòng lệnh, thêm `-f 65001` để giữ đúng ký tự tiếng Việt:
 >
 > ```bat
 > sqlcmd -S localhost -U sa -P "mat-khau" -f 65001 -i "database\scripts\16_admin_modernization_return_assessment.sql"
 > ```
 
-### 3. Hãy mở ứng dụng
+### 2. Chạy ứng dụng
 
-Tại thư mục gốc, chạy:
+Tại thư mục gốc:
 
 ```bat
 start-libradesk.bat
 ```
 
-Trong lần chạy đầu tiên, terminal sẽ yêu cầu host, tên database, tài khoản và mật khẩu SQL Server. Sau khi kết nối thành công, cấu hình được lưu riêng trong `%APPDATA%\LibraDesk` cho tài khoản Windows hiện tại.
+Lần chạy đầu tiên sẽ yêu cầu host, tên database, tài khoản và mật khẩu SQL Server. Cấu hình được lưu riêng tại `%APPDATA%\LibraDesk` cho tài khoản Windows hiện tại.
 
 Launcher thực hiện theo thứ tự:
 
@@ -82,7 +90,7 @@ Build và cập nhật JAR trong `release/`:
 scripts\build\build-backend-aot.bat
 ```
 
-Script trên chạy `mvnw.cmd -DskipTests package` và sao chép JAR sang `release/`. Launcher `backend\run-backend.ps1` tự phát hiện JAR có AOT hay JIT để chạy đúng chế độ.
+Script chạy `mvnw.cmd -DskipTests package` rồi sao chép JAR sang `release/`. Launcher `scripts\runtime\run-backend.ps1` tự phát hiện JAR AOT hay JIT.
 
 Kiểm tra compile nhanh trong lúc phát triển:
 
@@ -117,7 +125,7 @@ npm run electron:dev
 npm start
 ```
 
-`npm start` gọi `start-libradesk.bat`. `npm run dev` chỉ mở Vite để phát triển giao diện, không thay thế launcher của toàn hệ thống.
+`npm start` gọi `start-libradesk.bat`. `npm run dev` chỉ mở Vite để phát triển giao diện.
 
 ## Cấu trúc thư mục
 
@@ -127,17 +135,23 @@ Library-Management/
 |-- frontend/                 React, Vite và Electron
 |-- database/
 |   |-- scripts/              Schema, seed và script kiểm thử
-|   `-- notes/                Ghi chú database và nghiệp vụ
-|-- docs/                     Tài liệu kỹ thuật và kiểm thử
+|   |-- notes/                Ghi chú database và nghiệp vụ
+|   `-- diagrams/             Sơ đồ quan hệ dữ liệu
+|-- docs/
+|   |-- api/                  Hợp đồng prefix API và Postman collection
+|   |-- backend/              Tài liệu backend và kiểm thử phân quyền
+|   |-- frontend/             Mapping màn hình và API
+|   `-- admin-modernization/  Hồ sơ thiết kế quản trị hiện đại hóa
 |-- scripts/
 |   |-- build/                Script build artifact
-|   `-- runtime/              Script khởi động và cấu hình runtime
+|   |-- runtime/              Script khởi động, cấu hình và vận hành
+|   `-- test/                 Script kiểm thử
 |-- release/                  JAR và app desktop đã đóng gói
 |-- package.json              Lệnh npm dùng từ thư mục gốc
 `-- start-libradesk.bat       Điểm khởi động chính trên Windows
 ```
 
-## Tài liệu nên đọc
+## Tài liệu liên quan
 
 | Nhu cầu | Tài liệu |
 |---|---|
@@ -193,14 +207,6 @@ npm run build
 
 Sau đó chạy lại `start-libradesk.bat`. Nếu cần đóng gói lại app desktop, chạy `npm run dist:win` trong thư mục `frontend`.
 
-## Thành viên
-
-| Họ tên | MSSV | Phụ trách chính |
-|---|---:|---|
-| Lê Trí Cao | 24520206 | Backend, database và nghiệp vụ |
-| Tô Ngọc Huy | 24520698 | Frontend, Electron và giao diện |
-| Lê Tuấn Dương | 24520359 | Tài liệu, kiểm thử và báo cáo |
-
 ## Lưu ý vận hành
 
 - Không đưa mật khẩu database hoặc JWT secret thật lên Git.
@@ -212,7 +218,7 @@ Sau đó chạy lại `start-libradesk.bat`. Nếu cần đóng gói lại app d
 
 1. Chạy `git status` và xác nhận không có secret, log, `node_modules`, `frontend/dist` hoặc `backend/target` trong thay đổi.
 2. Chạy `npm run build` để kiểm tra frontend.
-3. Chạy `backend\\mvnw.cmd test` để kiểm tra backend khi môi trường database cho phép.
+3. Chạy `backend\mvnw.cmd test` để kiểm tra backend khi môi trường database cho phép.
 4. Khởi động bằng `start-libradesk.bat`, đăng nhập đủ ba vai trò và thử ít nhất một luồng đọc dữ liệu.
 5. Nếu source đã thay đổi hành vi runtime, build lại artifact tương ứng trong `release/` và kiểm tra timestamp.
 6. Cập nhật tài liệu API/database liên quan trong cùng đợt thay đổi.
