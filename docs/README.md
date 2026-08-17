@@ -15,17 +15,17 @@ Trang này là mục lục tài liệu kỹ thuật. Nếu bạn chỉ muốn c�
 ### Người kiểm thử
 
 1. [Postman collection](api/library-desktop-app.postman_collection.json)
-2. [Kiểm thử phân quyền backend](backend-permission-test.md)
-3. [Hợp đồng prefix API](api-prefix-contract.md)
+2. [Kiểm thử phân quyền backend](backend/backend-permission-test.md)
+3. [Hợp đồng prefix API](api/api-prefix-contract.md)
 4. [Kế hoạch nghiệm thu admin](admin-modernization/04-acceptance-tests.md)
 
 ## Tài liệu hiện hành
 
 | Chủ đề | File | Nội dung |
 |---|---|---|
-| API theo vai trò | [api-prefix-contract.md](api-prefix-contract.md) | Quy ước `/api/admin`, `/api/staff`, `/api/reader` |
+| API theo vai trò | [api/api-prefix-contract.md](api/api-prefix-contract.md) | Quy ước `/api/admin`, `/api/staff`, `/api/reader` |
 | Frontend và API | [frontend/api-mapping.md](frontend/api-mapping.md) | Màn hình nào gọi endpoint nào |
-| Phân quyền | [backend-permission-test.md](backend-permission-test.md) | Ma trận quyền và cách kiểm tra |
+| Phân quyền | [backend/backend-permission-test.md](backend/backend-permission-test.md) | Ma trận quyền và cách kiểm tra |
 | Cấu trúc backend | [backend/structure.md](backend/structure.md) | Các package và luồng xử lý |
 | Backend chi tiết | [backend/complete-documentation.md](backend/complete-documentation.md) | Tài liệu tham khảo theo lớp |
 | Database | [../database/README_DATABASE.md](../database/README_DATABASE.md) | Cài đặt, seed và xử lý lỗi |
@@ -46,7 +46,7 @@ Khi có xung đột, ưu tiên theo thứ tự:
 - Dùng tiếng Việt UTF-8 và thuật ngữ thống nhất: quản trị viên, thủ thư, độc giả.
 - Lệnh phải ghi rõ chạy từ thư mục gốc hay thư mục con.
 - Không ghi mật khẩu thật, connection string thật hoặc token vào Markdown.
-- Khi thay đổi endpoint, cập nhật cả `api-prefix-contract.md` và `frontend/api-mapping.md`.
+- Khi thay đổi endpoint, cập nhật cả `api/api-prefix-contract.md` và `frontend/api-mapping.md`.
 - Khi thay đổi schema hoặc seed, cập nhật `database/README_DATABASE.md`.
 
 ## Thông tin tối thiểu của tài liệu
