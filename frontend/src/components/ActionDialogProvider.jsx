@@ -79,6 +79,7 @@ export function ActionDialogProvider({ children }) {
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useActionDialog() {
     const context = useContext(ActionDialogContext);
 

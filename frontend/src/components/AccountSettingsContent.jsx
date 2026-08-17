@@ -54,10 +54,20 @@ export default function AccountSettingsContent() {
     const [editingProfile, setEditingProfile] = useState(false);
     const [activeSettingsCategory, setActiveSettingsCategory] = useState("profile");
 
-    useEffect(() => {
+    const [prevUser, setPrevUser] = useState(user);
+
+    if (prevUser !== user) {
+        setPrevUser(user);
         setProfileForm(buildProfileForm(user));
         setEditingProfile(false);
-    }, [user]);
+    }
+
+    const [prevHash, setPrevHash] = useState(location.hash);
+
+    if (prevHash !== location.hash && (location.hash === "#profile" || location.hash === "#security")) {
+        setPrevHash(location.hash);
+        setActiveSettingsCategory(location.hash === "#security" ? "security" : "profile");
+    }
 
     useEffect(() => {
         applyPreferences(preferences);
@@ -69,7 +79,6 @@ export default function AccountSettingsContent() {
         }
 
         const category = location.hash === "#security" ? "security" : "profile";
-        setActiveSettingsCategory(category);
         window.requestAnimationFrame(() => {
             document.getElementById(category === "security" ? "settings-password" : "settings-profile")?.scrollIntoView({
                 behavior: "smooth",
