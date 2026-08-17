@@ -2,7 +2,7 @@
   "name": "library-desktop-frontend",
   "version": "1.0.0",
   "description": "Desktop app quản lý thư viện",
-  "author": "Nhom 1",
+  "author": "LibraDesk",
   "private": true,
   "type": "module",
   "main": "electron/main.cjs",

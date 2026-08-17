@@ -13,5 +13,10 @@ for (const entry of fs.readdirSync(releaseDir)) {
 
   if (stat.isDirectory() && /^win.*-unpacked$/.test(entry)) {
     fs.rmSync(fullPath, { recursive: true, force: true });
+    continue;
+  }
+
+  if (stat.isFile() && /^builder-(debug|effective-config)\.yml$/.test(entry)) {
+    fs.rmSync(fullPath, { force: true });
   }
 }
