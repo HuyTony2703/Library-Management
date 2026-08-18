@@ -8,7 +8,7 @@ import {
     Star,
     TrendingUp
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
 import { useToast } from "../ToastProvider";
@@ -65,10 +65,10 @@ export default function RandomBookSection({ limit = 12 }) {
 
     const activeMeta = recommendationTypes.find((item) => item.type === activeType) ?? recommendationTypes[0];
     const activeCacheKey = getCacheKey(activeType, limit);
-    const books = booksByType[activeCacheKey] ?? [];
+    const books = useMemo(() => booksByType[activeCacheKey] ?? [], [booksByType, activeCacheKey]);
     const loading = loadingKey === activeCacheKey;
 
-    async function loadBooks(type = activeType, force = false) {
+    const loadBooks = useCallback(async (type = activeType, force = false) => {
         const cacheKey = getCacheKey(type, limit);
 
         if (!force && booksByType[cacheKey]) {
@@ -88,7 +88,7 @@ export default function RandomBookSection({ limit = 12 }) {
         } finally {
             setLoadingKey((current) => (current === cacheKey ? "" : current));
         }
-    }
+    }, [activeType, booksByType, limit, toast]);
 
     function handleSelectType(type) {
         if (type === activeType) {
@@ -145,8 +145,12 @@ export default function RandomBookSection({ limit = 12 }) {
     }
 
     useEffect(() => {
-        loadBooks(activeType);
-    }, [activeType, limit]);
+        const run = async () => {
+            await loadBooks(activeType);
+        };
+
+        run();
+    }, [activeType, limit, loadBooks]);
 
     useEffect(() => {
         let isCancelled = false;
