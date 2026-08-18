@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { libraryApi } from "../api/libraryApi";
 import DataTable from "../components/DataTable";
 import PageHeader from "../components/PageHeader";
@@ -10,18 +10,18 @@ export default function PaymentsPage() {
 
     const [maDocGia, setMaDocGia] = useState("DG003");
     const [debts, setDebts] = useState([]);
-    const [form, setForm] = useState({
+    const [form, setForm] = useState(() => ({
         maPhieuThu: `PT_FE_${Date.now().toString().slice(-8)}`,
         maKhoanNo: "NO_DG003_TRE_01",
         maPhuongThuc: "PT_TIEN_MAT",
         soTienThu: 3000
-    });
+    }));
 
     function update(key, value) {
         setForm((prev) => ({ ...prev, [key]: value }));
     }
 
-    async function loadDebts(silent = false) {
+    const loadDebts = useCallback(async (silent = false) => {
         if (!maDocGia.trim()) {
             setDebts([]);
             return;
@@ -39,7 +39,7 @@ export default function PaymentsPage() {
                 toast.error(err.message);
             }
         }
-    }
+    }, [maDocGia, toast]);
 
     useEffect(() => {
         const timer = window.setTimeout(() => {
@@ -47,7 +47,7 @@ export default function PaymentsPage() {
         }, 350);
 
         return () => window.clearTimeout(timer);
-    }, [maDocGia]);
+    }, [maDocGia, loadDebts]);
 
     async function submit(e) {
         e.preventDefault();
