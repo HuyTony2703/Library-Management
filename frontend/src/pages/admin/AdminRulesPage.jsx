@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Rocket, Plus } from "lucide-react";
 import { adminApi } from "../../api/adminApi";
 import PageHeader from "../../components/PageHeader";
@@ -51,7 +51,7 @@ export default function AdminRulesPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
     try {
       const [currentRule, historyRules] = await Promise.all([
         adminApi.getCurrentRule(),
@@ -63,11 +63,15 @@ export default function AdminRulesPage() {
     } catch (err) {
       toast.error(err.message || "Không tải được quy định");
     }
-  }
+  }, [toast]);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    const run = async () => {
+      await loadData();
+    };
+
+    run();
+  }, [loadData]);
 
   function buildPayload() {
     return {

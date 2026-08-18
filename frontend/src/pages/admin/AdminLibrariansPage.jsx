@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { KeyRound, Lock, Pencil, Plus, Trash2, Unlock, UserX } from "lucide-react";
 import { adminApi } from "../../api/adminApi";
 import PageHeader from "../../components/PageHeader";
@@ -18,6 +18,12 @@ export default function AdminLibrariansPage() {
     const [loading, setLoading] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedIds, setSelectedIds] = useState([]);
+    const [prevLibrarians, setPrevLibrarians] = useState([]);
+
+    if (prevLibrarians !== librarians) {
+        setPrevLibrarians(librarians);
+        setSelectedIds((prev) => prev.filter((id) => librarians.some((row) => row.maNhanVien === id)));
+    }
 
     const [createForm, setCreateForm] = useState({
         maNhanVien: "NV_TT_TEST_001",
@@ -35,22 +41,22 @@ export default function AdminLibrariansPage() {
 
     const [resetPassword, setResetPassword] = useState("123456");
 
-    async function loadLibrarians() {
+    const loadLibrarians = useCallback(async () => {
         try {
             const data = await adminApi.getLibrarians();
             setLibrarians(Array.isArray(data) ? data : []);
         } catch (err) {
             toast.error(err.message || "Không tải được danh sách thủ thư");
         }
-    }
+    }, [toast]);
 
     useEffect(() => {
-        loadLibrarians();
-    }, []);
+        const run = async () => {
+            await loadLibrarians();
+        };
 
-    useEffect(() => {
-        setSelectedIds((prev) => prev.filter((id) => librarians.some((row) => row.maNhanVien === id)));
-    }, [librarians]);
+        run();
+    }, [loadLibrarians]);
 
     function toggleSelected(id) {
         setSelectedIds((prev) => prev.includes(id)

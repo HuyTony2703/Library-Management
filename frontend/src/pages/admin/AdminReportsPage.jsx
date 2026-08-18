@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { adminApi } from "../../api/adminApi";
 import { libraryApi } from "../../api/libraryApi";
@@ -29,7 +29,7 @@ export default function AdminReportsPage() {
         return borrowByCategory.reduce((sum, item) => sum + Number(item.soLuotMuon || 0), 0);
     }, [borrowByCategory]);
 
-    async function loadReports(period = selectedReportPeriod) {
+    const loadReports = useCallback(async (period = selectedReportPeriod) => {
         if (!period) {
             toast.error("Tháng báo cáo không hợp lệ.");
             return;
@@ -65,19 +65,28 @@ export default function AdminReportsPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [selectedReportPeriod, toast]);
 
     useEffect(() => {
-        if (selectedReportPeriod) {
-            loadReports(selectedReportPeriod);
+        if (!selectedReportPeriod) {
+            return;
         }
-    }, [selectedReportPeriod]);
 
-    useEffect(() => {
+        const run = async () => {
+            await loadReports(selectedReportPeriod);
+        };
+
+        run();
+    }, [selectedReportPeriod, loadReports]);
+
+    const [prevDebts, setPrevDebts] = useState([]);
+
+    if (prevDebts !== debts) {
+        setPrevDebts(debts);
         setSelectedDebtReaders((prev) =>
             prev.filter((readerId) => debts.some((row) => getDebtReaderId(row) === readerId))
         );
-    }, [debts]);
+    }
 
     function toggleDebtReader(row) {
         const readerId = getDebtReaderId(row);

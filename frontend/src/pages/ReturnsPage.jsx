@@ -6,7 +6,7 @@ import { useToast } from "../components/ToastProvider";
 export default function ReturnsPage() {
     const toast = useToast();
 
-    const [form, setForm] = useState({
+    const [form, setForm] = useState(() => ({
         maPhieuTra: `PTR_FE_${Date.now().toString().slice(-8)}`,
         maDocGia: "DG001",
         maNhanVienNhan: "NV_TT001",
@@ -14,7 +14,7 @@ export default function ReturnsPage() {
         maChiTietMuon: "",
         tinhTrangKhiTra: "Bình thường",
         tienPhatHongMat: 0
-    });
+    }));
 
     const [result, setResult] = useState(null);
 
