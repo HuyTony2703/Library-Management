@@ -8,8 +8,18 @@ import {
     Trash2
 } from "lucide-react";
 
+const NOTIFICATION_ICONS = {
+    TB_SAP_DEN_HAN: CalendarClock,
+    TB_GIA_HAN_TC: CheckCircle2,
+    TB_MUA_GOI_TC: CheckCircle2,
+    TB_BI_PHAT: CircleDollarSign,
+    TB_DAT_TRUOC_TC: BookmarkCheck,
+    TB_SACH_DA_CO: BookmarkCheck,
+    TB_QUA_HAN: CircleAlert
+};
+
 export default function NotificationItem({ item, selected, onSelect, onRead, onDelete }) {
-    const Icon = getIcon(item.maLoaiThongBao);
+    const Icon = NOTIFICATION_ICONS[item.maLoaiThongBao] ?? Bell;
 
     return (
         <div className={`notification-item ${item.daDoc ? "is-read" : "is-unread"}`}>
@@ -63,25 +73,6 @@ export default function NotificationItem({ item, selected, onSelect, onRead, onD
             </div>
         </div>
     );
-}
-
-function getIcon(maLoaiThongBao) {
-    switch (maLoaiThongBao) {
-        case "TB_SAP_DEN_HAN":
-            return CalendarClock;
-        case "TB_GIA_HAN_TC":
-        case "TB_MUA_GOI_TC":
-            return CheckCircle2;
-        case "TB_BI_PHAT":
-            return CircleDollarSign;
-        case "TB_DAT_TRUOC_TC":
-        case "TB_SACH_DA_CO":
-            return BookmarkCheck;
-        case "TB_QUA_HAN":
-            return CircleAlert;
-        default:
-            return Bell;
-    }
 }
 
 function formatDateTime(value) {

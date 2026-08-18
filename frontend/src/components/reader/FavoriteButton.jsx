@@ -1,5 +1,5 @@
 import { Heart } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import { useToast } from "../ToastProvider";
 
@@ -13,8 +13,14 @@ export default function FavoriteButton({
 
     const [favorite, setFavorite] = useState(Boolean(initialFavorite));
     const [loading, setLoading] = useState(false);
+    const [prevInitial, setPrevInitial] = useState(initialFavorite);
 
-    async function loadFavoriteStatus() {
+    if (prevInitial !== initialFavorite) {
+        setPrevInitial(initialFavorite);
+        setFavorite(Boolean(initialFavorite));
+    }
+
+    const loadFavoriteStatus = useCallback(async () => {
         if (!maDauSach || initialFavorite !== null) {
             return;
         }
@@ -25,7 +31,7 @@ export default function FavoriteButton({
         } catch (err) {
             console.error("Không kiểm tra được trạng thái yêu thích:", err);
         }
-    }
+    }, [maDauSach, initialFavorite]);
 
     async function toggleFavorite(e) {
         e?.preventDefault?.();
@@ -58,12 +64,15 @@ export default function FavoriteButton({
 
     useEffect(() => {
         if (initialFavorite !== null) {
-            setFavorite(Boolean(initialFavorite));
             return;
         }
 
-        loadFavoriteStatus();
-    }, [maDauSach, initialFavorite]);
+        const run = async () => {
+            await loadFavoriteStatus();
+        };
+
+        run();
+    }, [maDauSach, initialFavorite, loadFavoriteStatus]);
 
     const title = loading
         ? "Đang cập nhật yêu thích"

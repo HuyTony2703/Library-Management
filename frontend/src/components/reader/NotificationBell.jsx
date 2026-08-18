@@ -34,7 +34,11 @@ export default function NotificationBell() {
     }
 
     useEffect(() => {
-        loadUnreadCount();
+        const run = async () => {
+            await loadUnreadCount();
+        };
+
+        run();
 
         const timer = window.setInterval(loadUnreadCount, 30000);
         const handleNotificationsChanged = (event) => {
