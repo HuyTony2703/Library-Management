@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { getToken } from "../api/apiClient";
 import { loginApi, logoutApi, meApi } from "../api/authApi";
 import { staffApi } from "../api/staffApi";
@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
     const [staffContext, setStaffContext] = useState(null);
     const [loadingUser, setLoadingUser] = useState(true);
 
-    async function loadStaffContext(authenticatedUser) {
+    const loadStaffContext = useCallback(async (authenticatedUser) => {
         if (authenticatedUser?.mustChangePassword) {
             setStaffContext(null);
             return null;
@@ -24,9 +24,9 @@ export function AuthProvider({ children }) {
         const context = await staffApi.getContext();
         setStaffContext(context);
         return context;
-    }
+    }, []);
 
-    async function refreshUser() {
+    const refreshUser = useCallback(async () => {
         if (!getToken()) {
             setUser(null);
             setStaffContext(null);
@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
         setUser(data);
         localStorage.setItem("user", JSON.stringify(data));
         return data;
-    }
+    }, [loadStaffContext]);
 
     useEffect(() => {
         async function loadUser() {
@@ -56,7 +56,7 @@ export function AuthProvider({ children }) {
         }
 
         loadUser();
-    }, []);
+    }, [refreshUser]);
 
     async function login(usernameOrEmail, password) {
         try {
@@ -108,6 +108,7 @@ export function AuthProvider({ children }) {
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
     const context = useContext(AuthContext);
 
