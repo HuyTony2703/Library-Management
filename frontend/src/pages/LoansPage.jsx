@@ -7,14 +7,14 @@ import { useToast } from "../components/ToastProvider";
 export default function LoansPage() {
     const toast = useToast();
 
-    const [form, setForm] = useState({
+    const [form, setForm] = useState(() => ({
         maPhieuMuon: `PM_FE_${Date.now().toString().slice(-8)}`,
         maDocGia: "DG001",
         maNhanVienLap: "NV_TT001",
         maChiNhanh: "CN_TD",
         maCuonSach: "F01-001",
         ghiChu: "Mượn sách từ giao diện desktop"
-    });
+    }));
 
     const [result, setResult] = useState(null);
 
