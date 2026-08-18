@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import { useToast } from "../ToastProvider";
 import RatingStars from "./RatingStars";
@@ -11,7 +11,7 @@ export default function ReaderBookRating({ maDauSach, embedded = false }) {
     const [noiDung, setNoiDung] = useState("");
     const [loading, setLoading] = useState(false);
 
-    async function loadSummary() {
+    const loadSummary = useCallback(async () => {
         try {
             const result = await readerApi.getRatingSummary(maDauSach);
             setSummary(result);
@@ -23,7 +23,7 @@ export default function ReaderBookRating({ maDauSach, embedded = false }) {
         } catch (err) {
             toast.error(err.message || "Không tải được đánh giá");
         }
-    }
+    }, [maDauSach, toast]);
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -45,10 +45,16 @@ export default function ReaderBookRating({ maDauSach, embedded = false }) {
     }
 
     useEffect(() => {
-        if (maDauSach) {
-            loadSummary();
+        if (!maDauSach) {
+            return;
         }
-    }, [maDauSach]);
+
+        const run = async () => {
+            await loadSummary();
+        };
+
+        run();
+    }, [maDauSach, loadSummary]);
 
     const average = Number(summary?.diemTrungBinh || 0);
     const total = summary?.tongSoDanhGia || 0;

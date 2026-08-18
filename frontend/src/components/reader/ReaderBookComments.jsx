@@ -1,5 +1,5 @@
 import { MessageCircle, Pencil, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import { useActionDialog } from "../ActionDialogProvider";
 import { useToast } from "../ToastProvider";
@@ -13,7 +13,7 @@ export default function ReaderBookComments({ maDauSach, embedded = false }) {
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    async function loadComments() {
+    const loadComments = useCallback(async () => {
         setLoading(true);
 
         try {
@@ -24,7 +24,7 @@ export default function ReaderBookComments({ maDauSach, embedded = false }) {
         } finally {
             setLoading(false);
         }
-    }
+    }, [maDauSach, toast]);
 
     async function handleCreate(noiDung) {
         try {
@@ -69,10 +69,16 @@ export default function ReaderBookComments({ maDauSach, embedded = false }) {
     }
 
     useEffect(() => {
-        if (maDauSach) {
-            loadComments();
+        if (!maDauSach) {
+            return;
         }
-    }, [maDauSach]);
+
+        const run = async () => {
+            await loadComments();
+        };
+
+        run();
+    }, [maDauSach, loadComments]);
 
     const Container = embedded ? "div" : "section";
 
