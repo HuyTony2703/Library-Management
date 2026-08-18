@@ -51,7 +51,7 @@ export default function DashboardPage() {
         }
 
         load();
-    }, [isAdmin]);
+    }, [isAdmin, toast]);
 
     const chartData = currentLoans.slice(0, 8).map((item) => ({
         name: item.hoTen || item.maDocGia,
