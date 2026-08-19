@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import { useToast } from "../../components/ToastProvider";
 import MembershipHistoryTable from "../../components/reader/MembershipHistoryTable";
@@ -34,7 +34,7 @@ export default function ReaderMembershipPage() {
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    async function loadMembershipData() {
+    const loadMembershipData = useCallback(async () => {
         setLoading(true);
 
         try {
@@ -52,7 +52,7 @@ export default function ReaderMembershipPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [toast]);
 
     async function handlePurchaseSuccess() {
         setSelectedPlan(null);
@@ -61,8 +61,12 @@ export default function ReaderMembershipPage() {
     }
 
     useEffect(() => {
-        loadMembershipData();
-    }, []);
+        const run = async () => {
+            await loadMembershipData();
+        };
+
+        run();
+    }, [loadMembershipData]);
 
     const visiblePlans = useMemo(() => {
         const byId = new Map(plans.map((plan) => [plan.maGoiThanhVien, plan]));

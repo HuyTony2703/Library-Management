@@ -1,5 +1,5 @@
 import { CheckCheck, Trash2, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import { useActionDialog } from "../../components/ActionDialogProvider";
 import { useToast } from "../../components/ToastProvider";
@@ -12,7 +12,7 @@ export default function ReaderNotificationsPage() {
     const [loading, setLoading] = useState(false);
     const [selectedIds, setSelectedIds] = useState(() => new Set());
 
-    async function loadNotifications() {
+    const loadNotifications = useCallback(async () => {
         setLoading(true);
 
         try {
@@ -29,7 +29,7 @@ export default function ReaderNotificationsPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [toast]);
 
     function removeFromList(ids) {
         const idSet = new Set(ids);
@@ -155,8 +155,12 @@ export default function ReaderNotificationsPage() {
     }
 
     useEffect(() => {
-        loadNotifications();
-    }, []);
+        const run = async () => {
+            await loadNotifications();
+        };
+
+        run();
+    }, [loadNotifications]);
 
     const unreadCount = data.filter((item) => !item.daDoc).length;
     const allSelected = data.length > 0 && selectedIds.size === data.length;
