@@ -1,5 +1,5 @@
 import { Calculator, ShieldCheck } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
 import LibraryRulesReference from "../../components/LibraryRulesReference";
@@ -14,7 +14,7 @@ export default function ReaderRulesPage() {
     const [loading, setLoading] = useState(false);
     const [soNgayTre, setSoNgayTre] = useState("3");
 
-    async function loadRules() {
+    const loadRules = useCallback(async () => {
         setLoading(true);
 
         try {
@@ -25,11 +25,15 @@ export default function ReaderRulesPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [toast]);
 
     useEffect(() => {
-        loadRules();
-    }, []);
+        const run = async () => {
+            await loadRules();
+        };
+
+        run();
+    }, [loadRules]);
 
     useEffect(() => {
         if (!location.hash) {

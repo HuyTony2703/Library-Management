@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import { useActionDialog } from "../../components/ActionDialogProvider";
 import { useToast } from "../../components/ToastProvider";
@@ -8,20 +8,15 @@ export default function ReaderReservationsPage() {
     const toast = useToast();
     const actionDialog = useActionDialog();
     const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(false);
 
-    async function loadReservations() {
-        setLoading(true);
-
+    const loadReservations = useCallback(async () => {
         try {
             const result = await readerApi.reservations();
             setData(Array.isArray(result) ? result : []);
         } catch (err) {
             toast.error(err.message || "Không tải được danh sách đặt trước. Vui lòng thử lại.");
-        } finally {
-            setLoading(false);
         }
-    }
+    }, [toast]);
 
     async function handleCancel(item) {
         const ok = await actionDialog.confirm({
@@ -50,8 +45,12 @@ export default function ReaderReservationsPage() {
     }
 
     useEffect(() => {
-        loadReservations();
-    }, []);
+        const run = async () => {
+            await loadReservations();
+        };
+
+        run();
+    }, [loadReservations]);
 
     return (
         <div>
