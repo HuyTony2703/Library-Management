@@ -1,5 +1,5 @@
 import { Check, RotateCcw, Search } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import ReaderBookCard from "../../components/reader/ReaderBookCard";
 
@@ -28,7 +28,7 @@ export default function ReaderBooksPage() {
         onlyAvailable: false
     });
 
-    async function loadBooks(searchKeyword = keyword) {
+    const loadBooks = useCallback(async (searchKeyword = keyword) => {
         setLoading(true);
         setError("");
 
@@ -40,11 +40,15 @@ export default function ReaderBooksPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [keyword]);
 
     useEffect(() => {
-        loadBooks("");
-    }, []);
+        const run = async () => {
+            await loadBooks("");
+        };
+
+        run();
+    }, [loadBooks]);
 
     function handleSearch(e) {
         e.preventDefault();

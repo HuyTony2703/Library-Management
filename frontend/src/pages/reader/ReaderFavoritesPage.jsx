@@ -1,5 +1,5 @@
 import { Heart, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
 import { useToast } from "../../components/ToastProvider";
@@ -11,7 +11,7 @@ export default function ReaderFavoritesPage() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    async function loadFavorites() {
+    const loadFavorites = useCallback(async () => {
         setLoading(true);
 
         try {
@@ -22,7 +22,7 @@ export default function ReaderFavoritesPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [toast]);
 
     function handleFavoriteChanged(maDauSach, isFavorite) {
         if (!isFavorite) {
@@ -31,8 +31,12 @@ export default function ReaderFavoritesPage() {
     }
 
     useEffect(() => {
-        loadFavorites();
-    }, []);
+        const run = async () => {
+            await loadFavorites();
+        };
+
+        run();
+    }, [loadFavorites]);
 
     return (
         <div>
