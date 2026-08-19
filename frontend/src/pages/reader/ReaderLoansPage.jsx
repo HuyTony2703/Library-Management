@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
 import { useToast } from "../../components/ToastProvider";
@@ -31,14 +31,14 @@ export default function ReaderLoansPage() {
     const [error, setError] = useState("");
     const [selectedLoan, setSelectedLoan] = useState(null);
 
-    async function loadCurrentLoans() {
+    const loadCurrentLoans = useCallback(async (silent = false) => {
         setLoading(true);
         setError("");
 
         try {
             const data = await readerApi.currentLoans();
             setLoans(Array.isArray(data) ? data : []);
-            if (!loading) {
+            if (!silent) {
                 toast.info("Dữ liệu sách đang mượn đã được cập nhật.");
             }
         } catch (err) {
@@ -46,11 +46,15 @@ export default function ReaderLoansPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [toast]);
 
     useEffect(() => {
-        loadCurrentLoans();
-    }, []);
+        const run = async () => {
+            await loadCurrentLoans(true);
+        };
+
+        run();
+    }, [loadCurrentLoans]);
 
     async function handleRenew() {
         if (!selectedLoan) {
