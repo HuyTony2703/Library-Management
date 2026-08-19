@@ -16,12 +16,10 @@ export default function ReaderRenewalHistoryPage() {
     const [error, setError] = useState("");
 
     async function loadHistory() {
-        setLoading(true);
-        setError("");
-
         try {
             const data = await readerApi.renewalHistory();
             setHistory(Array.isArray(data) ? data : []);
+            setError("");
         } catch (err) {
             setError(err.message || "Không tải được lịch sử gia hạn");
         } finally {
@@ -30,7 +28,11 @@ export default function ReaderRenewalHistoryPage() {
     }
 
     useEffect(() => {
-        loadHistory();
+        const run = async () => {
+            await loadHistory();
+        };
+
+        run();
     }, []);
 
     return (
