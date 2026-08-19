@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { EyeOff, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
@@ -37,7 +37,7 @@ export default function CommentModerationPage() {
         }));
     }
 
-    async function loadComments(nextFilter = filter) {
+    const loadComments = useCallback(async (nextFilter = filter) => {
         setLoading(true);
 
         try {
@@ -48,7 +48,7 @@ export default function CommentModerationPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [filter, toast]);
 
     useEffect(() => {
         const timer = window.setTimeout(() => {
@@ -71,7 +71,7 @@ export default function CommentModerationPage() {
         }, 300);
 
         return () => window.clearTimeout(timer);
-    }, [filter.status, filter.maDauSach, filter.keyword]);
+    }, [filter, loadComments, setSearchParams]);
 
     useEffect(() => {
         if (!openActionMenu) {

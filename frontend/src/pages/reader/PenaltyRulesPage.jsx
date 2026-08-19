@@ -1,5 +1,5 @@
 import { Calculator, RefreshCcw } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import { useToast } from "../../components/ToastProvider";
 
@@ -11,7 +11,7 @@ export default function PenaltyRulesPage() {
     const [soNgayTre, setSoNgayTre] = useState("3");
     const [loading, setLoading] = useState(false);
 
-    async function loadRules() {
+    const loadRules = useCallback(async () => {
         setLoading(true);
 
         try {
@@ -22,11 +22,15 @@ export default function PenaltyRulesPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [toast]);
 
     useEffect(() => {
-        loadRules();
-    }, []);
+        const run = async () => {
+            await loadRules();
+        };
+
+        run();
+    }, [loadRules]);
 
     const validationError = useMemo(() => {
         if (soNgayTre === "") {
