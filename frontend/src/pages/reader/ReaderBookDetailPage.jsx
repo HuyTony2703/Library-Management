@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { readerApi } from "../../api/readerApi";
 import FavoriteButton from "../../components/reader/FavoriteButton";
 import ReaderBookComments from "../../components/reader/ReaderBookComments";
@@ -21,7 +21,7 @@ export default function ReaderBookDetailPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    async function loadBook() {
+    const loadBook = useCallback(async () => {
         setLoading(true);
         setError("");
 
@@ -33,7 +33,7 @@ export default function ReaderBookDetailPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [maDauSach]);
 
     async function handleReserved() {
         await loadBook();
@@ -41,8 +41,12 @@ export default function ReaderBookDetailPage() {
     }
 
     useEffect(() => {
-        loadBook();
-    }, [maDauSach]);
+        const run = async () => {
+            await loadBook();
+        };
+
+        run();
+    }, [maDauSach, loadBook]);
 
     if (loading) {
         return <p>Đang tải chi tiết sách...</p>;
