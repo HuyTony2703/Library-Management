@@ -115,10 +115,11 @@ export default function ReportsPage() {
                             { key: "maCuonSach", title: "Mã cuốn" },
                             { key: "tenDauSach", title: "Tên sách" },
                             { key: "hoTenDocGia", title: "Độc giả" },
-                            { key: "soNgayTre", title: "Ngày trễ" },
+                            { key: "soNgayTre", title: "Ngày trễ", align: "center" },
                             {
                                 key: "tienPhatTre",
                                 title: "Tiền phạt",
+                                align: "center",
                                 render: (row) => `${Number(row.tienPhatTre || 0).toLocaleString()}đ`
                             }
                         ]}

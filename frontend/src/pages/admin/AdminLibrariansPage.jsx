@@ -281,8 +281,8 @@ export default function AdminLibrariansPage() {
                         { key: "tenDangNhap", title: "Tên đăng nhập" },
                         { key: "hoTen", title: "Họ tên" },
                         { key: "maChiNhanh", title: "Chi nhánh" },
-                        { key: "trangThaiTaiKhoan", title: "Tài khoản", render: (row) => <StatusBadge value={row.trangThaiTaiKhoan} /> },
-                        { key: "trangThaiNhanVien", title: "Nhân viên", render: (row) => <StatusBadge value={row.trangThaiNhanVien} /> },
+                        { key: "trangThaiTaiKhoan", title: "Tài khoản", align: "center", render: (row) => <StatusBadge value={row.trangThaiTaiKhoan} /> },
+                        { key: "trangThaiNhanVien", title: "Nhân viên", align: "center", render: (row) => <StatusBadge value={row.trangThaiNhanVien} /> },
                         {
                             key: "actions",
                             title: "Thao tác",
