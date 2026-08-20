@@ -162,8 +162,8 @@ export default function AdminReportsPage() {
                     columns={[
                         { key: "maTheLoai", title: "Mã thể loại" },
                         { key: "tenTheLoai", title: "Tên thể loại" },
-                        { key: "soLuotMuon", title: "Số lượt mượn" },
-                        { key: "tiLePhanTram", title: "Tỉ lệ", render: (row) => `${Number(row.tiLePhanTram || 0)}%` }
+                        { key: "soLuotMuon", title: "Số lượt mượn", align: "center" },
+                        { key: "tiLePhanTram", title: "Tỉ lệ", align: "center", render: (row) => `${Number(row.tiLePhanTram || 0)}%` }
                     ]}
                 />
             </div>
@@ -183,8 +183,8 @@ export default function AdminReportsPage() {
                         { key: "hoTenDocGia", title: "Độc giả" },
                         { key: "hanTra", title: "Hạn trả", render: (row) => formatDateTime(row.hanTra) },
                         { key: "ngayTraThucTe", title: "Ngày trả", render: (row) => formatDateTime(row.ngayTraThucTe) },
-                        { key: "soNgayTre", title: "Số ngày trễ" },
-                        { key: "tienPhatTre", title: "Tiền phạt", render: (row) => formatMoney(row.tienPhatTre) }
+                        { key: "soNgayTre", title: "Số ngày trễ", align: "center" },
+                        { key: "tienPhatTre", title: "Tiền phạt", align: "center", render: (row) => formatMoney(row.tienPhatTre) }
                     ]}
                 />
             </div>
@@ -217,8 +217,8 @@ export default function AdminReportsPage() {
                             }
                         },
                         { key: "maDocGia", title: "Mã độc giả" },
-                        { key: "hoTen", title: "Họ tên" },
-                        { key: "tongNoConLai", title: "Tổng nợ còn lại", render: (row) => formatMoney(row.tongNoConLai) }
+{ key: "hoTen", title: "Họ tên" },
+                        { key: "tongNoConLai", title: "Tổng nợ còn lại", align: "center", render: (row) => formatMoney(row.tongNoConLai) }
                     ]}
                 />
             </div>
@@ -242,6 +242,7 @@ export default function AdminReportsPage() {
                         {
                             key: "soNgayConLai",
                             title: "Còn lại",
+                            align: "center",
                             render: (row) => {
                                 const value = Number(row.soNgayConLai || 0);
                                 return value < 0 ? <span className="status-badge status-bad">Quá hạn {Math.abs(value)} ngày</span> : `${value} ngày`;
@@ -265,9 +266,9 @@ export default function AdminReportsPage() {
                         { key: "hoTenDocGia", title: "Họ tên" },
                         { key: "tenPhuongThuc", title: "Phương thức" },
                         { key: "loaiThu", title: "Loại thu" },
-                        { key: "soTienThu", title: "Số tiền", render: (row) => formatMoney(row.soTienThu) },
+                        { key: "soTienThu", title: "Số tiền", align: "center", render: (row) => formatMoney(row.soTienThu) },
                         { key: "ngayThu", title: "Ngày thu", render: (row) => formatDateTime(row.ngayThu) },
-                        { key: "trangThai", title: "Trạng thái", render: (row) => <StatusBadge value={row.trangThai} /> }
+                        { key: "trangThai", title: "Trạng thái", align: "center", render: (row) => <StatusBadge value={row.trangThai} /> }
                     ]}
                 />
             </div>
