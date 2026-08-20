@@ -15,10 +15,10 @@ export default function MembershipHistoryTable({ data = [] }) {
                         <th>Mã lịch sử</th>
                         <th>Gói</th>
                         <th>Phiếu thu</th>
-                        <th>Số tiền</th>
+                        <th className="reader-table-center">Số tiền</th>
                         <th>Ngày bắt đầu</th>
                         <th>Ngày kết thúc</th>
-                        <th>Trạng thái</th>
+                        <th className="reader-table-center">Trạng thái</th>
                     </tr>
                 </thead>
 
@@ -31,10 +31,10 @@ export default function MembershipHistoryTable({ data = [] }) {
                                 <div className="reader-muted">{item.maGoiThanhVien}</div>
                             </td>
                             <td>{item.maPhieuThu || "Miễn phí"}</td>
-                            <td>{formatCurrency(item.soTienThu)}</td>
+                            <td className="reader-table-center">{formatCurrency(item.soTienThu)}</td>
                             <td>{formatDate(item.ngayBatDau)}</td>
                             <td>{formatDate(item.ngayKetThuc)}</td>
-                            <td>
+                            <td className="reader-table-center">
                                 <span className={`copy-status ${getStatusClass(item.trangThai)}`}>
                                     {item.trangThai || "Không rõ"}
                                 </span>
