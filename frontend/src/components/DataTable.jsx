@@ -180,7 +180,7 @@ export default function DataTable({
                             {resolvedColumns.map((column) => (
                                 <th
                                     key={column.key}
-                                    className={column.className}
+                                    className={column.thClassName}
                                     data-column={column.key}
                                     style={column.cellStyle}
                                     aria-sort={getAriaSort(column, sort)}
@@ -404,9 +404,11 @@ function buildColumns(columns, includeSelection) {
             isActionColumn(column) ? "action-cell" : "",
             column.isSelection ? "select-cell" : ""
         ].filter(Boolean).join(" ");
+        const thClasses = classes.split(" ").filter((className) => !className.startsWith("align-")).join(" ");
         return {
             ...column,
             className: classes,
+            thClassName: thClasses,
             colStyle: {
                 width: column.width,
                 minWidth: column.minWidth || column.width
