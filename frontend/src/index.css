@@ -1,9 +1,11 @@
 :root {
   color-scheme: light;
   --bg: #eef2ff;
-  --surface: rgba(255, 255, 255, 0.86);
+  --surface: rgba(255, 255, 255, 0.93);
   --surface-solid: #ffffff;
   --line: rgba(15, 23, 42, 0.1);
+  --line-strong: rgba(15, 23, 42, 0.18);
+  --input-border: rgba(15, 23, 42, 0.32);
   --text: #0f172a;
   --muted: #64748b;
   --primary: #2563eb;
@@ -26,9 +28,11 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #101827;
-  --surface: rgba(15, 23, 42, 0.9);
+  --surface: rgba(15, 23, 42, 0.95);
   --surface-solid: #111827;
   --line: rgba(226, 232, 240, 0.14);
+  --line-strong: rgba(226, 232, 240, 0.24);
+  --input-border: rgba(226, 232, 240, 0.32);
   --text: #e5e7eb;
   --muted: #94a3b8;
   --shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
@@ -374,7 +378,7 @@ button {
   height: 46px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.74);
-  border: 1px solid var(--line);
+  border: 1px solid var(--input-border);
 }
 
 .search-box input {
@@ -461,7 +465,7 @@ button {
 .table-card {
   background: var(--surface);
   backdrop-filter: blur(18px);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
@@ -635,7 +639,8 @@ button {
 
 .data-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   table-layout: fixed;
   min-width: max-content;
 }
@@ -648,10 +653,17 @@ button {
   letter-spacing: 0.08em;
 }
 
+.data-table th {
+  text-align: center;
+}
+
+.data-table td {
+  text-align: left;
+}
+
 .data-table th,
 .data-table td {
-  padding: 17px 14px;
-  text-align: center;
+  padding: 17px 18px;
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
   white-space: nowrap;
@@ -715,6 +727,10 @@ button {
   opacity: 1;
 }
 
+.data-table th .table-sort-button {
+  justify-content: center;
+}
+
 .data-table th.align-left .table-sort-button {
   justify-content: flex-start;
 }
@@ -735,6 +751,11 @@ button {
 .data-table th.align-right,
 .data-table td.align-right {
   text-align: right;
+}
+
+.data-table th.align-center,
+.data-table td.align-center {
+  text-align: center;
 }
 
 .data-table th.select-cell,
@@ -829,7 +850,7 @@ button {
 .table-page-size select,
 .table-go-to input {
   min-height: 38px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--input-border);
   border-radius: 10px;
   background: var(--surface-solid);
   color: var(--text);
@@ -1053,7 +1074,7 @@ select,
 textarea {
   width: 100%;
   min-height: 44px;
-  border: 1px solid rgba(15, 23, 42, 0.14);
+  border: 1px solid var(--input-border);
   border-radius: 14px;
   padding: 12px 14px;
   outline: none;
@@ -1260,6 +1281,20 @@ textarea:focus {
   align-items: center;
   gap: 16px;
   margin: 12px 0 16px;
+}
+
+.list-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.list-toolbar-actions > button,
+.list-toolbar-actions .export-menu > summary {
+  min-height: 44px;
 }
 
 .list-toolbar .selection-toolbar {
@@ -2318,7 +2353,6 @@ textarea:focus {
 
 .column-customizer {
   position: relative;
-  margin-left: auto;
 }
 
 .column-customizer summary {
@@ -2341,7 +2375,7 @@ textarea:focus {
   display: grid;
   width: 230px;
   gap: 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 14px;
   padding: 14px;
   background: var(--surface-solid);
@@ -2359,6 +2393,73 @@ textarea:focus {
 .column-customizer-menu input {
   width: 20px;
   min-height: 20px;
+}
+
+.export-menu {
+  position: relative;
+}
+
+.export-menu summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.export-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.export-menu-list {
+  position: absolute;
+  z-index: 70;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  min-width: 280px;
+  gap: 4px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  padding: 8px;
+  background: var(--surface-solid);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+}
+
+.export-menu-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  font-weight: 750;
+  text-align: left;
+  cursor: pointer;
+}
+
+.export-menu-list button:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.export-menu-list button:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.export-menu-count {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.export-menu-spinner {
+  animation: table-spin 0.7s linear infinite;
 }
 
 .book-title-cell,
@@ -2599,7 +2700,7 @@ textarea:focus {
 .payment-base-fields input,
 .payment-base-fields select {
   width: 100%;
-  border: 1px solid var(--line);
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   padding: 10px 11px;
   font: inherit;
@@ -2791,9 +2892,6 @@ textarea:focus {
   background: rgba(37, 99, 235, 0.1);
 }
 
-:root[data-theme="dark"] input,
-:root[data-theme="dark"] select,
-:root[data-theme="dark"] textarea,
 :root[data-theme="dark"] .input-icon,
 :root[data-theme="dark"] .soft-button,
 :root[data-theme="dark"] .ghost-button,
@@ -2803,6 +2901,15 @@ textarea:focus {
   background: #111827;
   color: var(--text);
   border-color: var(--line);
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+  background: #111827;
+  color: var(--text);
+  border-color: var(--input-border);
   color-scheme: dark;
 }
 
@@ -2870,7 +2977,7 @@ textarea:focus {
 :root[data-theme="dark"] .settings-section textarea {
   background: #0b1220;
   color: var(--text);
-  border-color: rgba(226, 232, 240, 0.22);
+  border-color: var(--input-border);
 }
 
 :root[data-theme="dark"] .settings-section select {
@@ -3099,6 +3206,12 @@ textarea:focus {
     text-align: left;
   }
 
+  .list-toolbar-actions {
+    justify-content: flex-start;
+    margin-left: 0;
+    width: 100%;
+  }
+
   .search-box {
     width: 100%;
   }
@@ -3300,7 +3413,7 @@ textarea:focus {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  border: 1px solid rgba(15, 23, 42, 0.14);
+  border: 1px solid var(--input-border);
   border-radius: 14px;
   padding: 5px 42px 5px 8px;
   background: var(--surface-solid);
@@ -3500,7 +3613,7 @@ textarea:focus {
 .loan-preview-disclaimer { color: var(--muted); font-size: 13px; }
 .loan-submit-box { display: grid; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
 .loan-submit-box label { display: grid; gap: 7px; color: var(--muted); font-weight: 800; }
-.loan-submit-box textarea { width: 100%; resize: vertical; min-height: 84px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; color: var(--text); background: var(--surface); }
+.loan-submit-box textarea { width: 100%; resize: vertical; min-height: 84px; padding: 11px 12px; border: 1px solid var(--input-border); border-radius: 8px; font: inherit; color: var(--text); background: var(--surface); }
 .loan-submit-button { justify-self: end; }
 .loan-result-panel { display: grid; gap: 14px; margin-top: 18px; padding: 16px; border: 1px solid rgba(22, 101, 52, 0.32); border-radius: 8px; background: rgba(22, 101, 52, 0.06); }
 .loan-result-header { display: flex; gap: 12px; align-items: center; }
@@ -3522,7 +3635,7 @@ textarea:focus {
 .return-scan-form { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: end; }
 .return-scan-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 8px; color: var(--primary); background: rgba(37, 99, 235, 0.1); }
 .return-scan-form label, .return-submit-box label, .return-cart-controls label, .return-note-field, .return-adjustment-grid label { display: grid; gap: 6px; min-width: 0; color: var(--muted); font-weight: 800; }
-.return-scan-form input, .return-submit-box textarea, .return-cart-controls input, .return-cart-controls select, .return-note-field input, .return-note-field textarea, .return-adjustment-grid input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px 11px; font: inherit; color: var(--text); background: var(--surface); }
+.return-scan-form input, .return-submit-box textarea, .return-cart-controls input, .return-cart-controls select, .return-note-field input, .return-note-field textarea, .return-adjustment-grid input { width: 100%; border: 1px solid var(--input-border); border-radius: 8px; padding: 10px 11px; font: inherit; color: var(--text); background: var(--surface); }
 .return-reader-lock { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-soft); }
 .return-reader-lock span, .return-empty-hint { color: var(--muted); font-weight: 800; }
 .return-reader-lock button { margin-left: auto; }
@@ -3740,7 +3853,7 @@ textarea:focus {
   min-height: 44px;
   padding: 11px 12px;
   border-radius: 12px;
-  border-color: rgba(15, 23, 42, 0.16);
+  border-color: var(--input-border);
   background: rgba(255, 255, 255, 0.99);
   color: var(--text);
   box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.03);
@@ -4042,8 +4155,15 @@ body[data-density="compact"] .settings-card {
 .settings-matrix td {
   padding: 16px 18px;
   border-bottom: 1px solid var(--line);
-  text-align: center;
   vertical-align: middle;
+}
+
+.settings-matrix th {
+  text-align: center;
+}
+
+.settings-matrix td {
+  text-align: left;
 }
 
 .settings-matrix th:first-child,
