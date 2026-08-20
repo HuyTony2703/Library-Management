@@ -1,4 +1,4 @@
-import { Download, EyeOff, Pencil, Plus, RotateCcw, Settings2, Trash2, X } from "lucide-react";
+import { EyeOff, Pencil, Plus, RotateCcw, Settings2, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { libraryApi } from "../api/libraryApi";
@@ -6,6 +6,7 @@ import AsyncEntityPicker from "../components/AsyncEntityPicker";
 import BookDetailDrawer from "../components/BookDetailDrawer";
 import BookLifecycleDialog from "../components/BookLifecycleDialog";
 import DataTable from "../components/DataTable";
+import ExportMenu from "../components/ExportMenu";
 import InlineActionMenu from "../components/InlineActionMenu";
 import PageHeader from "../components/PageHeader";
 import ResultModal from "../components/ResultModal";
@@ -684,35 +685,35 @@ export default function BooksPage() {
                     <Plus size={17} />
                     Thêm sách
                 </button>
-                <div className="selection-toolbar">
-                    <button className="soft-button" type="button" onClick={() => exportBooks("SELECTED")} disabled={!selectedIds.length || exportLoading}>
-                        <Download size={15} /> Export đã chọn
-                    </button>
-                    <button className="soft-button" type="button" onClick={() => exportBooks("PAGE")} disabled={!data.length || exportLoading}>
-                        <Download size={15} /> Export trang này
-                    </button>
-                    <button className="soft-button" type="button" onClick={() => exportBooks("ALL_MATCHING")} disabled={pageInfo.totalItems === 0 || exportLoading}>
-                        <Download size={15} /> Export tất cả kết quả
-                    </button>
+                <div className="list-toolbar-actions">
+                    <ExportMenu
+                        items={[
+                            { key: "selected", scope: "SELECTED", label: "Export đã chọn", count: selectedIds.length, disabled: selectedIds.length === 0 },
+                            { key: "page", scope: "PAGE", label: "Export trang này", count: data.length, disabled: data.length === 0 },
+                            { key: "all", scope: "ALL_MATCHING", label: "Export tất cả kết quả", count: pageInfo.totalItems, disabled: pageInfo.totalItems === 0 }
+                        ]}
+                        onExport={exportBooks}
+                        loading={exportLoading}
+                    />
+                    <details className="column-customizer">
+                        <summary className="ghost-button">
+                            <Settings2 size={17} /> Tùy chỉnh cột
+                        </summary>
+                        <div className="column-customizer-menu">
+                            <strong>Cột hiển thị</strong>
+                            {CUSTOMIZABLE_COLUMNS.map((column) => (
+                                <label key={column.key}>
+                                    <input
+                                        type="checkbox"
+                                        checked={visibleColumnKeys.includes(column.key)}
+                                        onChange={() => toggleColumn(column.key)}
+                                    />
+                                    <span>{column.label}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </details>
                 </div>
-                <details className="column-customizer">
-                    <summary className="ghost-button">
-                        <Settings2 size={17} /> Tùy chỉnh cột
-                    </summary>
-                    <div className="column-customizer-menu">
-                        <strong>Cột hiển thị</strong>
-                        {CUSTOMIZABLE_COLUMNS.map((column) => (
-                            <label key={column.key}>
-                                <input
-                                    type="checkbox"
-                                    checked={visibleColumnKeys.includes(column.key)}
-                                    onChange={() => toggleColumn(column.key)}
-                                />
-                                <span>{column.label}</span>
-                            </label>
-                        ))}
-                    </div>
-                </details>
             </div>
 
             <DataTable
@@ -747,8 +748,8 @@ export default function BooksPage() {
                     {
                         key: "title",
                         title: "Tên đầu sách",
-                        width: "38%",
-                        minWidth: "320px",
+                        width: "320px",
+                        minWidth: "280px",
                         align: "left",
                         wrap: true,
                         maxLines: 3,
@@ -762,12 +763,12 @@ export default function BooksPage() {
                             </span>
                         )
                     },
-                    { key: "isbn", title: "ISBN", width: "165px", minWidth: "150px", sortable: true },
+                    { key: "isbn", title: "ISBN", width: "140px", minWidth: "130px", sortable: true },
                     {
                         key: "publisher",
                         title: "NXB / năm",
-                        width: "220px",
-                        minWidth: "190px",
+                        width: "200px",
+                        minWidth: "180px",
                         align: "left",
                         wrap: true,
                         sortable: true,
@@ -782,9 +783,9 @@ export default function BooksPage() {
                     {
                         key: "copies",
                         title: "Bản vật lý",
-                        width: "150px",
-                        minWidth: "140px",
-                        align: "right",
+                        width: "140px",
+                        minWidth: "130px",
+                        align: "center",
                         sortable: true,
                         sortKey: "totalCopies",
                         render: (row) => (
@@ -797,15 +798,15 @@ export default function BooksPage() {
                     {
                         key: "categories",
                         title: "Thể loại",
-                        width: "210px",
-                        minWidth: "180px",
+                        width: "200px",
+                        minWidth: "170px",
                         align: "left",
                         wrap: true,
                         render: (row) => (row.tenTheLoais || []).join(", ") || "—"
                     },
-                    { key: "language", title: "Ngôn ngữ", width: "140px", minWidth: "130px", sortable: true, sortKey: "language", render: (row) => row.ngonNgu || "—" },
-                    { key: "value", title: "Trị giá", width: "150px", minWidth: "140px", align: "right", sortable: true, sortKey: "value", render: (row) => formatMoney(row.triGia) },
-                    { key: "status", title: "Trạng thái", width: "180px", minWidth: "170px", sortable: true, sortKey: "status", render: (row) => <StatusBadge value={row.trangThai} /> },
+                    { key: "language", title: "Ngôn ngữ", width: "135px", minWidth: "125px", sortable: true, sortKey: "language", render: (row) => row.ngonNgu || "—" },
+                    { key: "value", title: "Trị giá", width: "145px", minWidth: "135px", align: "center", sortable: true, sortKey: "value", render: (row) => formatMoney(row.triGia) },
+                    { key: "status", title: "Trạng thái", width: "170px", minWidth: "160px", align: "center", sortable: true, sortKey: "status", render: (row) => <StatusBadge value={row.trangThai} /> },
                     {
                         key: "actions",
                         title: "Thao tác",
