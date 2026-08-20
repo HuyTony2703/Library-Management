@@ -61,7 +61,7 @@ export default function ReservationHistoryTable({ data = [], onCancel }) {
                         <th>Sách được giữ</th>
                         <th>Ngày đặt</th>
                         <th>Hết hạn giữ</th>
-                        <th>Trạng thái</th>
+                        <th className="reader-table-center">Trạng thái</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -89,12 +89,12 @@ export default function ReservationHistoryTable({ data = [], onCancel }) {
                                         ? formatDateTime(item.ngayHetHanGiuCho)
                                         : "Chưa có sách sẵn"}
                                 </td>
-                                <td>
+                                <td className="reader-table-center">
                                     <span className={`copy-status ${getReservationStatusClass(item.trangThai)}`}>
                                         {normalizeReservationStatus(item.trangThai)}
                                     </span>
                                 </td>
-                                <td>
+                                <td className="reader-table-center">
                                     {canCancel && (
                                         <button
                                             type="button"

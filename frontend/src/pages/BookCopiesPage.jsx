@@ -1,4 +1,4 @@
-import { Download, EyeOff, Pencil, Plus, Printer, RotateCcw, Trash2, X } from "lucide-react";
+import { EyeOff, Pencil, Plus, Printer, RotateCcw, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { libraryApi } from "../api/libraryApi";
@@ -6,6 +6,7 @@ import AsyncEntityPicker from "../components/AsyncEntityPicker";
 import BookCopyActionDialog from "../components/BookCopyActionDialog";
 import BookCopyDetailDrawer from "../components/BookCopyDetailDrawer";
 import DataTable from "../components/DataTable";
+import ExportMenu from "../components/ExportMenu";
 import InlineActionMenu from "../components/InlineActionMenu";
 import PageHeader from "../components/PageHeader";
 import ResultModal from "../components/ResultModal";
@@ -729,11 +730,17 @@ export default function BookCopiesPage() {
 
             <div className="list-toolbar">
                 <button className="primary-button" type="button" onClick={openCreateModal}><Plus size={17} /> Nhập lô cuốn sách</button>
-                <div className="selection-toolbar">
+                <div className="list-toolbar-actions">
                     <button className="soft-button" type="button" onClick={() => openLabelPreview(selectedIds)} disabled={!selectedIds.length || operationLoading}><Printer size={15} /> In nhãn đã chọn</button>
-                    <button className="soft-button" type="button" onClick={() => exportBookCopies("SELECTED")} disabled={!selectedIds.length || exportLoading}><Download size={15} /> Export đã chọn</button>
-                    <button className="soft-button" type="button" onClick={() => exportBookCopies("PAGE")} disabled={!data.length || exportLoading}><Download size={15} /> Export trang này</button>
-                    <button className="soft-button" type="button" onClick={() => exportBookCopies("ALL_MATCHING")} disabled={pageInfo.totalItems === 0 || exportLoading}><Download size={15} /> Export tất cả kết quả</button>
+                    <ExportMenu
+                        items={[
+                            { key: "selected", scope: "SELECTED", label: "Export đã chọn", count: selectedIds.length, disabled: selectedIds.length === 0 },
+                            { key: "page", scope: "PAGE", label: "Export trang này", count: data.length, disabled: data.length === 0 },
+                            { key: "all", scope: "ALL_MATCHING", label: "Export tất cả kết quả", count: pageInfo.totalItems, disabled: pageInfo.totalItems === 0 }
+                        ]}
+                        onExport={exportBookCopies}
+                        loading={exportLoading}
+                    />
                     <button className="soft-button danger-button" type="button" onClick={deleteSelectedBookCopies} disabled={!selectedIds.length || operationLoading}><Trash2 size={15} /> Xóa mục đã chọn</button>
                 </div>
             </div>
@@ -772,23 +779,23 @@ function copyColumns(operationLoading, openEditModal, openCopyAction, hardDelete
         {
             key: "title",
             title: "Đầu sách",
-            width: "30%",
-            minWidth: "280px",
+            width: "240px",
+            minWidth: "220px",
             wrap: true,
             sortable: true,
             sortKey: "title",
             render: (row) => <span className="copy-title-cell"><strong>{row.tenDauSach}</strong><span>{[row.maDauSach, row.isbn].filter(Boolean).join(" · ")}</span></span>
         },
-        { key: "id", title: "Mã cuốn", width: "150px", sortable: true, sortKey: "id", render: (row) => row.maCuonSach },
-        { key: "branch", title: "Chi nhánh", width: "190px", wrap: true, sortable: true, sortKey: "branch", render: (row) => <span className="copy-secondary-cell"><strong>{row.tenChiNhanh}</strong><span>{row.maChiNhanh}</span></span> },
-        { key: "location", title: "Vị trí", width: "230px", wrap: true, sortable: true, sortKey: "location", render: (row) => <span className="copy-secondary-cell"><strong>{row.viTriLabel}</strong><span>{[row.tenKhu, row.tenKeSach].filter(Boolean).join(" · ")}</span></span> },
-        { key: "status", title: "Trạng thái", width: "170px", sortable: true, sortKey: "status", render: (row) => <StatusBadge value={row.tenTrangThai} /> },
-        { key: "importedAt", title: "Ngày nhập", width: "140px", sortable: true, sortKey: "importedAt", render: (row) => formatDate(row.ngayNhapSach) },
-        { key: "barcode", title: "Barcode / QR", width: "190px", sortable: true, sortKey: "barcode", render: (row) => <span className="copy-secondary-cell"><strong>{row.maVach || "Chưa có barcode"}</strong><span>{row.maQrCode || "Chưa có QR"}</span></span> },
+        { key: "id", title: "Mã cuốn", width: "100px", sortable: true, sortKey: "id", render: (row) => row.maCuonSach },
+        { key: "branch", title: "Chi nhánh", width: "130px", minWidth: "120px", wrap: true, sortable: true, sortKey: "branch", render: (row) => <span className="copy-secondary-cell"><strong>{row.tenChiNhanh}</strong><span>{row.maChiNhanh}</span></span> },
+        { key: "location", title: "Vị trí", width: "150px", minWidth: "140px", wrap: true, sortable: true, sortKey: "location", render: (row) => <span className="copy-secondary-cell"><strong>{row.viTriLabel}</strong><span>{[row.tenKhu, row.tenKeSach].filter(Boolean).join(" · ")}</span></span> },
+        { key: "status", title: "Trạng thái", width: "140px", align: "center", sortable: true, sortKey: "status", render: (row) => <StatusBadge value={row.tenTrangThai} /> },
+        { key: "importedAt", title: "Ngày nhập", width: "105px", sortable: true, sortKey: "importedAt", render: (row) => formatDate(row.ngayNhapSach) },
+        { key: "barcode", title: "Barcode / QR", width: "130px", minWidth: "125px", sortable: true, sortKey: "barcode", render: (row) => <span className="copy-secondary-cell"><strong>{row.maVach || "Chưa có barcode"}</strong><span>{row.maQrCode || "Chưa có QR"}</span></span> },
         {
             key: "actions",
             title: "Thao tác",
-            width: "120px",
+            width: "100px",
             sticky: "right",
             render: (row) => (
                 <InlineActionMenu
