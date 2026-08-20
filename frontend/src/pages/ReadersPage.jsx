@@ -1,8 +1,8 @@
-import { Download } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { libraryApi } from "../api/libraryApi";
 import DataTable from "../components/DataTable";
+import ExportMenu from "../components/ExportMenu";
 import PageHeader from "../components/PageHeader";
 import ReaderDetailDrawer from "../components/ReaderDetailDrawer";
 import StatusBadge from "../components/StatusBadge";
@@ -218,10 +218,16 @@ export default function ReadersPage() {
         </div>
 
         <div className="list-toolbar">
-            <div className="selection-toolbar">
-                <button className="soft-button" type="button" onClick={() => exportReaders("SELECTED")} disabled={!selectedIds.length || exportLoading}><Download size={15} /> Export đã chọn</button>
-                <button className="soft-button" type="button" onClick={() => exportReaders("PAGE")} disabled={!data.length || exportLoading}><Download size={15} /> Export trang này</button>
-                <button className="soft-button" type="button" onClick={() => exportReaders("ALL_MATCHING")} disabled={pageInfo.totalItems === 0 || exportLoading}><Download size={15} /> Export tất cả kết quả</button>
+            <div className="list-toolbar-actions">
+                <ExportMenu
+                    items={[
+                        { key: "selected", scope: "SELECTED", label: "Export đã chọn", count: selectedIds.length, disabled: selectedIds.length === 0 },
+                        { key: "page", scope: "PAGE", label: "Export trang này", count: data.length, disabled: data.length === 0 },
+                        { key: "all", scope: "ALL_MATCHING", label: "Export tất cả kết quả", count: pageInfo.totalItems, disabled: pageInfo.totalItems === 0 }
+                    ]}
+                    onExport={exportReaders}
+                    loading={exportLoading}
+                />
             </div>
         </div>
 
@@ -248,8 +254,8 @@ function readerColumns() {
         { key: "cardIssued", title: "Ngày lập thẻ", width: "140px", sortable: true, sortKey: "cardIssued", render: (row) => formatDate(row.cardIssuedAt) },
         { key: "cardExpiry", title: "Hạn thẻ", width: "165px", sortable: true, sortKey: "cardExpiry", render: (row) => <Secondary primary={formatDate(row.cardExpiresAt)} secondary={statusLabel(row.cardStatus)} /> },
         { key: "membershipExpiry", title: "Hạn gói", width: "165px", sortable: true, sortKey: "membershipExpiry", render: (row) => <Secondary primary={formatDate(row.membershipExpiresAt) || "—"} secondary={statusLabel(row.membershipStatus)} /> },
-        { key: "profileStatus", title: "Hồ sơ", width: "150px", render: (row) => <StatusBadge value={row.profileStatus} /> },
-        { key: "summary", title: "Đang mượn / Nợ", width: "180px", render: (row) => <Secondary primary={`${row.currentLoans} cuốn`} secondary={formatMoney(row.outstandingDebt)} /> }
+        { key: "profileStatus", title: "Hồ sơ", width: "150px", align: "center", render: (row) => <StatusBadge value={row.profileStatus} /> },
+        { key: "summary", title: "Đang mượn / Nợ", width: "180px", align: "center", render: (row) => <Secondary primary={`${row.currentLoans} cuốn`} secondary={formatMoney(row.outstandingDebt)} /> }
     ];
 }
 
