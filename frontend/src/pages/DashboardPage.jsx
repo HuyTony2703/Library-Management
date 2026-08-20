@@ -122,6 +122,7 @@ export default function DashboardPage() {
                                 {
                                     key: "tongNoConLai",
                                     title: "Nợ còn lại",
+                                    align: "center",
                                     render: (row) => `${Number(row.tongNoConLai || row.tongNo || 0).toLocaleString()}đ`
                                 }
                             ]}

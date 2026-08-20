@@ -93,9 +93,9 @@ export default function PaymentsPage() {
                 columns={[
                     { key: "maKhoanNo", title: "Mã nợ" },
                     { key: "lyDo", title: "Lý do" },
-                    { key: "soTienPhatSinh", title: "Phát sinh", render: (r) => `${Number(r.soTienPhatSinh || 0).toLocaleString()}đ` },
-                    { key: "soTienConLai", title: "Còn lại", render: (r) => `${Number(r.soTienConLai || 0).toLocaleString()}đ` },
-                    { key: "trangThai", title: "Trạng thái", render: (r) => <StatusBadge value={r.trangThai} /> }
+                    { key: "soTienPhatSinh", title: "Phát sinh", align: "center", render: (r) => `${Number(r.soTienPhatSinh || 0).toLocaleString()}đ` },
+                    { key: "soTienConLai", title: "Còn lại", align: "center", render: (r) => `${Number(r.soTienConLai || 0).toLocaleString()}đ` },
+                    { key: "trangThai", title: "Trạng thái", align: "center", render: (r) => <StatusBadge value={r.trangThai} /> }
                 ]}
             />
 
