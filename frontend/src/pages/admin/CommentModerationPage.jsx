@@ -253,6 +253,7 @@ export default function CommentModerationPage() {
                         {
                             key: "trangThai",
                             title: "Trạng thái",
+                            align: "center",
                             render: (row) => <StatusBadge value={row.trangThai} />
                         },
                         {
