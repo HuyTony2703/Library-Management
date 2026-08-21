@@ -466,7 +466,7 @@
     align-items: center;
     gap: 10px;
     background: white;
-    border: 1px solid rgba(15, 23, 42, 0.1);
+    border: 1px solid var(--input-border);
     border-radius: 16px;
     padding: 0 14px;
 }
@@ -523,7 +523,7 @@
 .reader-form-row input,
 .reader-form-row select {
     min-height: 42px;
-    border: 1px solid rgba(15, 23, 42, 0.14);
+    border: 1px solid var(--input-border);
     border-radius: 12px;
     padding: 9px 11px;
     background: white;
@@ -1308,7 +1308,7 @@
 .reader-form-row textarea {
     width: 100%;
     min-height: 92px;
-    border: 1px solid rgba(15, 23, 42, 0.1);
+    border: 1px solid var(--input-border);
     border-radius: 14px;
     padding: 12px 14px;
     resize: vertical;
@@ -1331,6 +1331,15 @@
     padding: 13px 15px;
     border-bottom: 1px solid rgba(15, 23, 42, 0.08);
     text-align: left;
+}
+
+.reader-table th {
+    text-align: center;
+}
+
+.reader-table th.reader-table-center,
+.reader-table td.reader-table-center {
+    text-align: center;
 }
 
 .reader-table th {
@@ -1836,7 +1845,7 @@
     width: 100%;
     min-height: 90px;
     resize: vertical;
-    border: 1px solid rgba(15, 23, 42, 0.14);
+    border: 1px solid var(--input-border);
     border-radius: 16px;
     padding: 12px 14px;
     font: inherit;
@@ -2744,7 +2753,7 @@
 :root[data-theme="dark"] .reader-table-search input {
     background: #0b1220;
     color: #f8fafc;
-    border-color: rgba(148, 163, 184, 0.36);
+    border-color: var(--input-border);
     color-scheme: dark;
 }
 
