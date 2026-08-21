@@ -70,8 +70,8 @@ export default function ReaderRenewalHistoryPage() {
                                 <th>Ngày gia hạn</th>
                                 <th>Hạn cũ</th>
                                 <th>Hạn mới</th>
-                                <th>Lần</th>
-                                <th>Trạng thái</th>
+                                <th className="reader-table-center">Lần</th>
+                                <th className="reader-table-center">Trạng thái</th>
                             </tr>
                         </thead>
 
@@ -83,8 +83,8 @@ export default function ReaderRenewalHistoryPage() {
                                     <td>{formatDateTime(item.ngayGiaHan)}</td>
                                     <td>{formatDateTime(item.hanTraCu)}</td>
                                     <td>{formatDateTime(item.hanTraMoi)}</td>
-                                    <td>{item.lanGiaHanThu}</td>
-                                    <td>{item.trangThai}</td>
+                                    <td className="reader-table-center">{item.lanGiaHanThu}</td>
+                                    <td className="reader-table-center">{item.trangThai}</td>
                                 </tr>
                             ))}
                         </tbody>
