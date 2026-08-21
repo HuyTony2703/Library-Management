@@ -268,8 +268,8 @@ export default function AdminRulesPage() {
           columns={[
             { key: "maPhienBan", title: "Mã phiên bản" },
             { key: "tenPhienBan", title: "Tên phiên bản" },
-            { key: "mucPhat", title: "Phạt/ngày", render: (row) => formatMoney(row.thamSo?.mucPhatTreMoiNgay) },
-            { key: "trangThai", title: "Trạng thái", render: (row) => <StatusBadge value={row.trangThai} /> },
+            { key: "mucPhat", title: "Phạt/ngày", align: "center", render: (row) => formatMoney(row.thamSo?.mucPhatTreMoiNgay) },
+            { key: "trangThai", title: "Trạng thái", align: "center", render: (row) => <StatusBadge value={row.trangThai} /> },
             {
               key: "actions",
               title: "Thao tác",
@@ -330,8 +330,8 @@ function RuleDetailTables({ rule }) {
           { key: "maGiaGoi", title: "Mã giá gói" },
           { key: "maGoiThanhVien", title: "Gói", render: (row) => displayCode(row.maGoiThanhVien) },
           { key: "maNhomDocGia", title: "Nhóm độc giả", render: (row) => displayCode(row.maNhomDocGia) },
-          { key: "giaTien", title: "Giá tiền", render: (row) => formatMoney(row.giaTien) },
-          { key: "thoiHanGoiTheoNgay", title: "Thời hạn" }
+          { key: "giaTien", title: "Giá tiền", align: "center", render: (row) => formatMoney(row.giaTien) },
+          { key: "thoiHanGoiTheoNgay", title: "Thời hạn", align: "center" }
         ]}
       />
       <DataTable
@@ -339,8 +339,8 @@ function RuleDetailTables({ rule }) {
         columns={[
           { key: "maQuyDinhGoi", title: "Mã quy định" },
           { key: "maGoiThanhVien", title: "Gói", render: (row) => displayCode(row.maGoiThanhVien) },
-          { key: "soSachMuonToiDa", title: "Sách tối đa" },
-          { key: "soLanGiaHanToiDa", title: "Gia hạn tối đa" }
+          { key: "soSachMuonToiDa", title: "Sách tối đa", align: "center" },
+          { key: "soLanGiaHanToiDa", title: "Gia hạn tối đa", align: "center" }
         ]}
       />
       <DataTable
@@ -349,8 +349,8 @@ function RuleDetailTables({ rule }) {
           { key: "maQuyDinhMuon", title: "Mã quy định" },
           { key: "maGoiThanhVien", title: "Gói", render: (row) => displayCode(row.maGoiThanhVien) },
           { key: "maTheLoai", title: "Thể loại", render: (row) => displayCode(row.maTheLoai) },
-          { key: "soNgayMuon", title: "Ngày mượn" },
-          { key: "soNgayGiaHanMoiLan", title: "Ngày gia hạn/lần" }
+          { key: "soNgayMuon", title: "Ngày mượn", align: "center" },
+          { key: "soNgayGiaHanMoiLan", title: "Ngày gia hạn/lần", align: "center" }
         ]}
       />
     </div>
