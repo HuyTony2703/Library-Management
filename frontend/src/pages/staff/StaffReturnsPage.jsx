@@ -309,8 +309,8 @@ export default function StaffReturnsPage() {
                                 },
                                 { key: "borrowedAt", title: "Ngày mượn", render: (row) => formatDateTime(row.borrowedAt) },
                                 { key: "dueAt", title: "Hạn trả", render: (row) => formatDateTime(row.dueAt) },
-                                { key: "overdueDays", title: "Ngày trễ", render: (row) => <OverdueBadge days={row.overdueDays} /> },
-                                { key: "status", title: "Trạng thái", render: (row) => <StatusBadge value={row.status} /> }
+                                { key: "overdueDays", title: "Ngày trễ", align: "center", render: (row) => <OverdueBadge days={row.overdueDays} /> },
+                                { key: "status", title: "Trạng thái", align: "center", render: (row) => <StatusBadge value={row.status} /> }
                             ]}
                         />
                     )}
@@ -550,9 +550,9 @@ function ReturnResultPanel({ result, onClose, onPrint, onCollectPayment }) {
                         { key: "maChiTietTra", title: "CT trả" },
                         { key: "maChiTietMuon", title: "CT mượn" },
                         { key: "tinhTrangKhiTra", title: "Tình trạng" },
-                        { key: "soNgayTre", title: "Ngày trễ" },
-                        { key: "tienPhatTre", title: "Phạt trễ", render: (row) => formatMoney(row.tienPhatTre) },
-                        { key: "tienPhatHongMat", title: "Phạt hỏng/mất", render: (row) => formatMoney(row.tienPhatHongMat) }
+                        { key: "soNgayTre", title: "Ngày trễ", align: "center" },
+                        { key: "tienPhatTre", title: "Phạt trễ", align: "center", render: (row) => formatMoney(row.tienPhatTre) },
+                        { key: "tienPhatHongMat", title: "Phạt hỏng/mất", align: "center", render: (row) => formatMoney(row.tienPhatHongMat) }
                     ]}
                 />
                 <div className="return-result-actions">
