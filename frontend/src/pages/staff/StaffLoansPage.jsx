@@ -583,7 +583,7 @@ function CurrentLoans({ loans, readerName }) {
             {loans.length === 0 ? <p className="loan-state-message">Độc giả chưa có sách đang mượn.</p> : (
                 <div className="table-wrap">
                     <table className="data-table">
-                        <thead><tr><th>Cuốn sách</th><th>Đầu sách</th><th>Chi nhánh</th><th>Ngày mượn</th><th>Hạn trả</th><th>Trạng thái</th></tr></thead>
+                        <thead><tr><th>Cuốn sách</th><th>Đầu sách</th><th>Chi nhánh</th><th>Ngày mượn</th><th>Hạn trả</th><th className="align-center">Trạng thái</th></tr></thead>
                         <tbody>{loans.map((loan) => (
                             <tr className={loan.overdueDays > 0 ? "is-overdue" : ""} key={loan.loanDetailId}>
                                 <td><strong>{loan.copyId}</strong><small>{loan.barcode || "Không có barcode"}</small></td>
@@ -591,7 +591,7 @@ function CurrentLoans({ loans, readerName }) {
                                 <td>{loan.branchName || loan.branchId}</td>
                                 <td>{formatDateTime(loan.borrowedAt)}</td>
                                 <td>{formatDateTime(loan.dueAt)}</td>
-                                <td>{loan.overdueDays > 0 ? <span className="loan-overdue-badge">Quá hạn {loan.overdueDays} ngày</span> : <StatusBadge value={loan.status} />}</td>
+                                <td className="align-center">{loan.overdueDays > 0 ? <span className="loan-overdue-badge">Quá hạn {loan.overdueDays} ngày</span> : <StatusBadge value={loan.status} />}</td>
                             </tr>
                         ))}</tbody>
                     </table>
