@@ -120,8 +120,8 @@ export default function ReaderRulesPage() {
                                 <thead>
                                     <tr>
                                         <th>Gói</th>
-                                        <th>Số sách mượn tối đa</th>
-                                        <th>Số lần gia hạn tối đa</th>
+                                        <th className="reader-table-center">Số sách mượn tối đa</th>
+                                        <th className="reader-table-center">Số lần gia hạn tối đa</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -131,8 +131,8 @@ export default function ReaderRulesPage() {
                                                 <b>{item.tenGoi}</b>
                                                 <div className="reader-muted">{item.maGoiThanhVien}</div>
                                             </td>
-                                            <td>{item.soSachMuonToiDa} sách</td>
-                                            <td>{item.soLanGiaHanToiDa} lần</td>
+                                            <td className="reader-table-center">{item.soSachMuonToiDa} sách</td>
+                                            <td className="reader-table-center">{item.soLanGiaHanToiDa} lần</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -154,8 +154,8 @@ export default function ReaderRulesPage() {
                                     <tr>
                                         <th>Gói</th>
                                         <th>Thể loại</th>
-                                        <th>Số ngày mượn</th>
-                                        <th>Số ngày gia hạn mỗi lần</th>
+                                        <th className="reader-table-center">Số ngày mượn</th>
+                                        <th className="reader-table-center">Số ngày gia hạn mỗi lần</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -166,8 +166,8 @@ export default function ReaderRulesPage() {
                                                 <b>{item.tenTheLoai}</b>
                                                 <div className="reader-muted">{item.maTheLoai}</div>
                                             </td>
-                                            <td>{item.soNgayMuon} ngày</td>
-                                            <td>{item.soNgayGiaHanMoiLan} ngày</td>
+                                            <td className="reader-table-center">{item.soNgayMuon} ngày</td>
+                                            <td className="reader-table-center">{item.soNgayGiaHanMoiLan} ngày</td>
                                         </tr>
                                     ))}
                                 </tbody>
