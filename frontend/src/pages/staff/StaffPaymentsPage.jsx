@@ -524,12 +524,13 @@ function ManualPaymentPanel({
                         { key: "maKhoanNo", title: "Mã nợ" },
                         { key: "maLoaiKhoanNo", title: "Loại", render: (row) => displayCode(row.maLoaiKhoanNo) },
                         { key: "lyDo", title: "Lý do" },
-                        { key: "soTienPhatSinh", title: "Phát sinh", render: (row) => formatMoney(row.soTienPhatSinh) },
-                        { key: "soTienDaThanhToan", title: "Đã trả", render: (row) => formatMoney(row.soTienDaThanhToan) },
-                        { key: "soTienConLai", title: "Còn lại", render: (row) => formatMoney(getDebtRemaining(row)) },
+                        { key: "soTienPhatSinh", title: "Phát sinh", align: "center", render: (row) => formatMoney(row.soTienPhatSinh) },
+                        { key: "soTienDaThanhToan", title: "Đã trả", align: "center", render: (row) => formatMoney(row.soTienDaThanhToan) },
+                        { key: "soTienConLai", title: "Còn lại", align: "center", render: (row) => formatMoney(getDebtRemaining(row)) },
                         {
                             key: "soTienApDung",
                             title: "Tiền áp dụng",
+                            align: "center",
                             render: (row) => {
                                 const debtId = getDebtId(row);
                                 return selectedAllocations[debtId] !== undefined ? (
@@ -543,7 +544,7 @@ function ManualPaymentPanel({
                                 ) : "-";
                             }
                         },
-                        { key: "trangThai", title: "Trạng thái", render: (row) => <StatusBadge value={row.trangThai} /> }
+                        { key: "trangThai", title: "Trạng thái", align: "center", render: (row) => <StatusBadge value={row.trangThai} /> }
                     ]}
                 />
             )}
@@ -589,7 +590,7 @@ function PaymentResultPanel({ result, paymentMethods, onClose }) {
                     columns={[
                         { key: "maChiTietPhieuThu", title: "Mã chi tiết" },
                         { key: "maKhoanNo", title: "Khoản nợ" },
-                        { key: "soTienApDung", title: "Tiền áp dụng", render: (row) => formatMoney(row.soTienApDung) }
+                        { key: "soTienApDung", title: "Tiền áp dụng", align: "center", render: (row) => formatMoney(row.soTienApDung) }
                     ]}
                 />
             </div>
