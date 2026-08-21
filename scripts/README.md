@@ -8,6 +8,9 @@ Người dùng không cần phải chạy phần lớn file trong thư mục nà
 |---|---|
 | `runtime/start-libradesk.ps1` | Script PowerShell được launcher chính gọi tự động |
 | `runtime/start-backend.bat` | Chạy backend riêng để theo dõi lỗi hoặc cấu hình database |
+| `runtime/start-backend-background.ps1` | Khởi động backend ở chế độ nền, gọi bởi `start-backend.bat` |
+| `runtime/run-backend.ps1` | Runner chính của backend: đọc cấu hình DB, kiểm tra Java/JAR rồi khởi động |
+| `runtime/setup-db-config.ps1` | Hỏi thông tin SQL Server và lưu cấu hình bằng DPAPI |
 | `runtime/reset-db-config.bat` | Xóa cấu hình SQL Server đã lưu để nhập lại |
 
 ### Luồng khởi động
