@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 
 $Root = $Root.Trim().Trim('"').TrimEnd("\")
 $backendBat = Join-Path $Root "scripts\runtime\start-backend.bat"
-$backendScript = Join-Path $Root "backend\run-backend.ps1"
+$backendScript = Join-Path $Root "scripts\runtime\run-backend.ps1"
 $resetDbConfigBat = Join-Path $Root "scripts\runtime\reset-db-config.bat"
 $frontendDir = Join-Path $Root "frontend"
 $electronCmd = Join-Path $frontendDir "node_modules\.bin\electron.cmd"
