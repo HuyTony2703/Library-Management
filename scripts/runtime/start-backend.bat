@@ -6,7 +6,7 @@ setlocal
 
 set "SCRIPT_DIR=%~dp0"
 for %%I in ("%SCRIPT_DIR%..\..") do set "ROOT=%%~fI"
-set "START_BACKEND=%ROOT%\backend\start-backend-background.ps1"
+set "START_BACKEND=%ROOT%\scripts\runtime\start-backend-background.ps1"
 
 if not exist "%START_BACKEND%" (
     echo [ERROR] Khong tim thay script backend:
