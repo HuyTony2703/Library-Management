@@ -18,27 +18,16 @@ Chạy đúng thứ tự:
 |---:|---|---|
 | 1 | `scripts/01_full_database.sql` | Tạo database, bảng, ràng buộc và dữ liệu nền |
 | 2 | `scripts/02_seed_demo_data.sql` | Thêm tài khoản và dữ liệu demo |
-| 8 | `scripts/08_admin_modernization_staff_context.sql` | Tạo quan hệ nhiều chi nhánh cho nhân viên và backfill chi nhánh hiện tại làm mặc định |
-| 9 | `scripts/09_admin_modernization_payment_integrity.sql` | Bổ sung metadata idempotency cho phiếu thu, index khóa nợ ổn định và unique phiếu thu + khoản nợ |
-| 10 | `scripts/10_admin_modernization_copy_list_indexes.sql` | Bổ sung index cho danh sách cuốn sách phân trang theo chi nhánh, trạng thái, ngày nhập và vị trí |
-| 11 | `scripts/11_admin_modernization_copy_actions.sql` | Tạo lịch sử chuyển trạng thái và vị trí cuốn sách, lưu actor, lý do và before-after |
-| 12 | `scripts/12_admin_modernization_reader_list_indexes.sql` | Bổ sung index cho phân trang, lọc, sắp xếp độc giả và lịch sử gói |
-| 13 | `scripts/13_admin_modernization_reader_state.sql` | Tách borrowing/login lock và lifecycle event, backfill khóa legacy |
-| 14 | `scripts/14_admin_modernization_reader_password_reset.sql` | Bổ sung trường phục vụ revoke token, force-change, audit và rate-limit reset mật khẩu độc giả |
-| 15 | `scripts/15_admin_modernization_loan_integrity.sql` | Bổ sung ràng buộc toàn vẹn phiếu mượn/chi tiết mượn và index truy vấn |
-| 16 | `scripts/16_admin_modernization_return_assessment.sql` | Tạo bảng quy định phạt hư hỏng/mất, mức độ hư hỏng và loại hư hỏng |
-| 17 | `scripts/17_admin_modernization_return_integrity.sql` | Bổ sung ràng buộc toàn vẹn phiếu trả/chi tiết trả và quy trình trả sách |
-| 18 | `scripts/18_admin_modernization_payment_receipt_completion.sql` | Bổ sung đơn vị tiền tệ và hoàn tất phiếu thu |
-| 19 | `scripts/19_admin_modernization_payment_reversal.sql` | Bổ sung hủy/hồi phiếu thu |
+| 3 | `scripts/03_migrations_admin.sql` | Gộp 12 migration hiện đại hóa admin (08–19 cũ): phân công nhân viên - chi nhánh, toàn vẹn thanh toán/mượn/trả và idempotency, index tối ưu, lịch sử sự kiện cuốn sách, khóa độc giả theo phạm vi, reset mật khẩu độc giả, quy định phạt hỏng/mất, hoàn tất phiếu thu, hủy/hồi phiếu thu |
 
 `01_full_database.sql` tự tạo `QuanLyThuVien` nếu database chưa tồn tại, sau đó chuyển ngữ cảnh sang database này.
 
-> Chạy đủ các script từ `01` đến `19` theo đúng thứ tự để ứng dụng có đầy đủ tính năng.
+> Chạy đủ các script từ `01` đến `03` theo đúng thứ tự để ứng dụng có đầy đủ tính năng. Các migration trong `03_migrations_admin.sql` đều idempotent, chạy lại an toàn.
 
 > **Lưu ý mã hóa (UTF-8):** các script chứa ký tự tiếng Việt. Khi chạy bằng `sqlcmd`, phải chỉ định trang mã UTF-8 để tránh làm hỏng dữ liệu tiếng Việt:
 >
 > ```bat
-> sqlcmd -S localhost -d QuanLyThuVien -U sa -P "mat-khau" -f 65001 -i "database\scripts\16_admin_modernization_return_assessment.sql"
+> sqlcmd -S localhost -d QuanLyThuVien -U sa -P "mat-khau" -f 65001 -i "database\scripts\03_migrations_admin.sql"
 > ```
 >
 > Không pipe nội dung script qua `sqlcmd` (ví dụ `type file.sql | sqlcmd ...`) vì ký tự tiếng Việt sẽ bị méo.
@@ -71,12 +60,8 @@ Các file sau không bắt buộc khi cài mới:
 
 | Script | Công dụng |
 |---|---|
-| `scripts/03_test_queries.sql` | Truy vấn kiểm tra dữ liệu và quan hệ chính |
-| `scripts/04_reader_notification_extra.sql` | Dữ liệu bổ sung cho thông báo độc giả |
-| `scripts/04_reader_portal_extra.sql` | Dữ liệu bổ sung cho cổng độc giả |
-| `scripts/05_reader_membership_extra.sql` | Dữ liệu gói thành viên |
-| `scripts/06_reader_comment_rating_reset.sql` | Reset dữ liệu đánh giá và bình luận |
-| `scripts/07_reader_favorites_reset.sql` | Reset dữ liệu sách yêu thích |
+| `scripts/05_test_queries.sql` | Truy vấn kiểm tra dữ liệu và quan hệ chính |
+| `scripts/04_reader_extras.sql` | Gộp các script bổ sung/reset độc giả cũ (04–07): thông báo, cổng độc giả, gói thành viên, reset đánh giá/bình luận và sách yêu thích |
 
 Chỉ chạy script hỗ trợ khi bạn hiểu dữ liệu mà script sẽ thêm, sửa hoặc xóa.
 
@@ -108,7 +93,7 @@ start-libradesk.bat
 
 1. Mở database `QuanLyThuVien`.
 2. Kiểm tra các bảng `TAIKHOAN`, `DOCGIA`, `DAUSACH`, `CUONSACH`, `PHIEUMUON`, `KHOANNO` và `PHIEUTHU`.
-3. Chạy `scripts/03_test_queries.sql`.
+3. Chạy `scripts/05_test_queries.sql`.
 4. Khởi động app và đăng nhập bằng một tài khoản demo.
 5. Kiểm tra health endpoint: `http://localhost:8080/api/health`.
 
