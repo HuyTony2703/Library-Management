@@ -30,18 +30,18 @@
 
 ### 1. Khởi tạo database
 
-Mở SQL Server Management Studio hoặc công cụ SQL tương đương, chạy lần lượt các script trong `database/scripts/` theo thứ tự số từ `01` đến `19`:
+Mở SQL Server Management Studio hoặc công cụ SQL tương đương, chạy lần lượt các script trong `database/scripts/` theo thứ tự số từ `01` đến `03`:
 
 1. `database/scripts/01_full_database.sql`
 2. `database/scripts/02_seed_demo_data.sql`
-3. `database/scripts/03_test_queries.sql` đến `database/scripts/19_admin_modernization_payment_reversal.sql`
+3. `database/scripts/03_migrations_admin.sql`
 
 Script đầu tiên tự tạo database `QuanLyThuVien` nếu chưa tồn tại. Hướng dẫn chi tiết tại [database/README_DATABASE.md](database/README_DATABASE.md).
 
 > **Lưu ý:** khi chạy bằng `sqlcmd` từ dòng lệnh, thêm `-f 65001` để giữ đúng ký tự tiếng Việt:
 >
 > ```bat
-> sqlcmd -S localhost -U sa -P "mat-khau" -f 65001 -i "database\scripts\16_admin_modernization_return_assessment.sql"
+> sqlcmd -S localhost -U sa -P "mat-khau" -f 65001 -i "database\scripts\03_migrations_admin.sql"
 > ```
 
 ### 2. Chạy ứng dụng
