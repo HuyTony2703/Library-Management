@@ -1,7 +1,0 @@
-USE QuanLyThuVien;
-GO
-
-DELETE FROM SACHYEUTHICH
-WHERE MaDocGia = 'DG001'
-  AND MaDauSach = 'F01';
-GO
