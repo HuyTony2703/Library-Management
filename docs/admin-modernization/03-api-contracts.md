@@ -550,7 +550,7 @@ Header idempotency. Body như preview cộng method-specific fields (`cashReceiv
 
 Contract chuyển tiếp P0 hiện tại vẫn nhận `maPhieuThu`, `maDocGia`, `maPhuongThuc`, `soTienThu` và optional `chiTietNo`. `maNhanVienThu` chỉ còn là field legacy optional: backend không dùng làm actor và trả 403 nếu khác staff ID của principal. Client nên gửi header `Idempotency-Key` (tối đa 100 ký tự); nếu thiếu, backend tạm dùng `maPhieuThu` làm key tương thích. Cùng key và cùng actor/payload trả lại phiếu đã tạo, còn payload khác bị từ chối. Backend khóa pessimistic các khoản nợ theo thứ tự ổn định, đọc lại remaining, kiểm tra tổng allocations bằng tổng phiếu và ghi audit before/after cho từng khoản trong cùng transaction.
 
-Database migration bắt buộc: `09_admin_modernization_payment_integrity.sql` thêm metadata/fingerprint idempotency nullable cho dữ liệu cũ, unique filtered index trên key, index debt `(reader,status,date,id)` và unique `(receipt,debt)`.
+Database migration bắt buộc: `database/scripts/03_migrations_admin.sql` (phần Migration 09) thêm metadata/fingerprint idempotency nullable cho dữ liệu cũ, unique filtered index trên key, index debt `(reader,status,date,id)` và unique `(receipt,debt)`.
 
 ### POST `/api/admin/payments/{id}/reverse`
 
