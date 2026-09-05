@@ -1,6 +1,6 @@
 # LibraDesk
 
-Ứng dụng desktop quản lý thư viện chạy trên Windows với ba vai trò: **quản trị viên**, **thủ thư** và **độc giả**.
+Ứng dụng desktop app quản lý thư viện chạy trên Windows với ba vai trò: **quản trị viên**, **thủ thư** và **độc giả**.
 
 ## Tính năng chính
 
