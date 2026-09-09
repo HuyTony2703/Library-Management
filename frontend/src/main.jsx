@@ -6,6 +6,7 @@ import { ActionDialogProvider } from "./components/ActionDialogProvider";
 import { ToastProvider } from "./components/ToastProvider";
 import { AuthProvider } from "./context/AuthContext";
 import "./index.css";
+import "./styles/design-system.css";
 
 applyStoredPreferences();
 
