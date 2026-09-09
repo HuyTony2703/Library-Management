@@ -9,18 +9,22 @@ export default function StatusBadge({ value }) {
         lower.includes("hoạt động") ||
         lower.includes("thành công") ||
         lower.includes("đã thanh toán") ||
+        lower.includes("đã trả") ||
         lower.includes("đã ẩn") ||
         lower.includes("đã xóa")
             ? "good"
             : lower.includes("mượn") ||
                 lower.includes("đang") ||
                 lower.includes("một phần") ||
+                lower.includes("sắp") ||
                 lower.includes("chưa thanh toán")
                 ? "warn"
                 : lower.includes("mất") ||
                     lower.includes("hỏng") ||
                     lower.includes("khóa") ||
-                    lower.includes("ngừng")
+                    lower.includes("ngừng") ||
+                    lower.includes("quá hạn") ||
+                    lower.includes("trễ")
                     ? "bad"
                     : "neutral";
 
