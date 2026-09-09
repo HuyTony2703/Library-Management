@@ -7,19 +7,18 @@ import {
     ClipboardList,
     CreditCard,
     Home,
-    Library,
     MessageSquare,
     Settings,
     ShieldCheck,
     UserCog,
-    UserRound,
     UsersRound
 } from "lucide-react";
-import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { isReaderUser } from "../utils/authRole";
 import { isAdmin } from "../utils/roleUtils";
 import "../styles/role-theme.css";
+import AppShell from "./AppShell";
 
 const staffMenuGroups = [
     {
@@ -112,8 +111,6 @@ const adminMenuGroups = [
 
 export default function AppLayout() {
     const { user } = useAuth();
-    const navigate = useNavigate();
-    const displayName = getUserDisplayName(user);
     const adminUser = isAdmin(user);
     const menuGroups = adminUser ? adminMenuGroups : staffMenuGroups;
 
@@ -121,70 +118,27 @@ export default function AppLayout() {
         return <Navigate to="/reader" replace />;
     }
 
-    function goToProfileSettings() {
-        navigate("/settings#profile");
-        window.setTimeout(() => {
-            document.getElementById("settings-profile")?.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-        }, 50);
-    }
-
-    return (
-        <div className={`app-shell ${adminUser ? "role-admin" : "role-staff"}`}>
-            <aside className="sidebar">
-                <div className="brand">
-                    <div className="brand-icon">
-                        <Library size={24} />
-                    </div>
-                    <div>
-                        <div className="brand-title">LibraDesk</div>
-                        <div className="brand-subtitle">Library Manager</div>
-                    </div>
-                </div>
-
-                <NavMenu groups={menuGroups} />
-
-                <button type="button" className="sidebar-user sidebar-user-button" onClick={goToProfileSettings}>
-                    <div className="avatar">
-                        <UserRound size={20} />
-                    </div>
-                    <div className="user-meta">
-                        <b>{displayName}</b>
-                        <span>{user?.tenVaiTro || user?.maVaiTro || "Vai trò"}</span>
-                    </div>
-                </button>
-            </aside>
-
-            <main className="workspace">
-                <section className="page-container">
-                    <Outlet />
-                </section>
-            </main>
-        </div>
+    const role = adminUser ? "admin" : "staff";
+    const roleBadge = (
+        <span className={`role-chip role-chip-${role}`}>
+            {adminUser ? "ADMIN" : "THỦ THƯ"}
+        </span>
     );
-}
 
-function NavMenu({ groups, className = "" }) {
     return (
-        <nav className={`nav-menu ${className}`.trim()}>
-            {groups.map((group) => (
-                <div className="nav-group" key={group.label}>
-                    <span>{group.label}</span>
-                    {group.items.map((item) => {
-                        const Icon = item.icon;
-
-                        return (
-                            <NavLink key={item.to} to={item.to} end={item.to === "/"}>
-                                <Icon size={18} />
-                                <span>{item.label}</span>
-                            </NavLink>
-                        );
-                    })}
-                </div>
-            ))}
-        </nav>
+        <AppShell
+            role={role}
+            brandTitle="LibraDesk"
+            brandSubtitle={adminUser ? "Quản trị hệ thống" : "Quầy thủ thư"}
+            menuGroups={menuGroups}
+            roleBadge={roleBadge}
+            topbarTitle={adminUser ? "Trung tâm điều hành" : "Không gian tác nghiệp"}
+            topbarSubtitle={adminUser ? "Quản trị • Báo cáo • Quy định" : "Mượn • Trả • Thu tiền"}
+            userName={getUserDisplayName(user)}
+            userSub={user?.tenVaiTro || user?.maVaiTro || (adminUser ? "Admin" : "Thủ thư")}
+            profilePath="/settings#profile"
+            profileTargetId="settings-profile"
+        />
     );
 }
 
