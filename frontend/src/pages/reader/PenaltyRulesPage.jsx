@@ -1,6 +1,7 @@
 import { Calculator, RefreshCcw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { readerApi } from "../../api/readerApi";
+import PageHeader from "../../components/PageHeader";
 import { useToast } from "../../components/ToastProvider";
 
 const MAX_OVERDUE_DAYS = 365;
@@ -54,18 +55,17 @@ export default function PenaltyRulesPage() {
 
     return (
         <div>
-            <div className="reader-home-header">
-                <small>QUY ĐỊNH PHẠT</small>
-                <h1>Quy định phạt và cách tính</h1>
-                <p>Giải thích cách tính tiền phạt khi trả sách trễ, sách hỏng hoặc mất.</p>
-            </div>
-
-            <div className="reader-page-actions">
-                <button type="button" onClick={loadRules} disabled={loading}>
-                    <RefreshCcw size={17} />
-                    {loading ? "Đang tải..." : "Tải lại quy định"}
-                </button>
-            </div>
+            <PageHeader
+                eyebrow="Quy định phạt"
+                title="Quy định phạt và cách tính"
+                description="Giải thích cách tính tiền phạt khi trả sách trễ, sách hỏng hoặc mất."
+                right={
+                    <button type="button" className="ghost-button" onClick={loadRules} disabled={loading}>
+                        <RefreshCcw size={17} />
+                        {loading ? "Đang tải..." : "Tải lại quy định"}
+                    </button>
+                }
+            />
 
             <section className="penalty-layout">
                 <div className="penalty-info-card">
