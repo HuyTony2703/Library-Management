@@ -15,7 +15,7 @@
 | Thành phần | Công nghệ |
 |---|---|
 | Frontend | React, Vite, Electron |
-| Backend | Java 21, Spring Boot, Spring Security |
+| Backend | Java | Backend | Java 21, Spring Boot, Spring Security |
 | Cơ sở dữ liệu | Microsoft SQL Server |
 
 ## Yêu cầu hệ thống
@@ -23,8 +23,7 @@
 - Windows 10 hoặc Windows 11.
 - SQL Server đang hoạt động.
 - Java 21 để chạy backend dạng JAR.
-
-Để build từ source cần thêm Node.js/npm và kết nối Internet trong lần cài dependency đầu tiên.
+hêm Node.js/npm và kết nối Internet trong lần cài dependency đầu tiên.
 
 ## Cài đặt
 
