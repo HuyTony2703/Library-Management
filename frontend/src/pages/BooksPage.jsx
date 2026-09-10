@@ -489,7 +489,7 @@ export default function BooksPage() {
     return (
         <div>
             <PageHeader
-                eyebrow="Catalog"
+                eyebrow="Danh mục"
                 title="Quản lý đầu sách"
                 description="Danh sách đầu sách, ISBN, trị giá và trạng thái hiển thị."
             />
