@@ -49,7 +49,7 @@ export default function LoansPage() {
     return (
         <div>
             <PageHeader
-                eyebrow="Circulation"
+                eyebrow="Mượn trả"
                 title="Mượn sách"
                 description="Lập phiếu mượn, tự kiểm tra thẻ, nợ, trạng thái sách và quy định mượn."
             />
