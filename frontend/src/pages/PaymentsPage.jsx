@@ -78,7 +78,7 @@ export default function PaymentsPage() {
     return (
         <div>
             <PageHeader
-                eyebrow="Finance"
+                eyebrow="Tài chính"
                 title="Khoản nợ / Phiếu thu"
                 description="Theo dõi công nợ và lập phiếu thu tiền phạt."
             />
