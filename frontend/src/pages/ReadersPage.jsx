@@ -194,7 +194,7 @@ export default function ReadersPage() {
     }
 
     return <div>
-        <PageHeader eyebrow="Members" title="Quản lý độc giả" description="Tra cứu hồ sơ, hiệu lực thẻ, gói thành viên và nghĩa vụ hiện tại." />
+        <PageHeader eyebrow="Độc giả" title="Quản lý độc giả" description="Tra cứu hồ sơ, hiệu lực thẻ, gói thành viên và nghĩa vụ hiện tại." />
 
         <div className="reader-presets" aria-label="Bộ lọc nhanh độc giả">
             <Preset active={preset === "card-expiring"} onClick={() => applyPreset("card-expiring")}>Thẻ sắp hết hạn</Preset>
