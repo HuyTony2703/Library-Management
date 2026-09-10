@@ -548,7 +548,7 @@ export default function BookCopiesPage() {
 
     return (
         <div>
-            <PageHeader eyebrow="Inventory" title="Quản lý cuốn sách" description="Theo dõi từng bản sách vật lý, vị trí, chi nhánh và trạng thái." />
+            <PageHeader eyebrow="Kho sách" title="Quản lý cuốn sách" description="Theo dõi từng bản sách vật lý, vị trí, chi nhánh và trạng thái." />
 
             <div className="copy-presets" aria-label="Bộ lọc nhanh">
                 <PresetButton active={activePreset === "available"} onClick={() => applyPreset("available")} disabled={filterLoading}>Sẵn có</PresetButton>
