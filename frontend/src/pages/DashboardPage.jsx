@@ -65,7 +65,7 @@ export default function DashboardPage() {
     return (
         <div>
             <PageHeader
-                eyebrow="Dashboard"
+                eyebrow="Tổng quan"
                 title="Tổng quan hệ thống"
                 description="Theo dõi nhanh tình trạng sách, độc giả, mượn trả và công nợ."
             />
