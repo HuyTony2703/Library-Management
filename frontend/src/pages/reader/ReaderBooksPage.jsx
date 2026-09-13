@@ -1,6 +1,7 @@
 import { Check, RotateCcw, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { readerApi } from "../../api/readerApi";
+import PageHeader from "../../components/PageHeader";
 import ReaderBookCard from "../../components/reader/ReaderBookCard";
 
 const ALL = "all";
@@ -132,11 +133,11 @@ export default function ReaderBooksPage() {
 
     return (
         <div>
-            <div className="reader-home-header">
-                <small>DANH MỤC SÁCH</small>
-                <h1>Tra cứu sách</h1>
-                <p>Tìm kiếm theo tên sách, mã sách, ISBN, tác giả hoặc thể loại.</p>
-            </div>
+            <PageHeader
+                eyebrow="Danh mục sách"
+                title="Tra cứu sách"
+                description="Tìm kiếm theo tên sách, mã sách, ISBN, tác giả hoặc thể loại."
+            />
 
             <form className="reader-search-panel" onSubmit={handleSearch}>
                 <div className="reader-search-input">
