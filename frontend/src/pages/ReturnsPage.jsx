@@ -52,7 +52,7 @@ export default function ReturnsPage() {
     return (
         <div>
             <PageHeader
-                eyebrow="Return"
+                eyebrow="Trả sách"
                 title="Trả sách"
                 description="Ghi nhận trả sách, tự tính trễ hạn và tạo khoản nợ nếu hỏng/mất."
             />
