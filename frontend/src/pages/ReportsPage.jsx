@@ -47,7 +47,7 @@ export default function ReportsPage() {
         return (
             <div>
                 <PageHeader
-                    eyebrow="Reports"
+                    eyebrow="Báo cáo"
                     title="Báo cáo thư viện"
                     description="Báo cáo tổng hợp chỉ dành cho admin."
                 />
@@ -65,7 +65,7 @@ export default function ReportsPage() {
     return (
         <div>
             <PageHeader
-                eyebrow="Reports"
+                eyebrow="Báo cáo"
                 title="Báo cáo thư viện"
                 description="Thống kê mượn sách theo thể loại và danh sách trả trễ trong tháng."
             />
