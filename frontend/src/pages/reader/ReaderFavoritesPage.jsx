@@ -2,6 +2,7 @@ import { Heart, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
+import PageHeader from "../../components/PageHeader";
 import { useToast } from "../../components/ToastProvider";
 import ReaderBookCard from "../../components/reader/ReaderBookCard";
 
@@ -40,11 +41,11 @@ export default function ReaderFavoritesPage() {
 
     return (
         <div>
-            <div className="reader-home-header">
-                <small>SÁCH YÊU THÍCH</small>
-                <h1>Sách yêu thích</h1>
-                <p>Những đầu sách bạn đã lưu để xem lại nhanh.</p>
-            </div>
+            <PageHeader
+                eyebrow="Sách yêu thích"
+                title="Sách yêu thích"
+                description="Những đầu sách bạn đã lưu để xem lại nhanh."
+            />
 
             {loading && <p>Đang tải sách yêu thích...</p>}
 
