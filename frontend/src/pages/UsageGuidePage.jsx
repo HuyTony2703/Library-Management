@@ -129,7 +129,7 @@ export default function UsageGuidePage() {
     return (
         <div>
             <PageHeader
-                eyebrow="Guide"
+                eyebrow="Hỗ trợ"
                 title="Hướng dẫn sử dụng"
                 description={adminUser
                     ? "Các bước thao tác chính dành cho quản trị viên khi vận hành LibraDesk."
