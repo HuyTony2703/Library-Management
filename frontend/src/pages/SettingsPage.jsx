@@ -6,7 +6,7 @@ export default function SettingsPage() {
         <div>
             <PageHeader
                 className="settings-page-header"
-                eyebrow="Settings"
+                eyebrow="Tài khoản"
                 title="Cài đặt"
                 description="Quản lý tài khoản, đổi mật khẩu, giao diện, thông báo và đăng xuất."
                 right={<SettingsLogoutButton />}
