@@ -2,6 +2,7 @@ import { Bell, BookOpen, BookmarkCheck, Calculator, CreditCard, Search } from "l
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
+import PageHeader from "../../components/PageHeader";
 import RandomBookSection from "../../components/reader/RandomBookSection";
 
 function safeCount(value) {
@@ -71,11 +72,11 @@ export default function ReaderHomePage() {
     if (error) {
         return (
             <div>
-                <div className="reader-home-header">
-                    <small>CỔNG ĐỘC GIẢ</small>
-                    <h1>Trang chủ độc giả</h1>
-                    <p>Không tải được thông tin tài khoản độc giả.</p>
-                </div>
+                <PageHeader
+                    eyebrow="Cổng độc giả"
+                    title="Trang chủ độc giả"
+                    description="Không tải được thông tin tài khoản độc giả."
+                />
 
                 <div className="reader-error">{error}</div>
             </div>
@@ -84,20 +85,22 @@ export default function ReaderHomePage() {
 
     return (
         <div>
-            <div className="reader-home-header reader-dashboard-header">
-                <small>CỔNG ĐỘC GIẢ</small>
-                <h1>Xin chào, {profile?.hoTen || "độc giả"}</h1>
-                <p>
-                    {dueSoonLoans[0]
+            <PageHeader
+                eyebrow="Cổng độc giả"
+                title={`Xin chào, ${profile?.hoTen || "độc giả"}`}
+                description={
+                    dueSoonLoans[0]
                         ? `Bạn có sách "${dueSoonLoans[0].tenDauSach}" ${dueSoonLoans[0].daysLeft < 0 ? `quá hạn ${Math.abs(dueSoonLoans[0].daysLeft)} ngày` : `còn ${dueSoonLoans[0].daysLeft} ngày đến hạn`}.`
-                        : "Theo dõi sách đang mượn, đặt trước, thông báo và gói độc giả của bạn."}
-                </p>
-                {dueSoonLoans[0] && (
-                    <Link className="reader-primary-button" to="/reader/loans">
-                        Gia hạn sách
-                    </Link>
-                )}
-            </div>
+                        : "Theo dõi sách đang mượn, đặt trước, thông báo và gói độc giả của bạn."
+                }
+                right={
+                    dueSoonLoans[0] ? (
+                        <Link className="primary-button" to="/reader/loans">
+                            Gia hạn sách
+                        </Link>
+                    ) : null
+                }
+            />
 
             <section className="reader-overview-grid">
                 <DashboardCard label="Đang mượn" value={`${loans.length} sách`} to="/reader/loans" />
