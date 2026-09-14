@@ -5,16 +5,14 @@ import {
     CreditCard,
     Heart,
     Home,
-    Library,
     Search,
     Settings,
-    ShieldCheck,
-    UserRound
+    ShieldCheck
 } from "lucide-react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import NotificationBell from "../../components/reader/NotificationBell";
 import { useAuth } from "../../context/AuthContext";
 import "../../styles/role-theme.css";
+import AppShell from "../../components/AppShell";
 import "./reader.css";
 
 const menuGroups = [
@@ -51,71 +49,21 @@ const menuGroups = [
 
 export default function ReaderLayout() {
     const { user } = useAuth();
-    const navigate = useNavigate();
-
-    function goToProfileSettings() {
-        navigate("/reader/settings#profile");
-        window.setTimeout(() => {
-            document.getElementById("settings-profile")?.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-        }, 50);
-    }
 
     return (
-        <div className="reader-shell role-reader">
-            <aside className="reader-sidebar">
-                <div className="reader-brand">
-                    <div className="reader-brand-icon">
-                        <Library size={24} />
-                    </div>
-                    <div>
-                        <h2>LibraDesk</h2>
-                        <p>Cổng độc giả</p>
-                    </div>
-                </div>
-
-                <nav className="reader-nav">
-                    {menuGroups.map((group) => (
-                        <div className="reader-nav-group" key={group.label}>
-                            <span>{group.label}</span>
-                            {group.items.map((item) => {
-                                const Icon = item.icon;
-
-                                return (
-                                    <NavLink key={item.to} to={item.to} end={item.to === "/reader"}>
-                                        <Icon size={18} />
-                                        <span>{item.label}</span>
-                                    </NavLink>
-                                );
-                            })}
-                        </div>
-                    ))}
-                </nav>
-
-                <button type="button" className="reader-account reader-account-button" onClick={goToProfileSettings}>
-                    <div className="reader-avatar">
-                        <UserRound size={20} />
-                    </div>
-                    <div>
-                        <b>{user?.hoTen || user?.tenDangNhap || "Độc giả"}</b>
-                        <span>{user?.maDocGia || user?.maTaiKhoan || "Độc giả"}</span>
-                    </div>
-                </button>
-            </aside>
-
-            <main className="reader-content">
-                <header className="reader-topbar">
-                    <div className="reader-topbar-actions">
-                        <NotificationBell />
-                    </div>
-                </header>
-
-                <section className="reader-page">
-                    <Outlet />
-                </section>
-            </main>
-        </div>
+        <AppShell
+            role="reader"
+            brandTitle="LibraDesk"
+            brandSubtitle="Cổng độc giả"
+            menuGroups={menuGroups}
+            roleBadge={<span className="role-chip role-chip-reader">ĐỘC GIẢ</span>}
+            topbarTitle="Không gian đọc sách"
+            topbarSubtitle="Tra cứu • Mượn • Đặt trước"
+            topbarActions={<NotificationBell />}
+            profilePath="/reader/settings#profile"
+            profileTargetId="settings-profile"
+            userName={user?.hoTen || user?.tenDangNhap || "Độc giả"}
+            userSub={user?.maDocGia || user?.maTaiKhoan || "Độc giả"}
+        />
     );
 }
