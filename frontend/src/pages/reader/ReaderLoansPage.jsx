@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
+import PageHeader from "../../components/PageHeader";
 import { useToast } from "../../components/ToastProvider";
 import ReaderLoanCard from "../../components/reader/ReaderLoanCard";
 import RenewalConfirmModal from "../../components/reader/RenewalConfirmModal";
@@ -89,17 +90,16 @@ export default function ReaderLoansPage() {
 
     return (
         <div>
-            <div className="reader-home-header">
-                <small>SÁCH ĐANG MƯỢN</small>
-                <h1>Sách đang mượn</h1>
-                <p>Xem hạn trả, số ngày còn lại và gia hạn sách khi còn lượt.</p>
-            </div>
-
-            <div className="reader-page-actions">
-                <Link to="/reader/loans/renewal-history">
-                    Xem lịch sử gia hạn
-                </Link>
-            </div>
+            <PageHeader
+                eyebrow="Sách đang mượn"
+                title="Sách đang mượn"
+                description="Xem hạn trả, số ngày còn lại và gia hạn sách khi còn lượt."
+                right={
+                    <Link className="soft-button" to="/reader/loans/renewal-history">
+                        Xem lịch sử gia hạn
+                    </Link>
+                }
+            />
 
             {!loading && loans.length > 0 && (
                 <section className="reader-loan-summary">
