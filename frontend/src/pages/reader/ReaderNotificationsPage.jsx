@@ -1,6 +1,7 @@
 import { CheckCheck, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { readerApi } from "../../api/readerApi";
+import PageHeader from "../../components/PageHeader";
 import { useActionDialog } from "../../components/ActionDialogProvider";
 import { useToast } from "../../components/ToastProvider";
 import NotificationItem from "../../components/reader/NotificationItem";
@@ -172,11 +173,11 @@ export default function ReaderNotificationsPage() {
 
     return (
         <div>
-            <div className="reader-home-header">
-                <small>THÔNG BÁO</small>
-                <h1>Thông báo</h1>
-                <p>Bạn có {unreadCount} thông báo chưa đọc.</p>
-            </div>
+            <PageHeader
+                eyebrow="Thông báo"
+                title="Thông báo"
+                description={`Bạn có ${unreadCount} thông báo chưa đọc.`}
+            />
 
             <div className="notification-toolbar">
                 <button
