@@ -7,15 +7,16 @@ import {
     Search
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import PageHeader from "../../components/PageHeader";
 
 export default function ReaderGuidePage() {
     return (
         <div>
-            <div className="reader-home-header">
-                <small>Guide</small>
-                <h1>Hướng dẫn sử dụng</h1>
-                <p>Các bước cơ bản dành cho độc giả khi sử dụng LibraDesk.</p>
-            </div>
+            <PageHeader
+                eyebrow="Hướng dẫn"
+                title="Hướng dẫn sử dụng"
+                description="Các bước cơ bản dành cho độc giả khi sử dụng LibraDesk."
+            />
 
             <div className="guide-grid">
                 <GuideCard
@@ -96,10 +97,10 @@ export default function ReaderGuidePage() {
 function GuideCard({ icon: Icon, title, steps }) {
     return (
         <article className="guide-card">
-            <div className="guide-icon">
+            <div className="guide-card-icon">
                 <Icon size={24} />
             </div>
-            <h3>{title}</h3>
+            <h2>{title}</h2>
             <ol>
                 {steps.map((step) => (
                     <li key={step}>{step}</li>
