@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { readerApi } from "../../api/readerApi";
+import PageHeader from "../../components/PageHeader";
 import { useToast } from "../../components/ToastProvider";
 import MembershipHistoryTable from "../../components/reader/MembershipHistoryTable";
 import MembershipPlanCard from "../../components/reader/MembershipPlanCard";
@@ -110,11 +111,11 @@ export default function ReaderMembershipPage() {
 
     return (
         <div>
-            <div className="reader-home-header">
-                <small>GÓI ĐỘC GIẢ</small>
-                <h1>Gói độc giả</h1>
-                <p>Gói Thường là mặc định. Bạn chỉ có thể nâng cấp lên VIP hoặc Premium.</p>
-            </div>
+            <PageHeader
+                eyebrow="Gói độc giả"
+                title="Gói độc giả"
+                description="Gói Thường là mặc định. Bạn chỉ có thể nâng cấp lên VIP hoặc Premium."
+            />
 
             <section className="current-membership-box">
                 <h2>Gói đang sử dụng</h2>
