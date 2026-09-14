@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
+import PageHeader from "../../components/PageHeader";
 
 function formatDateTime(value) {
     if (!value) {
@@ -37,18 +38,19 @@ export default function ReaderRenewalHistoryPage() {
 
     return (
         <div>
-            <div className="reader-home-header">
-                <small>Renewal History</small>
-                <h1>Lịch sử gia hạn</h1>
-                <p>Theo dõi các lần gia hạn sách của bạn.</p>
-            </div>
-
-            <div className="reader-page-actions">
-                <Link to="/reader/loans">Quay lại sách đang mượn</Link>
-                <button type="button" onClick={loadHistory}>
-                    Tải lại
-                </button>
-            </div>
+            <PageHeader
+                eyebrow="Lịch sử gia hạn"
+                title="Lịch sử gia hạn"
+                description="Theo dõi các lần gia hạn sách của bạn."
+                right={
+                    <>
+                        <Link className="soft-button" to="/reader/loans">Quay lại sách đang mượn</Link>
+                        <button type="button" className="ghost-button" onClick={loadHistory}>
+                            Tải lại
+                        </button>
+                    </>
+                }
+            />
 
             {error && <div className="reader-error">{error}</div>}
 
