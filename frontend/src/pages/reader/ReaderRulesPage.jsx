@@ -2,6 +2,7 @@ import { Calculator, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { readerApi } from "../../api/readerApi";
+import PageHeader from "../../components/PageHeader";
 import LibraryRulesReference from "../../components/LibraryRulesReference";
 import { useToast } from "../../components/ToastProvider";
 
@@ -67,11 +68,11 @@ export default function ReaderRulesPage() {
 
     return (
         <div>
-            <div className="reader-home-header">
-                <small>QUY ĐỊNH</small>
-                <h1>Quy định thư viện</h1>
-                <p>Quy định mượn sách, gói độc giả và cách tính tiền phạt đang áp dụng.</p>
-            </div>
+            <PageHeader
+                eyebrow="Quy định"
+                title="Quy định thư viện"
+                description="Quy định mượn sách, gói độc giả và cách tính tiền phạt đang áp dụng."
+            />
 
             {loading && <p>Đang tải quy định...</p>}
 
