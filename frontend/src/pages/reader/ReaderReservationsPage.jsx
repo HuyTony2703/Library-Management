@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { readerApi } from "../../api/readerApi";
+import PageHeader from "../../components/PageHeader";
 import { useActionDialog } from "../../components/ActionDialogProvider";
 import { useToast } from "../../components/ToastProvider";
 import ReservationHistoryTable from "../../components/reader/ReservationHistoryTable";
@@ -54,11 +55,11 @@ export default function ReaderReservationsPage() {
 
     return (
         <div>
-            <div className="reader-home-header">
-                <small>ĐẶT TRƯỚC</small>
-                <h1>Đặt trước sách</h1>
-                <p>Theo dõi sách đang chờ, sách đã được giữ và thời hạn nhận sách.</p>
-            </div>
+            <PageHeader
+                eyebrow="Đặt trước"
+                title="Đặt trước sách"
+                description="Theo dõi sách đang chờ, sách đã được giữ và thời hạn nhận sách."
+            />
 
             <ReservationHistoryTable data={data} onCancel={handleCancel} />
         </div>
