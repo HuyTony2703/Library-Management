@@ -1,0 +1,355 @@
+/* ============================================================
+   LibraDesk Design System — dùng chung Admin / Staff / Reader
+   Sáng, thân thiện, chuyên nghiệp. Role chỉ khác accent + badge.
+   File này định nghĩa token + override dùng chung, load SAU
+   index.css / reader.css để chuẩn hoá mà không sửa logic.
+   ============================================================ */
+
+:root {
+  --bg: #f3f6fb;
+  --surface: #ffffff;
+  --surface-solid: #ffffff;
+  --surface-soft: #f8fafc;
+  --line: rgba(15, 23, 42, 0.09);
+  --line-strong: rgba(15, 23, 42, 0.14);
+  --input-border: rgba(15, 23, 42, 0.18);
+  --text: #0f172a;
+  --muted: #64748b;
+  --primary: #2563eb;
+  --primary-2: #7c3aed;
+  --good: #16a34a;
+  --warn: #d97706;
+  --bad: #dc2626;
+  --radius: 16px;
+  --radius-sm: 12px;
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 18px 55px rgba(15, 23, 42, 0.12);
+  --sidebar-w: 272px;
+  --topbar-h: 64px;
+  --page-pad: 28px;
+
+  /* Role accent mặc định (staff blue). Override bởi .role-* */
+  --role: #2563eb;
+  --role-2: #0ea5e9;
+  --role-soft: rgba(37, 99, 235, 0.09);
+  --role-line: rgba(37, 99, 235, 0.22);
+}
+
+/* ---------- Accent theo vai trò ---------- */
+.role-admin {
+  --role: #4f46e5;
+  --role-2: #7c3aed;
+  --role-soft: rgba(79, 70, 229, 0.09);
+  --role-line: rgba(79, 70, 229, 0.24);
+}
+.role-staff {
+  --role: #0284c7;
+  --role-2: #0d9488;
+  --role-soft: rgba(2, 132, 199, 0.09);
+  --role-line: rgba(2, 132, 199, 0.24);
+}
+.role-reader {
+  --role: #d97706;
+  --role-2: #ea580c;
+  --role-soft: rgba(217, 119, 6, 0.1);
+  --role-line: rgba(217, 119, 6, 0.26);
+}
+
+/* ---------- Nền tổng thể: sáng, nhẹ ---------- */
+body {
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.07), transparent 34%),
+    radial-gradient(circle at top right, rgba(124, 58, 237, 0.06), transparent 30%),
+    var(--bg);
+}
+
+/* ---------- Sidebar sáng dùng chung ---------- */
+.sidebar,
+.reader-sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  color: var(--text);
+  border-right: 1px solid var(--line);
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.04);
+}
+
+.workspace,
+.reader-content {
+  margin-left: var(--sidebar-w);
+}
+
+.brand-title,
+.reader-brand h2 {
+  color: var(--text);
+}
+.brand-subtitle,
+.reader-brand p {
+  color: var(--muted);
+}
+.brand-icon,
+.reader-brand-icon {
+  background: linear-gradient(135deg, var(--role), var(--role-2));
+  box-shadow: 0 10px 22px var(--role-soft), 0 6px 16px rgba(15, 23, 42, 0.12);
+}
+
+.nav-group > span,
+.reader-nav-group > span {
+  color: var(--muted);
+}
+
+.nav-menu a,
+.reader-nav a {
+  color: #334155;
+  font-weight: 700;
+}
+.nav-menu a:hover,
+.reader-nav a:hover {
+  background: var(--role-soft);
+  color: var(--text);
+}
+.nav-menu a.active,
+.reader-nav a.active {
+  background: linear-gradient(90deg, var(--role-soft), rgba(255, 255, 255, 0));
+  color: var(--text);
+  box-shadow: inset 3px 0 0 var(--role);
+}
+.nav-menu a.active svg,
+.reader-nav a.active svg {
+  color: var(--role);
+}
+
+.sidebar-user,
+.reader-account {
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.sidebar-user .avatar,
+.reader-avatar {
+  background: linear-gradient(135deg, var(--role), var(--role-2));
+  color: #fff;
+}
+.user-meta span,
+.reader-account span {
+  color: var(--muted);
+}
+
+/* ---------- Page container thống nhất ---------- */
+.page-container,
+.reader-page {
+  padding: 22px var(--page-pad) 40px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* Bỏ margin-right 250px của page-header cũ (topbar ma đã chết) */
+.page-header {
+  margin: 0 0 20px 0;
+  align-items: center;
+}
+.page-header h1,
+.reader-home-header h1 {
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+/* ---------- Role badge dùng chung ---------- */
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--role-line);
+  background: var(--role-soft);
+  color: var(--role);
+  white-space: nowrap;
+}
+.role-chip-admin { --role: #4f46e5; --role-2: #7c3aed; --role-soft: rgba(79,70,229,.1); --role-line: rgba(79,70,229,.28); color: #4338ca; }
+.role-chip-staff { --role: #0284c7; --role-2: #0d9488; --role-soft: rgba(2,132,199,.1); --role-line: rgba(2,132,199,.28); color: #0369a1; }
+.role-chip-reader { --role: #d97706; --role-2: #ea580c; --role-soft: rgba(217,119,6,.12); --role-line: rgba(217,119,6,.3); color: #b45309; }
+
+/* ---------- Topbar dùng chung ---------- */
+.app-topbar,
+.reader-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  min-height: var(--topbar-h);
+  height: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 28px;
+  margin: 0 calc(var(--page-pad) * -1) 18px;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+  pointer-events: auto;
+}
+.app-topbar-title strong { font-size: 15px; }
+.app-topbar-title span { color: var(--muted); font-size: 12px; font-weight: 700; }
+
+/* ---------- Card / panel bo góc thống nhất ---------- */
+.stat-card, .panel, .table-card,
+.reader-card, .reader-dashboard-card,
+.staff-shortcut, .admin-kpi {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+}
+.stat-icon, .settings-card-icon, .guide-card-icon,
+.staff-shortcut-icon, .admin-kpi-icon {
+  background: linear-gradient(135deg, var(--role), var(--role-2));
+}
+
+/* ---------- P2: Chuẩn hoá header / badge / button / filter ---------- */
+.page-header, .reader-home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-header-actions, .reader-home-header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Badge reader ánh xạ về status-badge chung */
+.reader-status, .copy-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(100, 116, 139, 0.12);
+  color: var(--muted);
+}
+
+/* Nút bấm: thống nhất chiều cao 40px, bo 12px */
+.primary-button, .reader-primary-button,
+.soft-button, .reader-soft-button,
+.ghost-button, .reader-secondary-button,
+.danger-button, .reader-danger-button {
+  min-height: 40px;
+  border-radius: 12px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+}
+.primary-button, .reader-primary-button {
+  background: linear-gradient(135deg, var(--role, var(--primary)), var(--role-2, var(--primary-2)));
+  color: #fff;
+  border: 1px solid transparent;
+}
+.icon-button, .reader-icon-button {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+}
+
+/* Filter panel: một kiểu duy nhất */
+.filter-panel, .books-filter-panel, .reader-filter-panel,
+.copy-filter-panel, .comment-filter-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* Bảng reader dùng chung cảm quan với data-table */
+.reader-table-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* ---------- Dark mode: chỉ đổi biến ---------- */
+:root[data-theme="dark"] {
+  --bg: #0e1526;
+  --surface: rgba(17, 25, 40, 0.96);
+  --surface-solid: #111927;
+  --surface-soft: rgba(30, 41, 59, 0.6);
+  --line: rgba(226, 232, 240, 0.12);
+  --line-strong: rgba(226, 232, 240, 0.2);
+  --input-border: rgba(226, 232, 240, 0.24);
+  --text: #e8edf5;
+  --muted: #94a3b8;
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 34%),
+    radial-gradient(circle at top right, rgba(124, 58, 237, 0.1), transparent 30%),
+    var(--bg);
+}
+:root[data-theme="dark"] .sidebar,
+:root[data-theme="dark"] .reader-sidebar {
+  background: #101a30;
+  border-right-color: rgba(226, 232, 240, 0.1);
+}
+:root[data-theme="dark"] .nav-menu a,
+:root[data-theme="dark"] .reader-nav a { color: #cbd5e1; }
+:root[data-theme="dark"] .nav-menu a:hover,
+:root[data-theme="dark"] .reader-nav a:hover,
+:root[data-theme="dark"] .nav-menu a.active,
+:root[data-theme="dark"] .reader-nav a.active { color: #fff; }
+:root[data-theme="dark"] .brand-title,
+:root[data-theme="dark"] .reader-brand h2 { color: #f1f5f9; }
+:root[data-theme="dark"] .app-topbar,
+:root[data-theme="dark"] .reader-topbar {
+  background: rgba(16, 26, 48, 0.88);
+}
+:root[data-theme="dark"] .role-chip-admin { color: #a5b4fc; }
+:root[data-theme="dark"] .role-chip-staff { color: #7dd3fc; }
+:root[data-theme="dark"] .role-chip-reader { color: #fbbf24; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+  :root { --sidebar-w: 248px; }
+  .stat-grid, .reader-overview-grid,
+  .staff-shortcut-grid, .admin-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .grid-2, .staff-action-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 820px) {
+  .workspace, .reader-content { margin-left: 0; }
+  .sidebar, .reader-sidebar {
+    position: sticky;
+    top: 0;
+    width: auto;
+    z-index: 30;
+  }
+  .app-topbar, .reader-topbar { margin: 0 0 14px; padding: 10px 16px; }
+  .page-container, .reader-page { padding: 16px 16px 32px; }
+  .page-header h1, .reader-home-header h1 { font-size: 24px; }
+  .stat-grid, .reader-overview-grid,
+  .staff-shortcut-grid, .admin-kpi-grid { grid-template-columns: 1fr; }
+  .topbar-logout span { display: none; }
+  .topbar-logout { padding: 0 11px; }
+}
+
+/* Chuông thông báo dùng biến theme (sáng/tối) */
+.notification-bell {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.notification-bell:hover {
+  border-color: var(--role-line);
+  color: var(--role);
+}
