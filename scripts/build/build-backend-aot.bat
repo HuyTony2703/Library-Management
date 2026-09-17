@@ -28,7 +28,10 @@ if not exist "%RELEASE_DIR%" (
 )
 
 cd /d "%BACKEND_DIR%"
-call "%BACKEND_DIR%\mvnw.cmd" -Pnative -DskipTests package
+REM Khong dung -Pnative o day: profile native chay process-aot va tao ra JAR
+REM thieu class goc (ClassNotFoundException: BackendApplication khi java -jar).
+REM Build JAR chay bang JVM thuong luon dung clean package mac dinh.
+call "%BACKEND_DIR%\mvnw.cmd" -DskipTests clean package
 
 if errorlevel 1 (
     echo.
